@@ -124,35 +124,42 @@ const getLiveVaults = cache(async (): Promise<LiveVaultsResult> => {
   };
 });
 
-export async function getVaultsResponse(): Promise<VaultsApiResponse> {
-  const { vaults, errors, source } = await getLiveVaults();
-  const response = {
-    generatedAt: new Date().toISOString(),
-    source,
-    errors: errors.length > 0 ? errors : undefined,
-    vaults,
-  } satisfies VaultsApiResponse;
+export async function getVaultsResponse(
+  source: DataSource = getDataSource()
+): Promise<VaultsApiResponse> {
+  if (source === "mock") {
+    return VaultsApiResponseSchema.parse({
+      generatedAt: new Date().toISOString(),
+      source: {
+        supabase: "mock",
+        indexer: null,
+      },
+      vaults: MOCK_VAULTS,
+    } satisfies VaultsApiResponse);
+  }
 
-  return VaultsApiResponseSchema.parse(response);
+  const live = await getLiveVaults();
+  return VaultsApiResponseSchema.parse({
+    generatedAt: new Date().toISOString(),
+    source: live.source,
+    errors: live.errors.length > 0 ? live.errors : undefined,
+    vaults: live.vaults,
+  } satisfies VaultsApiResponse);
 }
 
 export async function getVaults(
   source: DataSource = getDataSource()
 ): Promise<VaultRecord[]> {
-  if (source === "live") {
-    try {
-      const response = await getVaultsResponse();
-      return [...response.vaults].sort((a, b) => {
-        const orderA = a.uiConfig.displayOrder ?? 999;
-        const orderB = b.uiConfig.displayOrder ?? 999;
-        return orderA - orderB;
-      });
-    } catch {
-      return MOCK_VAULTS;
-    }
+  try {
+    const response = await getVaultsResponse(source);
+    return [...response.vaults].sort((a, b) => {
+      const orderA = a.uiConfig.displayOrder ?? 999;
+      const orderB = b.uiConfig.displayOrder ?? 999;
+      return orderA - orderB;
+    });
+  } catch {
+    return MOCK_VAULTS;
   }
-
-  return MOCK_VAULTS;
 }
 
 export async function getVaultById(
