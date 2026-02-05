@@ -5,6 +5,8 @@ out/
 # Vendored deps
 lib/boring-vault/
 lib/forge-std/
+lib/openzeppelin-contracts/
+lib/openzeppelin-contracts-upgradeable/
 
 # Ignores development broadcast logs
 !/broadcast
