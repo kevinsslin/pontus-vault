@@ -6,10 +6,10 @@ import {AccountantWithRateProviders} from "../../lib/boring-vault/src/base/Roles
 import {RolesAuthority, Authority} from "../../lib/boring-vault/lib/solmate/src/auth/authorities/RolesAuthority.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {BaseTrancheTest} from "../BaseTrancheTest.sol";
+import {BaseTest} from "../BaseTest.sol";
 import {BoringVaultTellerAdapter} from "../mocks/BoringVaultTellerAdapter.sol";
 
-contract TrancheIntegrationTest is BaseTrancheTest {
+contract TrancheIntegrationTest is BaseTest {
     BoringVault internal vault;
     AccountantWithRateProviders internal accountant;
     RolesAuthority internal rolesAuthority;
@@ -57,5 +57,5 @@ contract TrancheIntegrationTest is BaseTrancheTest {
         assertEq(vault.balanceOf(address(controller)), 200e18);
     }
 
-    // deposit helpers come from BaseTrancheTest
+    // deposit helpers come from BaseTest
 }

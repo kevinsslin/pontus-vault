@@ -5,11 +5,11 @@ import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol"
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {BaseTrancheTest} from "../BaseTrancheTest.sol";
+import {BaseTest} from "../BaseTest.sol";
 import {MockTeller} from "../mocks/MockTeller.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
 
-contract TrancheControllerTest is BaseTrancheTest {
+contract TrancheControllerTest is BaseTest {
     MockTeller internal teller;
 
     function setUp() public {
@@ -121,5 +121,5 @@ contract TrancheControllerTest is BaseTrancheTest {
         vm.stopPrank();
     }
 
-    // deposit helpers come from BaseTrancheTest
+    // deposit helpers come from BaseTest
 }
