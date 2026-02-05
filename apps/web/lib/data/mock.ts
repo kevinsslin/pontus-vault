@@ -2,7 +2,7 @@ import type { ActivityEvent, PortfolioSnapshot, VaultRecord } from "@pti/shared"
 
 export const MOCK_VAULTS: VaultRecord[] = [
   {
-    productId: "0",
+    vaultId: "0",
     chain: "pharos-atlantic",
     name: "Pontus Vault USDC Lending S1",
     route: "lending",
@@ -35,7 +35,7 @@ export const MOCK_VAULTS: VaultRecord[] = [
     },
   },
   {
-    productId: "1",
+    vaultId: "1",
     chain: "pharos-atlantic",
     name: "Pontus Vault USDT T-Bills S1",
     route: "t-bill",
@@ -68,7 +68,7 @@ export const MOCK_VAULTS: VaultRecord[] = [
     },
   },
   {
-    productId: "2",
+    vaultId: "2",
     chain: "pharos-atlantic",
     name: "Pontus Vault Delta Neutral Credit S1",
     route: "credit",
@@ -164,7 +164,7 @@ export const MOCK_PORTFOLIO: PortfolioSnapshot = {
   dayChange: "+1.3%",
   positions: [
     {
-      productId: "0",
+      vaultId: "0",
       name: "Pontus Vault USDC Lending S1",
       tranche: "SENIOR",
       shares: "1,000,000 pvS",
@@ -172,7 +172,7 @@ export const MOCK_PORTFOLIO: PortfolioSnapshot = {
       pnl: "+0.9%",
     },
     {
-      productId: "0",
+      vaultId: "0",
       name: "Pontus Vault USDC Lending S1",
       tranche: "JUNIOR",
       shares: "700,000 pvJ",

@@ -18,7 +18,7 @@ export GOLDSKY_SUBGRAPH_NAME="pontus-vault/0.1.0"
 ```
 
 **Responsibilities**
-- Product discovery (registry events)
+- Vault discovery (registry events)
 - Activity feed (deposit/redeem/accrue)
 - Event-level tranche snapshots (`TrancheSnapshot`)
 - Hourly and daily rollups (`VaultHourlySnapshot`, `VaultDailySnapshot`) with flow counters, latest state, and OHLC-style TVL/price fields for charting
@@ -35,7 +35,7 @@ export GOLDSKY_SUBGRAPH_NAME="pontus-vault/0.1.0"
 query VaultSnapshots($controller: String!) {
   vault(id: $controller) {
     id
-    productId
+    vaultId
     tvl
     seniorPrice
     juniorPrice

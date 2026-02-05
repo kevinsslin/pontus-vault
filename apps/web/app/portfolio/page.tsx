@@ -16,7 +16,7 @@ export default function PortfolioPage() {
         </p>
         <div className="card-actions">
           <span className="chip">Positions: {positionCount}</span>
-          <span className="chip">Products: {new Set(portfolio.positions.map((p) => p.productId)).size}</span>
+          <span className="chip">Vaults: {new Set(portfolio.positions.map((p) => p.vaultId)).size}</span>
         </div>
       </section>
 
@@ -50,7 +50,7 @@ export default function PortfolioPage() {
             </thead>
             <tbody>
               {portfolio.positions.map((position) => (
-                <tr key={`${position.productId}-${position.tranche}`}>
+                <tr key={`${position.vaultId}-${position.tranche}`}>
                   <td>{position.name}</td>
                   <td>{position.tranche}</td>
                   <td>{position.shares}</td>

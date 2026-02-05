@@ -8,7 +8,7 @@ const INDEXER_QUERY = `
     vaults(first: 1000) {
       id
       controller
-      productId
+      vaultId
       tvl
       seniorPrice
       juniorPrice

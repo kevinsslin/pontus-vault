@@ -133,7 +133,7 @@ export default async function HomePage() {
         </div>
         <div className="grid grid-3">
           {featured.map((vault) => (
-            <VaultCard key={vault.productId} vault={vault} />
+            <VaultCard key={vault.vaultId} vault={vault} />
           ))}
         </div>
       </section>

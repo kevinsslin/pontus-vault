@@ -89,7 +89,7 @@ async function getLiveVaults(): Promise<LiveVaultsResult> {
     const metrics = indexerMap.get(controllerKey);
 
     return {
-      productId: row.product_id,
+      vaultId: row.vault_id,
       chain: row.chain,
       name: row.name,
       route: row.route,
@@ -170,11 +170,11 @@ export async function getVaultById(
   source: DataSource = getDataSource()
 ): Promise<VaultRecord | null> {
   const vaults = await getVaults(source);
-  return vaults.find((vault) => vault.productId === id) ?? null;
+  return vaults.find((vault) => vault.vaultId === id) ?? null;
 }
 
-export function getActivityForVault(productId: string): ActivityEvent[] {
-  return MOCK_ACTIVITY[productId] ?? [];
+export function getActivityForVault(vaultId: string): ActivityEvent[] {
+  return MOCK_ACTIVITY[vaultId] ?? [];
 }
 
 export function getPortfolioSnapshot(): PortfolioSnapshot {

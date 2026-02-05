@@ -1,7 +1,7 @@
 create extension if not exists "pgcrypto";
 
 create table if not exists public.vault_registry (
-  product_id text primary key,
+  vault_id text primary key,
   chain text not null,
   name text not null,
   route text not null,
@@ -20,9 +20,9 @@ create table if not exists public.vault_registry (
 create table if not exists public.watchlists (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null,
-  product_id text not null references public.vault_registry(product_id) on delete cascade,
+  vault_id text not null references public.vault_registry(vault_id) on delete cascade,
   created_at timestamptz not null default now(),
-  unique (user_id, product_id)
+  unique (user_id, vault_id)
 );
 
 alter table public.vault_registry enable row level security;

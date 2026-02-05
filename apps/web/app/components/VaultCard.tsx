@@ -45,12 +45,12 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
       </div>
 
       <div className="card-actions">
-        <Link className="button" href={`/vaults/${vault.productId}`}>
+        <Link className="button" href={`/vaults/${vault.vaultId}`}>
           Open vault
         </Link>
         <Link
           className={`button button--ghost ${!isLive ? "button--disabled" : ""}`}
-          href={isLive ? `/vaults/${vault.productId}/deposit` : "#"}
+          href={isLive ? `/vaults/${vault.vaultId}/deposit` : "#"}
           aria-disabled={!isLive}
           tabIndex={isLive ? 0 : -1}
         >

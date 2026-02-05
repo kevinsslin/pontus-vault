@@ -1,12 +1,12 @@
 import { BigInt } from "@graphprotocol/graph-ts";
 
-import { ProductCreated } from "../generated/TrancheRegistry/TrancheRegistry";
+import { TrancheVaultCreated } from "../generated/TrancheRegistry/TrancheRegistry";
 import { Vault } from "../generated/schema";
 import { TrancheController as TrancheControllerTemplate } from "../generated/templates";
 
 const ZERO = BigInt.fromI32(0);
 
-export function handleProductCreated(event: ProductCreated): void {
+export function handleTrancheVaultCreated(event: TrancheVaultCreated): void {
   const id = event.params.controller.toHexString();
   let vault = Vault.load(id);
   const isNew = vault == null;
@@ -15,7 +15,7 @@ export function handleProductCreated(event: ProductCreated): void {
     vault = new Vault(id);
   }
 
-  vault.productId = event.params.productId;
+  vault.vaultId = event.params.vaultId;
   vault.controller = event.params.controller;
   vault.seniorToken = event.params.seniorToken;
   vault.juniorToken = event.params.juniorToken;

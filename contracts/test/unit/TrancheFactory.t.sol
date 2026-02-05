@@ -46,10 +46,10 @@ contract TrancheFactoryTest is Test {
         factory.setRegistry(address(0));
     }
 
-    function test_createProduct_revertsWhenRegistryIsUnset() public {
+    function test_createTrancheVault_revertsWhenRegistryIsUnset() public {
         TrancheFactory factory = new TrancheFactory(owner, address(controllerImpl), address(tokenImpl), address(0));
 
-        TrancheFactory.ProductConfig memory config = TrancheFactory.ProductConfig({
+        TrancheFactory.TrancheVaultConfig memory config = TrancheFactory.TrancheVaultConfig({
             paramsHash: bytes32(0),
             asset: address(1),
             vault: address(2),
@@ -70,6 +70,6 @@ contract TrancheFactoryTest is Test {
 
         vm.prank(owner);
         vm.expectRevert(TrancheFactory.ZeroAddress.selector);
-        factory.createProduct(config);
+        factory.createTrancheVault(config);
     }
 }

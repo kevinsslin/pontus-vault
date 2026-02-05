@@ -26,7 +26,7 @@ export default async function DiscoverPage() {
       <section className="section reveal delay-1">
         <div className="grid grid-3">
           {vaults.map((vault) => (
-            <VaultCard key={vault.productId} vault={vault} />
+            <VaultCard key={vault.vaultId} vault={vault} />
           ))}
         </div>
       </section>

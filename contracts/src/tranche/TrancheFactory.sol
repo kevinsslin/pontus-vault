@@ -16,7 +16,7 @@ contract TrancheFactory is Ownable {
 
     event RegistryUpdated(address indexed oldRegistry, address indexed newRegistry);
 
-    struct ProductConfig {
+    struct TrancheVaultConfig {
         bytes32 paramsHash;
         address asset;
         address vault;
@@ -48,7 +48,7 @@ contract TrancheFactory is Ownable {
         registry = newRegistry;
     }
 
-    function createProduct(ProductConfig calldata config) external onlyOwner returns (uint256 productId) {
+    function createTrancheVault(TrancheVaultConfig calldata config) external onlyOwner returns (uint256 vaultId) {
         if (registry == address(0)) revert ZeroAddress();
 
         address controller = Clones.clone(controllerImpl);
@@ -77,9 +77,9 @@ contract TrancheFactory is Ownable {
                 })
             );
 
-        productId = TrancheRegistry(registry)
-            .registerProduct(
-                TrancheRegistry.ProductInfo({
+        vaultId = TrancheRegistry(registry)
+            .registerTrancheVault(
+                TrancheRegistry.TrancheVaultInfo({
                     controller: controller,
                     seniorToken: seniorToken,
                     juniorToken: juniorToken,

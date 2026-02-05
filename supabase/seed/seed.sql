@@ -1,5 +1,5 @@
 insert into public.vault_registry (
-  product_id,
+  vault_id,
   chain,
   name,
   route,
@@ -58,7 +58,7 @@ insert into public.vault_registry (
     '0x0000000000000000000000000000000000000000',
     '{"status":"COMING_SOON","displayOrder":3,"risk":"MEDIUM","tags":["credit","delta-neutral"]}'::jsonb
   )
-on conflict (product_id) do update set
+on conflict (vault_id) do update set
   chain = excluded.chain,
   name = excluded.name,
   route = excluded.route,

@@ -9,7 +9,7 @@ export default async function VaultDetailPage({ params }: { params: { id: string
     notFound();
   }
 
-  const activity = getActivityForVault(vault.productId);
+  const activity = getActivityForVault(vault.vaultId);
   const isLive = vault.uiConfig.status === "LIVE";
   const tags = vault.uiConfig.tags ?? [];
 
@@ -85,7 +85,7 @@ export default async function VaultDetailPage({ params }: { params: { id: string
             <div className="card-actions">
               <Link
                 className={`button ${!isLive ? "button--disabled" : ""}`}
-                href={isLive ? `/vaults/${vault.productId}/deposit` : "#"}
+                href={isLive ? `/vaults/${vault.vaultId}/deposit` : "#"}
                 aria-disabled={!isLive}
                 tabIndex={isLive ? 0 : -1}
               >
@@ -93,7 +93,7 @@ export default async function VaultDetailPage({ params }: { params: { id: string
               </Link>
               <Link
                 className={`button button--ghost ${!isLive ? "button--disabled" : ""}`}
-                href={isLive ? `/vaults/${vault.productId}/redeem` : "#"}
+                href={isLive ? `/vaults/${vault.vaultId}/redeem` : "#"}
                 aria-disabled={!isLive}
                 tabIndex={isLive ? 0 : -1}
               >

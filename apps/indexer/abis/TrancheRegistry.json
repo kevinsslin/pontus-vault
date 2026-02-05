@@ -2,7 +2,7 @@
   {
     "anonymous": false,
     "inputs": [
-      {"indexed": true, "name": "productId", "type": "uint256"},
+      {"indexed": true, "name": "vaultId", "type": "uint256"},
       {"indexed": true, "name": "controller", "type": "address"},
       {"indexed": false, "name": "seniorToken", "type": "address"},
       {"indexed": false, "name": "juniorToken", "type": "address"},
@@ -13,7 +13,7 @@
       {"indexed": false, "name": "asset", "type": "address"},
       {"indexed": false, "name": "paramsHash", "type": "bytes32"}
     ],
-    "name": "ProductCreated",
+    "name": "TrancheVaultCreated",
     "type": "event"
   }
 ]

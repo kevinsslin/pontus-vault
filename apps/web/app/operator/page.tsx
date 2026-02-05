@@ -23,7 +23,7 @@ export default async function OperatorPage() {
       <section className="section reveal delay-1">
         <div className="grid">
           {vaults.map((vault) => (
-            <div className="card" key={vault.productId}>
+            <div className="card" key={vault.vaultId}>
               <h3>{vault.name}</h3>
               <p className="muted">Route: {vault.uiConfig.routeLabel ?? vault.route}</p>
               <p className="muted">Status: {vault.uiConfig.status}</p>

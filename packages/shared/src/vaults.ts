@@ -31,7 +31,7 @@ export type VaultMetrics = z.infer<typeof VaultMetricsSchema>;
 export const IndexerVaultSchema = z.object({
   id: z.string(),
   controller: z.string().nullable().optional(),
-  productId: z.string().nullable().optional(),
+  vaultId: z.string().nullable().optional(),
   tvl: z.string().nullable().optional(),
   seniorPrice: z.string().nullable().optional(),
   juniorPrice: z.string().nullable().optional(),
@@ -53,7 +53,7 @@ export const IndexerVaultsResponseSchema = z.object({
 export type IndexerVaultsResponse = z.infer<typeof IndexerVaultsResponseSchema>;
 
 export const SupabaseVaultRegistryRowSchema = z.object({
-  product_id: z.string(),
+  vault_id: z.string(),
   chain: z.string(),
   name: z.string(),
   route: z.string(),
@@ -70,7 +70,7 @@ export const SupabaseVaultRegistryRowSchema = z.object({
 export type SupabaseVaultRegistryRow = z.infer<typeof SupabaseVaultRegistryRowSchema>;
 
 export const VaultRecordSchema = z.object({
-  productId: z.string(),
+  vaultId: z.string(),
   chain: z.string(),
   name: z.string(),
   route: z.string(),
@@ -102,7 +102,7 @@ export const PortfolioSnapshotSchema = z.object({
   dayChange: z.string(),
   positions: z.array(
     z.object({
-      productId: z.string(),
+      vaultId: z.string(),
       name: z.string(),
       tranche: z.enum(["SENIOR", "JUNIOR"]),
       shares: z.string(),

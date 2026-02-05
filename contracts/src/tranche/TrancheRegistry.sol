@@ -7,7 +7,7 @@ contract TrancheRegistry is Ownable {
     error NotFactory();
     error ZeroAddress();
 
-    struct ProductInfo {
+    struct TrancheVaultInfo {
         address controller;
         address seniorToken;
         address juniorToken;
@@ -20,11 +20,11 @@ contract TrancheRegistry is Ownable {
     }
 
     address public factory;
-    ProductInfo[] private _products;
+    TrancheVaultInfo[] private _trancheVaults;
 
     event FactoryUpdated(address indexed oldFactory, address indexed newFactory);
-    event ProductCreated(
-        uint256 indexed productId,
+    event TrancheVaultCreated(
+        uint256 indexed vaultId,
         address indexed controller,
         address seniorToken,
         address juniorToken,
@@ -51,11 +51,11 @@ contract TrancheRegistry is Ownable {
         factory = newFactory;
     }
 
-    function registerProduct(ProductInfo calldata info) external onlyFactory returns (uint256 productId) {
-        productId = _products.length;
-        _products.push(info);
-        emit ProductCreated(
-            productId,
+    function registerTrancheVault(TrancheVaultInfo calldata info) external onlyFactory returns (uint256 vaultId) {
+        vaultId = _trancheVaults.length;
+        _trancheVaults.push(info);
+        emit TrancheVaultCreated(
+            vaultId,
             info.controller,
             info.seniorToken,
             info.juniorToken,
@@ -68,27 +68,27 @@ contract TrancheRegistry is Ownable {
         );
     }
 
-    function productCount() external view returns (uint256) {
-        return _products.length;
+    function trancheVaultCount() external view returns (uint256) {
+        return _trancheVaults.length;
     }
 
-    function products(uint256 id) external view returns (ProductInfo memory) {
-        return _products[id];
+    function trancheVaults(uint256 id) external view returns (TrancheVaultInfo memory) {
+        return _trancheVaults[id];
     }
 
-    function getProducts(uint256 offset, uint256 limit) external view returns (ProductInfo[] memory) {
-        uint256 total = _products.length;
+    function getTrancheVaults(uint256 offset, uint256 limit) external view returns (TrancheVaultInfo[] memory) {
+        uint256 total = _trancheVaults.length;
         if (offset >= total) {
-            return new ProductInfo[](0);
+            return new TrancheVaultInfo[](0);
         }
         uint256 end = offset + limit;
         if (end > total) {
             end = total;
         }
         uint256 size = end - offset;
-        ProductInfo[] memory page = new ProductInfo[](size);
+        TrancheVaultInfo[] memory page = new TrancheVaultInfo[](size);
         for (uint256 i = 0; i < size; i++) {
-            page[i] = _products[offset + i];
+            page[i] = _trancheVaults[offset + i];
         }
         return page;
     }

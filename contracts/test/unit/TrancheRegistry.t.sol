@@ -39,21 +39,21 @@ contract TrancheRegistryTest is Test {
         assertEq(registry.factory(), newFactory);
     }
 
-    function test_registerProduct_revertsForNonFactory() public {
-        TrancheRegistry.ProductInfo memory info = _sampleProduct();
+    function test_registerTrancheVault_revertsForNonFactory() public {
+        TrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
         vm.prank(outsider);
         vm.expectRevert(TrancheRegistry.NotFactory.selector);
-        registry.registerProduct(info);
+        registry.registerTrancheVault(info);
     }
 
-    function test_registerProduct_storesProductForFactory() public {
-        TrancheRegistry.ProductInfo memory info = _sampleProduct();
+    function test_registerTrancheVault_storesVaultForFactory() public {
+        TrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
         vm.prank(factory);
-        uint256 productId = registry.registerProduct(info);
-        assertEq(productId, 0);
-        assertEq(registry.productCount(), 1);
+        uint256 vaultId = registry.registerTrancheVault(info);
+        assertEq(vaultId, 0);
+        assertEq(registry.trancheVaultCount(), 1);
 
-        TrancheRegistry.ProductInfo memory stored = registry.products(0);
+        TrancheRegistry.TrancheVaultInfo memory stored = registry.trancheVaults(0);
         assertEq(stored.controller, info.controller);
         assertEq(stored.seniorToken, info.seniorToken);
         assertEq(stored.juniorToken, info.juniorToken);
@@ -65,27 +65,27 @@ contract TrancheRegistryTest is Test {
         assertEq(stored.paramsHash, info.paramsHash);
     }
 
-    function test_getProducts_paginates() public {
-        TrancheRegistry.ProductInfo memory info0 = _sampleProduct();
-        TrancheRegistry.ProductInfo memory info1 = _sampleProduct();
+    function test_getTrancheVaults_paginates() public {
+        TrancheRegistry.TrancheVaultInfo memory info0 = _sampleTrancheVault();
+        TrancheRegistry.TrancheVaultInfo memory info1 = _sampleTrancheVault();
         info1.controller = address(0x2001);
         info1.paramsHash = keccak256("sample-2");
 
         vm.startPrank(factory);
-        registry.registerProduct(info0);
-        registry.registerProduct(info1);
+        registry.registerTrancheVault(info0);
+        registry.registerTrancheVault(info1);
         vm.stopPrank();
 
-        TrancheRegistry.ProductInfo[] memory page = registry.getProducts(1, 10);
+        TrancheRegistry.TrancheVaultInfo[] memory page = registry.getTrancheVaults(1, 10);
         assertEq(page.length, 1);
         assertEq(page[0].controller, info1.controller);
 
-        TrancheRegistry.ProductInfo[] memory emptyPage = registry.getProducts(3, 10);
+        TrancheRegistry.TrancheVaultInfo[] memory emptyPage = registry.getTrancheVaults(3, 10);
         assertEq(emptyPage.length, 0);
     }
 
-    function _sampleProduct() internal pure returns (TrancheRegistry.ProductInfo memory) {
-        return TrancheRegistry.ProductInfo({
+    function _sampleTrancheVault() internal pure returns (TrancheRegistry.TrancheVaultInfo memory) {
+        return TrancheRegistry.TrancheVaultInfo({
             controller: address(0x1001),
             seniorToken: address(0x1002),
             juniorToken: address(0x1003),

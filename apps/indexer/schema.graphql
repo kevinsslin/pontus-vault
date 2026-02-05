@@ -1,6 +1,6 @@
 type Vault @entity(immutable: false) {
   id: ID!
-  productId: BigInt!
+  vaultId: BigInt!
   controller: Bytes!
   seniorToken: Bytes!
   juniorToken: Bytes!

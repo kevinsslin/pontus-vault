@@ -79,7 +79,7 @@ export default async function RedeemPage({ params }: { params: { id: string } })
               </div>
             </div>
             <div className="card-actions">
-              <Link className="button button--ghost" href={`/vaults/${vault.productId}`}>
+              <Link className="button button--ghost" href={`/vaults/${vault.vaultId}`}>
                 Back to vault
               </Link>
             </div>

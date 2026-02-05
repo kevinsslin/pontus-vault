@@ -73,8 +73,8 @@ contract FactoryRegistryIntegrationTest is Test {
         registry.setFactory(address(factory));
     }
 
-    function test_ownerCanCreateProductAndRegistryStoresWiring() public {
-        TrancheFactory.ProductConfig memory config = TrancheFactory.ProductConfig({
+    function test_ownerCanCreateVaultAndRegistryStoresWiring() public {
+        TrancheFactory.TrancheVaultConfig memory config = TrancheFactory.TrancheVaultConfig({
             paramsHash: keccak256("usdc-lending-s1"),
             asset: address(asset),
             vault: address(boringVault),
@@ -94,11 +94,11 @@ contract FactoryRegistryIntegrationTest is Test {
         });
 
         vm.prank(owner);
-        uint256 productId = factory.createProduct(config);
-        assertEq(productId, 0);
-        assertEq(registry.productCount(), 1);
+        uint256 vaultId = factory.createTrancheVault(config);
+        assertEq(vaultId, 0);
+        assertEq(registry.trancheVaultCount(), 1);
 
-        TrancheRegistry.ProductInfo memory info = registry.products(productId);
+        TrancheRegistry.TrancheVaultInfo memory info = registry.trancheVaults(vaultId);
         assertEq(info.asset, address(asset));
         assertEq(info.vault, address(boringVault));
         assertEq(info.teller, address(teller));
@@ -117,8 +117,8 @@ contract FactoryRegistryIntegrationTest is Test {
         assertEq(controller.maxSeniorRatioBps(), 8_000);
     }
 
-    function test_createProduct_revertsForNonOwner() public {
-        TrancheFactory.ProductConfig memory config = TrancheFactory.ProductConfig({
+    function test_createTrancheVault_revertsForNonOwner() public {
+        TrancheFactory.TrancheVaultConfig memory config = TrancheFactory.TrancheVaultConfig({
             paramsHash: bytes32(0),
             asset: address(asset),
             vault: address(boringVault),
@@ -139,6 +139,6 @@ contract FactoryRegistryIntegrationTest is Test {
 
         vm.prank(outsider);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, outsider));
-        factory.createProduct(config);
+        factory.createTrancheVault(config);
     }
 }
