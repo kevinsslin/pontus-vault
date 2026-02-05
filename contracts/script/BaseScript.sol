@@ -2,7 +2,6 @@
 pragma solidity ^0.8.21;
 
 import "forge-std/Script.sol";
-import "forge-std/console2.sol";
 
 abstract contract BaseScript is Script {
     error MissingConfig(string key);
@@ -17,9 +16,5 @@ abstract contract BaseScript is Script {
 
     function _requireAddress(address value, string memory key) internal pure {
         if (value == address(0)) revert MissingConfig(key);
-    }
-
-    function _logAddress(string memory label, address value) internal {
-        console2.log(label, value);
     }
 }

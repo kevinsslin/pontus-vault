@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "deps": "./script/install-deps.sh",
     "build": "forge build",
     "test": "forge test",
     "lint": "forge fmt --check",

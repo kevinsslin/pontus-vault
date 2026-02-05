@@ -3,17 +3,21 @@ pragma solidity ^0.8.21;
 
 import {BoringVault} from "../../lib/boring-vault/src/base/BoringVault.sol";
 import {AccountantWithRateProviders} from "../../lib/boring-vault/src/base/Roles/AccountantWithRateProviders.sol";
+import {TellerWithMultiAssetSupport} from "../../lib/boring-vault/src/base/Roles/TellerWithMultiAssetSupport.sol";
 import {RolesAuthority, Authority} from "../../lib/boring-vault/lib/solmate/src/auth/authorities/RolesAuthority.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20} from "../../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
+import {WETH} from "../../lib/boring-vault/lib/solmate/src/tokens/WETH.sol";
 
 import {BaseTest} from "../BaseTest.sol";
-import {BoringVaultTellerShim} from "../mocks/BoringVaultTellerShim.sol";
 
 contract TrancheIntegrationTest is BaseTest {
+    uint8 internal constant TELLER_CALLER_ROLE = 9;
+
     BoringVault internal vault;
     AccountantWithRateProviders internal accountant;
+    TellerWithMultiAssetSupport internal teller;
     RolesAuthority internal rolesAuthority;
-    BoringVaultTellerShim internal teller;
+    WETH internal weth;
 
     function setUp() public {
         _initActors();
@@ -25,17 +29,27 @@ contract TrancheIntegrationTest is BaseTest {
             address(this), address(vault), address(this), 1e6, address(asset), 11_000, 9_000, 0, 0, 0
         );
 
+        weth = new WETH();
+        teller = new TellerWithMultiAssetSupport(address(this), address(vault), address(accountant), address(weth));
+        teller.updateAssetData(ERC20(address(asset)), true, true, 0);
+
         rolesAuthority = new RolesAuthority(address(this), Authority(address(0)));
         vault.setAuthority(rolesAuthority);
+        teller.setAuthority(rolesAuthority);
 
         rolesAuthority.setRoleCapability(MINTER_ROLE, address(vault), BoringVault.enter.selector, true);
         rolesAuthority.setRoleCapability(BURNER_ROLE, address(vault), BoringVault.exit.selector, true);
-
-        teller = new BoringVaultTellerShim(vault, accountant, IERC20(address(asset)));
         rolesAuthority.setUserRole(address(teller), MINTER_ROLE, true);
         rolesAuthority.setUserRole(address(teller), BURNER_ROLE, true);
+        rolesAuthority.setRoleCapability(
+            TELLER_CALLER_ROLE, address(teller), TellerWithMultiAssetSupport.deposit.selector, true
+        );
+        rolesAuthority.setRoleCapability(
+            TELLER_CALLER_ROLE, address(teller), TellerWithMultiAssetSupport.bulkWithdraw.selector, true
+        );
 
         _initController(address(vault), address(teller), address(0), address(accountant));
+        rolesAuthority.setUserRole(address(controller), TELLER_CALLER_ROLE, true);
         _seedBalances(1_000_000e6);
     }
 

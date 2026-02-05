@@ -6,7 +6,10 @@ import "forge-std/console2.sol";
 import {BaseScript} from "./BaseScript.sol";
 import {BoringVault} from "../lib/boring-vault/src/base/BoringVault.sol";
 import {AccountantWithRateProviders} from "../lib/boring-vault/src/base/Roles/AccountantWithRateProviders.sol";
+import {TellerWithMultiAssetSupport} from "../lib/boring-vault/src/base/Roles/TellerWithMultiAssetSupport.sol";
 import {RolesAuthority, Authority} from "../lib/boring-vault/lib/solmate/src/auth/authorities/RolesAuthority.sol";
+import {ERC20} from "../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
+import {WETH} from "../lib/boring-vault/lib/solmate/src/tokens/WETH.sol";
 
 import {TrancheController} from "../src/tranche/TrancheController.sol";
 import {TrancheFactory} from "../src/tranche/TrancheFactory.sol";
@@ -18,9 +21,6 @@ contract Deploy is BaseScript {
     uint8 internal constant BURNER_ROLE = 8;
     uint8 internal constant TELLER_ROLE = 9;
 
-    bytes4 internal constant DEPOSIT_SELECTOR = bytes4(keccak256("deposit(address,uint256,uint256)"));
-    bytes4 internal constant BULK_WITHDRAW_SELECTOR = bytes4(keccak256("bulkWithdraw(address,uint256,uint256,address)"));
-
     function run() external {
         uint256 deployerKey = _envUint("PRIVATE_KEY", 0);
         require(deployerKey != 0, "PRIVATE_KEY missing");
@@ -29,10 +29,8 @@ contract Deploy is BaseScript {
         address operator = _envAddress("OPERATOR", owner);
         address guardian = _envAddress("GUARDIAN", owner);
         address asset = _envAddress("ASSET", address(0));
-        address teller = _envAddress("TELLER", address(0));
 
         _requireAddress(asset, "ASSET");
-        _requireAddress(teller, "TELLER");
 
         vm.startBroadcast(deployerKey);
 
@@ -40,25 +38,26 @@ contract Deploy is BaseScript {
         BoringVault vault = new BoringVault(owner, "Boring Vault", "BV", 18);
         vault.setAuthority(rolesAuthority);
 
-        AccountantWithRateProviders accountant = new AccountantWithRateProviders(
-            owner,
-            address(vault),
-            owner,
-            1e6,
-            asset,
-            11_000,
-            9_000,
-            0,
-            0,
-            0
-        );
+        AccountantWithRateProviders accountant =
+            new AccountantWithRateProviders(owner, address(vault), owner, 1e6, asset, 11_000, 9_000, 0, 0, 0);
+        WETH weth = new WETH();
+        TellerWithMultiAssetSupport teller =
+            new TellerWithMultiAssetSupport(owner, address(vault), address(accountant), address(weth));
+        teller.updateAssetData(ERC20(asset), true, true, 0);
+        teller.setAuthority(rolesAuthority);
 
         rolesAuthority.setRoleCapability(MINTER_ROLE, address(vault), BoringVault.enter.selector, true);
         rolesAuthority.setRoleCapability(BURNER_ROLE, address(vault), BoringVault.exit.selector, true);
-        rolesAuthority.setUserRole(teller, MINTER_ROLE, true);
-        rolesAuthority.setUserRole(teller, BURNER_ROLE, true);
-        rolesAuthority.setRoleCapability(TELLER_ROLE, teller, DEPOSIT_SELECTOR, true);
-        rolesAuthority.setRoleCapability(TELLER_ROLE, teller, BULK_WITHDRAW_SELECTOR, true);
+        rolesAuthority.setUserRole(address(teller), MINTER_ROLE, true);
+        rolesAuthority.setUserRole(address(teller), BURNER_ROLE, true);
+        rolesAuthority.setRoleCapability(
+            TELLER_ROLE, address(teller), TellerWithMultiAssetSupport.deposit.selector, true
+        );
+        rolesAuthority.setRoleCapability(
+            TELLER_ROLE, address(teller), TellerWithMultiAssetSupport.bulkWithdraw.selector, true
+        );
+        // Controllers are created later via TrancheFactory; operator gets interim teller-call role for setup checks.
+        rolesAuthority.setUserRole(operator, TELLER_ROLE, true);
 
         TrancheController controllerImpl = new TrancheController();
         TrancheToken tokenImpl = new TrancheToken();
@@ -72,7 +71,8 @@ contract Deploy is BaseScript {
         console2.log("RolesAuthority", address(rolesAuthority));
         console2.log("BoringVault", address(vault));
         console2.log("Accountant", address(accountant));
-        console2.log("Teller", teller);
+        console2.log("WETH", address(weth));
+        console2.log("Teller", address(teller));
         console2.log("TrancheControllerImpl", address(controllerImpl));
         console2.log("TrancheTokenImpl", address(tokenImpl));
         console2.log("TrancheRegistry", address(registry));

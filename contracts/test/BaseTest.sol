@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
-import {MockAccountant} from "./mocks/MockAccountant.sol";
+import {TestAccountant} from "./mocks/TestAccountant.sol";
 import {TrancheController} from "../src/tranche/TrancheController.sol";
 import {TrancheToken} from "../src/tranche/TrancheToken.sol";
 
@@ -28,7 +28,7 @@ abstract contract BaseTest is Test {
     address internal bob;
 
     MockERC20 internal asset;
-    MockAccountant internal mockAccountant;
+    TestAccountant internal testAccountant;
     TrancheController internal controller;
     TrancheToken internal seniorToken;
     TrancheToken internal juniorToken;
@@ -41,15 +41,12 @@ abstract contract BaseTest is Test {
     }
 
     function _initRules() internal {
-        rules = RuleSet({
-            maxSeniorRatioBps: DEFAULT_MAX_SENIOR_RATIO_BPS,
-            seniorRatePerSecondWad: 0
-        });
+        rules = RuleSet({maxSeniorRatioBps: DEFAULT_MAX_SENIOR_RATIO_BPS, seniorRatePerSecondWad: 0});
     }
 
     function _deployCore(string memory name, string memory symbol, uint8 decimals) internal {
         asset = new MockERC20(name, symbol, decimals);
-        mockAccountant = new MockAccountant();
+        testAccountant = new TestAccountant();
         controller = new TrancheController();
         seniorToken = new TrancheToken();
         juniorToken = new TrancheToken();
@@ -57,7 +54,7 @@ abstract contract BaseTest is Test {
         seniorToken.initialize("Pontus Vault Senior USDC S1", "pvS-USDC", decimals, address(controller));
         juniorToken.initialize("Pontus Vault Junior USDC S1", "pvJ-USDC", decimals, address(controller));
 
-        mockAccountant.setRate(IERC20(address(asset)), 1e18);
+        testAccountant.setRate(IERC20(address(asset)), 1e18);
     }
 
     function _initController(address vault, address teller, address rateModel, address accountantAddress) internal {

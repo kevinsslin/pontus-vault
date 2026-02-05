@@ -23,10 +23,13 @@ apps/web/.vercel/
 contracts/out/
 contracts/cache/
 contracts/broadcast/
+contracts/lib/
 
 # Build
 dist/
 coverage/
+apps/indexer/build/
+apps/indexer/generated/
 
 # OS
 .DS_Store

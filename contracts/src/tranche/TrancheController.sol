@@ -79,10 +79,8 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
     function _validateInit(InitParams calldata params) internal pure {
         if (
-            params.asset == address(0) ||
-            params.vault == address(0) ||
-            params.teller == address(0) ||
-            params.accountant == address(0)
+            params.asset == address(0) || params.vault == address(0) || params.teller == address(0)
+                || params.accountant == address(0)
         ) {
             revert ZeroAddress();
         }
@@ -243,8 +241,8 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         _enforceSeniorRatioCap(V0, D0, assetsIn);
 
         asset.safeTransferFrom(msg.sender, address(this), assetsIn);
-        asset.forceApprove(address(teller), assetsIn);
-        teller.deposit(asset, assetsIn, 0);
+        asset.forceApprove(vault, assetsIn);
+        teller.deposit(ERC20(address(asset)), assetsIn, 0);
 
         seniorDebt = D0 + assetsIn;
         seniorToken.mint(receiver, sharesOut);
@@ -275,8 +273,8 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         }
 
         asset.safeTransferFrom(msg.sender, address(this), assetsIn);
-        asset.forceApprove(address(teller), assetsIn);
-        teller.deposit(asset, assetsIn, 0);
+        asset.forceApprove(vault, assetsIn);
+        teller.deposit(ERC20(address(asset)), assetsIn, 0);
 
         juniorToken.mint(receiver, sharesOut);
         emit JuniorDeposited(msg.sender, receiver, assetsIn, sharesOut);
@@ -304,7 +302,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         if (assetsOut != 0) {
             uint256 shareAmount = _sharesForAssets(assetsOut);
             seniorDebt = D0 - assetsOut;
-            teller.bulkWithdraw(asset, shareAmount, assetsOut, receiver);
+            teller.bulkWithdraw(ERC20(address(asset)), shareAmount, assetsOut, receiver);
         }
 
         emit SeniorRedeemed(msg.sender, receiver, sharesIn, assetsOut);
@@ -331,7 +329,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         juniorToken.burnFrom(msg.sender, sharesIn);
         if (assetsOut != 0) {
             uint256 shareAmount = _sharesForAssets(assetsOut);
-            teller.bulkWithdraw(asset, shareAmount, assetsOut, receiver);
+            teller.bulkWithdraw(ERC20(address(asset)), shareAmount, assetsOut, receiver);
         }
 
         emit JuniorRedeemed(msg.sender, receiver, sharesIn, assetsOut);

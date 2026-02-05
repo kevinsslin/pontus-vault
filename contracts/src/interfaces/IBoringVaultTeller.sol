@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20} from "../../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
 
-/// @notice Minimal interface matching BoringVault's TellerWithMultiAssetSupport signatures.
+/// @notice BoringVault teller interface used by TrancheController.
 interface IBoringVaultTeller {
-    function deposit(IERC20 asset, uint256 amount, uint256 minMint) external payable returns (uint256 shares);
+    function deposit(ERC20 asset, uint256 amount, uint256 minMint) external payable returns (uint256 shares);
 
-    function bulkWithdraw(
-        IERC20 asset,
-        uint256 shareAmount,
-        uint256 minAssets,
-        address to
-    ) external returns (uint256 assetsOut);
+    function bulkWithdraw(ERC20 asset, uint256 shareAmount, uint256 minAssets, address to)
+        external
+        returns (uint256 assetsOut);
 }
