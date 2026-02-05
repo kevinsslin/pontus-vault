@@ -5,13 +5,13 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import {TestAccountant} from "./TestAccountant.sol";
+import {MockAccountant} from "./MockAccountant.sol";
 
-contract TestTeller {
+contract MockTeller {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable asset;
-    TestAccountant public immutable accountant;
+    MockAccountant public immutable accountant;
     uint8 public immutable decimals;
 
     uint256 public totalSupply;
@@ -21,7 +21,7 @@ contract TestTeller {
     event Transfer(address indexed from, address indexed to, uint256 amount);
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
-    constructor(IERC20 asset_, TestAccountant accountant_) {
+    constructor(IERC20 asset_, MockAccountant accountant_) {
         asset = asset_;
         accountant = accountant_;
         decimals = 18;

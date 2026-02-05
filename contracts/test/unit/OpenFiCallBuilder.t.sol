@@ -5,6 +5,7 @@ import {Test} from "forge-std/Test.sol";
 
 import {IOpenFiPool} from "../../src/interfaces/IOpenFiPool.sol";
 import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
+import {TestConstants} from "../utils/Constants.sol";
 
 contract MockOpenFiPool is IOpenFiPool {
     address internal _supplyAsset;
@@ -74,7 +75,7 @@ contract OpenFiCallBuilderTest is Test {
     function test_supplyCalldata_executesWithExpectedArguments() public {
         address asset = makeAddr("asset");
         address onBehalfOf = makeAddr("onBehalfOf");
-        uint256 amount = 1_250e6;
+        uint256 amount = TestConstants.OPENFI_SUPPLY_AMOUNT;
 
         (bool ok,) = address(pool).call(OpenFiCallBuilder.supplyCalldata(asset, amount, onBehalfOf));
         assertTrue(ok);
@@ -87,7 +88,7 @@ contract OpenFiCallBuilderTest is Test {
     function test_withdrawCalldata_executesWithExpectedArguments() public {
         address asset = makeAddr("asset");
         address to = makeAddr("to");
-        uint256 amount = 250e6;
+        uint256 amount = TestConstants.OPENFI_WITHDRAW_AMOUNT;
 
         (bool ok,) = address(pool).call(OpenFiCallBuilder.withdrawCalldata(asset, amount, to));
         assertTrue(ok);

@@ -6,6 +6,7 @@ import "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IOpenFiPool} from "../../src/interfaces/IOpenFiPool.sol";
 import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
+import {TestConstants} from "../utils/Constants.sol";
 
 contract OpenFiForkTest is Test {
     address internal constant POOL = 0xEC86f142E7334d99EEEF2c43298413299D919B30;
@@ -38,7 +39,7 @@ contract OpenFiForkTest is Test {
         assertEq(OpenFiCallBuilder.supplySelector(), IOpenFiPool.supply.selector);
         assertEq(OpenFiCallBuilder.withdrawSelector(), IOpenFiPool.withdraw.selector);
 
-        _runRoundtrip(USDC, 1_000e6);
-        _runRoundtrip(USDT, 1_000e6);
+        _runRoundtrip(USDC, TestConstants.OPENFI_FORK_ROUNDTRIP);
+        _runRoundtrip(USDT, TestConstants.OPENFI_FORK_ROUNDTRIP);
     }
 }

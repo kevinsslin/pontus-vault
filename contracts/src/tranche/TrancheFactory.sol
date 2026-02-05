@@ -55,10 +55,8 @@ contract TrancheFactory is Ownable {
         address seniorToken = Clones.clone(tokenImpl);
         address juniorToken = Clones.clone(tokenImpl);
 
-        TrancheToken(seniorToken)
-            .initialize(config.seniorName, config.seniorSymbol, config.tokenDecimals, controller);
-        TrancheToken(juniorToken)
-            .initialize(config.juniorName, config.juniorSymbol, config.tokenDecimals, controller);
+        TrancheToken(seniorToken).initialize(config.seniorName, config.seniorSymbol, config.tokenDecimals, controller);
+        TrancheToken(juniorToken).initialize(config.juniorName, config.juniorSymbol, config.tokenDecimals, controller);
 
         TrancheController(controller)
             .initialize(

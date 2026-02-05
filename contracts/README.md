@@ -45,6 +45,11 @@ pnpm --filter @pti/contracts deploy
 ```
 
 **Test Notes**
+- `test/utils/Constants.sol`: shared numeric values for test amounts/rates/bounds.
+- `test/utils/Defaults.sol`: shared default labels/symbols/config strings.
+- `test/BaseTest.sol`: shared actor/rule/core-tranche setup used by all test layers.
+- `test/integration/IntegrationTest.sol`: shared BoringVault deployment setup (BoringVault + `TellerWithMultiAssetSupport` + accountant + authority) for integration suites.
 - Integration tests deploy the full BoringVault dependency set (vault + teller + accountant + authority) and wire tranche contracts against that deployment.
+- Unit/invariant tests use local test doubles (`MockTeller`, `MockAccountant`) only for isolated controller math and invariant exploration.
 - Fork tests target Pharos Atlantic OpenFi `supply/withdraw` roundtrip via `OpenFiCallBuilder`.
 - Set `PHAROS_RPC_URL` to execute live fork behavior; tests skip the fork path when unset.

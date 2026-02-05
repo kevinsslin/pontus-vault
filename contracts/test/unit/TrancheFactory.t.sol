@@ -7,6 +7,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TrancheFactory} from "../../src/tranche/TrancheFactory.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
+import {TestConstants} from "../utils/Constants.sol";
+import {TestDefaults} from "../utils/Defaults.sol";
 
 contract TrancheFactoryTest is Test {
     address internal owner;
@@ -48,8 +50,15 @@ contract TrancheFactoryTest is Test {
 
     function test_createTrancheVault_revertsWhenRegistryIsUnset() public {
         TrancheFactory factory = new TrancheFactory(owner, address(controllerImpl), address(tokenImpl), address(0));
+        TrancheFactory.TrancheVaultConfig memory config = _defaultConfig();
 
-        TrancheFactory.TrancheVaultConfig memory config = TrancheFactory.TrancheVaultConfig({
+        vm.prank(owner);
+        vm.expectRevert(TrancheFactory.ZeroAddress.selector);
+        factory.createTrancheVault(config);
+    }
+
+    function _defaultConfig() internal pure returns (TrancheFactory.TrancheVaultConfig memory) {
+        return TrancheFactory.TrancheVaultConfig({
             paramsHash: bytes32(0),
             asset: address(1),
             vault: address(2),
@@ -58,18 +67,14 @@ contract TrancheFactoryTest is Test {
             manager: address(5),
             operator: address(6),
             guardian: address(7),
-            tokenDecimals: 6,
+            tokenDecimals: TestConstants.USDC_DECIMALS,
             seniorRatePerSecondWad: 0,
             rateModel: address(0),
-            maxSeniorRatioBps: 8_000,
-            seniorName: "Pontus Vault Senior USDC S1",
-            seniorSymbol: "pvS-USDC",
-            juniorName: "Pontus Vault Junior USDC S1",
-            juniorSymbol: "pvJ-USDC"
+            maxSeniorRatioBps: TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS,
+            seniorName: TestDefaults.SENIOR_TOKEN_NAME,
+            seniorSymbol: TestDefaults.SENIOR_TOKEN_SYMBOL,
+            juniorName: TestDefaults.JUNIOR_TOKEN_NAME,
+            juniorSymbol: TestDefaults.JUNIOR_TOKEN_SYMBOL
         });
-
-        vm.prank(owner);
-        vm.expectRevert(TrancheFactory.ZeroAddress.selector);
-        factory.createTrancheVault(config);
     }
 }

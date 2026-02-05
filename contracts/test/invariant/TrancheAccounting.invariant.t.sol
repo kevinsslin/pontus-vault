@@ -6,15 +6,16 @@ import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {BaseTest} from "../BaseTest.sol";
-import {TestTeller} from "../mocks/TestTeller.sol";
-import {TestAccountant} from "../mocks/TestAccountant.sol";
+import {MockTeller} from "../mocks/MockTeller.sol";
+import {MockAccountant} from "../mocks/MockAccountant.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
+import {TestConstants} from "../utils/Constants.sol";
 
 contract TrancheHandler is Test {
     MockERC20 internal immutable asset;
-    TestAccountant internal immutable accountant;
+    MockAccountant internal immutable accountant;
     TrancheController internal immutable controller;
     TrancheToken internal immutable seniorToken;
     TrancheToken internal immutable juniorToken;
@@ -23,7 +24,7 @@ contract TrancheHandler is Test {
 
     constructor(
         MockERC20 asset_,
-        TestAccountant accountant_,
+        MockAccountant accountant_,
         TrancheController controller_,
         TrancheToken seniorToken_,
         TrancheToken juniorToken_,
@@ -91,16 +92,16 @@ contract TrancheAccountingInvariantTest is StdInvariant, BaseTest {
     function setUp() public {
         _initActors();
         _initRules();
-        _deployCore("USDC", "USDC", 6);
+        _deployCore();
 
-        TestTeller teller = new TestTeller(IERC20(address(asset)), testAccountant);
-        _initController(address(teller), address(teller), address(0), address(testAccountant));
+        MockTeller teller = new MockTeller(IERC20(address(asset)), mockAccountant);
+        _initController(address(teller), address(teller), address(0), address(mockAccountant));
 
-        _seedBalances(1_000_000e6);
-        _depositJunior(bob, 200_000e6);
-        _depositSenior(alice, 400_000e6);
+        _seedBalances(TestConstants.DEFAULT_INITIAL_BALANCE);
+        _depositJunior(bob, TestConstants.INVARIANT_JUNIOR_BOOTSTRAP);
+        _depositSenior(alice, TestConstants.INVARIANT_SENIOR_BOOTSTRAP);
 
-        handler = new TrancheHandler(asset, testAccountant, controller, seniorToken, juniorToken, alice, bob);
+        handler = new TrancheHandler(asset, mockAccountant, controller, seniorToken, juniorToken, alice, bob);
         targetContract(address(handler));
     }
 

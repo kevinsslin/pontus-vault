@@ -5,6 +5,7 @@ import {Test} from "forge-std/Test.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {CapSafetyRateModel, FixedRateModel} from "../../src/tranche/RateModel.sol";
+import {TestConstants} from "../utils/Constants.sol";
 
 contract MockRefRateProvider {
     uint256 internal _rate;
@@ -73,6 +74,6 @@ contract RateModelTest is Test {
 
     function test_capSafetyRateModel_revertsForInvalidSafetyFactor() public {
         vm.expectRevert(CapSafetyRateModel.InvalidSafetyFactor.selector);
-        new CapSafetyRateModel(owner, address(refProvider), 1000, 1e18 + 1);
+        new CapSafetyRateModel(owner, address(refProvider), 1000, TestConstants.ONE_WAD + 1);
     }
 }
