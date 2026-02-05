@@ -1,64 +1,6 @@
-export type VaultStatus = "LIVE" | "COMING_SOON";
-export type DataSource = "mock" | "live";
+import type { ActivityEvent, PortfolioSnapshot, VaultRecord } from "@pti/shared";
 
-export type VaultMetrics = {
-  tvl: string | null;
-  seniorPrice: string | null;
-  juniorPrice: string | null;
-  seniorDebt: string | null;
-  seniorSupply: string | null;
-  juniorSupply: string | null;
-  updatedAt: string | null;
-};
-
-export type VaultRecord = {
-  productId: string;
-  chain: string;
-  name: string;
-  route: string;
-  assetSymbol: string;
-  assetAddress: string;
-  controllerAddress: string;
-  seniorTokenAddress: string;
-  juniorTokenAddress: string;
-  vaultAddress: string;
-  tellerAddress: string;
-  managerAddress: string;
-  uiConfig: {
-    status: VaultStatus;
-    displayOrder?: number;
-    risk?: string;
-    routeLabel?: string;
-    summary?: string;
-    tags?: string[];
-    banner?: string;
-  };
-  metrics: VaultMetrics;
-};
-
-export type ActivityEvent = {
-  id: string;
-  type: "DEPOSIT" | "REDEEM" | "ACCRUE";
-  tranche: "SENIOR" | "JUNIOR" | "SYSTEM";
-  amount: string;
-  time: string;
-  actor: string;
-};
-
-export type PortfolioSnapshot = {
-  totalValue: string;
-  dayChange: string;
-  positions: Array<{
-    productId: string;
-    name: string;
-    tranche: "SENIOR" | "JUNIOR";
-    shares: string;
-    value: string;
-    pnl: string;
-  }>;
-};
-
-const MOCK_VAULTS: VaultRecord[] = [
+export const MOCK_VAULTS: VaultRecord[] = [
   {
     productId: "0",
     chain: "pharos-atlantic",
@@ -77,7 +19,8 @@ const MOCK_VAULTS: VaultRecord[] = [
       displayOrder: 1,
       risk: "LOW",
       routeLabel: "OpenFi lending",
-      summary: "Blue-chip USDC lending routed through OpenFi. Senior is capped; junior takes the volatility.",
+      summary:
+        "Blue-chip USDC lending routed through OpenFi. Senior is capped; junior takes the volatility.",
       tags: ["USDC", "Lending", "OpenFi"],
       banner: "Senior cap 8% APR · Junior absorbs tail risk",
     },
@@ -109,7 +52,8 @@ const MOCK_VAULTS: VaultRecord[] = [
       displayOrder: 2,
       risk: "LOW",
       routeLabel: "Tokenized T-Bills",
-      summary: "Short-duration treasury exposure for the senior tranche with conservative drawdown control.",
+      summary:
+        "Short-duration treasury exposure for the senior tranche with conservative drawdown control.",
       tags: ["USDT", "RWA", "T-Bill"],
       banner: "Underwriting in progress",
     },
@@ -141,7 +85,8 @@ const MOCK_VAULTS: VaultRecord[] = [
       displayOrder: 3,
       risk: "MEDIUM",
       routeLabel: "Delta-neutral credit",
-      summary: "Structured credit sleeve with volatility hedged down to senior-friendly ranges.",
+      summary:
+        "Structured credit sleeve with volatility hedged down to senior-friendly ranges.",
       tags: ["USDC", "Credit", "Delta Neutral"],
       banner: "Strategy calibration pending",
     },
@@ -157,7 +102,7 @@ const MOCK_VAULTS: VaultRecord[] = [
   },
 ];
 
-const MOCK_ACTIVITY: Record<string, ActivityEvent[]> = {
+export const MOCK_ACTIVITY: Record<string, ActivityEvent[]> = {
   "0": [
     {
       id: "evt-1",
@@ -214,7 +159,7 @@ const MOCK_ACTIVITY: Record<string, ActivityEvent[]> = {
   ],
 };
 
-const MOCK_PORTFOLIO: PortfolioSnapshot = {
+export const MOCK_PORTFOLIO: PortfolioSnapshot = {
   totalValue: "$2.48m",
   dayChange: "+1.3%",
   positions: [
@@ -236,61 +181,3 @@ const MOCK_PORTFOLIO: PortfolioSnapshot = {
     },
   ],
 };
-
-export function getDataSource(): DataSource {
-  const value =
-    process.env.NEXT_PUBLIC_DATA_SOURCE ??
-    process.env.DATA_SOURCE ??
-    "mock";
-  return value === "live" ? "live" : "mock";
-}
-
-function resolveBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
-  if (process.env.SITE_URL) return process.env.SITE_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
-}
-
-async function fetchLiveVaults(): Promise<VaultRecord[]> {
-  const baseUrl = resolveBaseUrl();
-  const response = await fetch(`${baseUrl}/api/vaults`, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
-  }
-  const payload = (await response.json()) as { vaults?: VaultRecord[] };
-  return payload.vaults ?? [];
-}
-
-export async function getVaults(source: DataSource = getDataSource()): Promise<VaultRecord[]> {
-  if (source === "live") {
-    try {
-      const liveVaults = await fetchLiveVaults();
-      return [...liveVaults].sort((a, b) => {
-        const orderA = a.uiConfig.displayOrder ?? 999;
-        const orderB = b.uiConfig.displayOrder ?? 999;
-        return orderA - orderB;
-      });
-    } catch {
-      return MOCK_VAULTS;
-    }
-  }
-
-  return MOCK_VAULTS;
-}
-
-export async function getVaultById(
-  id: string,
-  source: DataSource = getDataSource()
-): Promise<VaultRecord | null> {
-  const vaults = await getVaults(source);
-  return vaults.find((vault) => vault.productId === id) ?? null;
-}
-
-export function getActivityForVault(productId: string): ActivityEvent[] {
-  return MOCK_ACTIVITY[productId] ?? [];
-}
-
-export function getPortfolioSnapshot(): PortfolioSnapshot {
-  return MOCK_PORTFOLIO;
-}

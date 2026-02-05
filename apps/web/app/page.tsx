@@ -1,6 +1,6 @@
 import Link from "next/link";
 import VaultCard from "./components/VaultCard";
-import { getVaults } from "../lib/vaults";
+import { getVaults } from "../lib/data/vaults";
 
 export default async function HomePage() {
   const vaults = await getVaults();

@@ -1,4 +1,4 @@
-import { getVaults } from "../../lib/vaults";
+import { getVaults } from "../../lib/data/vaults";
 
 export default async function OperatorPage() {
   const vaults = await getVaults();

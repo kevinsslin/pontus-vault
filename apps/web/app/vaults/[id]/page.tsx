@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getActivityForVault, getVaultById } from "../../../lib/vaults";
+import { getActivityForVault, getVaultById } from "../../../lib/data/vaults";
 import { formatTimestamp, formatUsd, formatWad } from "../../../lib/format";
 
 export default async function VaultDetailPage({ params }: { params: { id: string } }) {

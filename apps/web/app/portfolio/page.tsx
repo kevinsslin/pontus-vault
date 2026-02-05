@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPortfolioSnapshot } from "../../lib/vaults";
+import { getPortfolioSnapshot } from "../../lib/data/vaults";
 
 export default function PortfolioPage() {
   const portfolio = getPortfolioSnapshot();

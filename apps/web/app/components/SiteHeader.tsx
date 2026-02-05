@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getDataSource } from "../../lib/vaults";
+import { getDataSource } from "../../lib/data/vaults";
 
 export default function SiteHeader() {
   const dataSource = getDataSource();

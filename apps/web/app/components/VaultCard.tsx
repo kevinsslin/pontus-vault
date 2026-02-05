@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { VaultRecord } from "../../lib/vaults";
+import type { VaultRecord } from "@pti/shared";
 import { formatUsd, formatWad } from "../../lib/format";
 
 export default function VaultCard({ vault }: { vault: VaultRecord }) {

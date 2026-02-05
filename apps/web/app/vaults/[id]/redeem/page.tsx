@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getVaultById } from "../../../../lib/vaults";
+import { getVaultById } from "../../../../lib/data/vaults";
 
 export default async function RedeemPage({ params }: { params: { id: string } }) {
   const vault = await getVaultById(params.id);
