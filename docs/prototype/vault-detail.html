@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pontus Vault Strategy Console</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              pontus: {
+                DEFAULT: "#1e2b3e", // Dark Navy
+                light: "#334155",
+                gold: "#D4AF37", // Metallic Gold accent
+                cream: "#F9FAF5", // Richer background
+              },
+              primary: "#0F172A", // Deep Slate
+              "background-light": "#FAFAF9", // Warm gray/stone
+              "background-dark": "#0B1120", 
+              "surface-light": "#FFFFFF",
+              "surface-dark": "#1E293B",
+              "chart-dark": "#111827", // Very dark for the data pod
+              "text-primary-light": "#1C1917",
+              "text-primary-dark": "#F8FAFC",
+              "text-secondary-light": "#57534E",
+              "text-secondary-dark": "#94A3B8",
+              "accent-green": "#10B981", 
+            },
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+              serif: ["Playfair Display", "serif"], // Custom Pontus font
+              mono: ["JetBrains Mono", "monospace"],
+            },
+            boxShadow: {
+                'pod': '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)',
+                'console': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+            }
+          },
+        },
+      };
+    </script>
+<style>
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, #e7e5e4 1px, transparent 1px), linear-gradient(to bottom, #e7e5e4 1px, transparent 1px);
+        }
+        .pontus-gradient-text {
+            background: linear-gradient(135deg, #1e2b3e 0%, #334155 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .data-pod {
+            background: radial-gradient(circle at top right, #1f2937, #111827);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+    </style>
+</head>
+<body class="bg-background-light text-text-primary-light font-sans antialiased min-h-screen flex flex-col">
+<nav class="sticky top-0 z-50 backdrop-blur-md bg-background-light/90 border-b border-stone-200">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-center h-20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-pontus text-pontus-gold flex items-center justify-center border border-pontus-gold/20 shadow-sm">
+<span class="font-serif text-2xl font-bold">P</span>
+</div>
+<span class="font-serif font-semibold text-2xl text-pontus tracking-tight">Pontus<span class="font-sans font-light text-text-secondary-light ml-1 text-lg tracking-normal">Vault</span></span>
+</div>
+<div class="hidden md:flex space-x-10">
+<a class="text-pontus font-medium border-b-2 border-pontus-gold pb-1" href="#">Console</a>
+<a class="text-text-secondary-light hover:text-pontus transition font-medium" href="#">Portfolio</a>
+<a class="text-text-secondary-light hover:text-pontus transition font-medium" href="#">Intelligence</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex flex-col items-end mr-2">
+<span class="text-xs font-mono text-text-secondary-light">PRIVATE BANKING</span>
+<span class="text-xs font-bold text-pontus">CONNECTED</span>
+</div>
+<button class="bg-surface-light border border-stone-200 text-pontus px-5 py-2.5 rounded-lg font-medium hover:border-pontus transition shadow-sm flex items-center gap-2 text-sm group">
+<span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+<span class="font-mono">0x84...2A</span>
+<span class="material-symbols-outlined text-stone-400 group-hover:text-pontus transition text-lg">wallet</span>
+</button>
+</div>
+</div>
+</div>
+</nav>
+<main class="flex-grow relative overflow-hidden pb-20">
+<div class="absolute inset-0 z-0 pointer-events-none grid-bg opacity-30"></div>
+<div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-sm mb-6 animate-fade-in-up">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span class="text-xs font-semibold tracking-wide text-pontus uppercase">Active Strategy • Low Volatility</span>
+</div>
+<h1 class="text-5xl md:text-6xl font-serif font-medium text-pontus mb-4 tracking-tight">BlackOpal LiquidStone II</h1>
+<p class="text-lg text-text-secondary-light max-w-2xl mx-auto font-light">Institutional-grade exposure to short-term credit receivables with enhanced yield optimization.</p>
+</div>
+<div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+<div class="data-pod rounded-2xl p-1 shadow-pod text-white overflow-hidden relative group">
+<div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+<div class="relative bg-gray-900/90 backdrop-blur-xl rounded-xl p-8">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+<div class="md:col-span-4 flex flex-col justify-between border-r border-gray-800 pr-0 md:pr-8">
+<div>
+<h3 class="text-gray-400 text-xs font-mono uppercase tracking-widest mb-6">Performance Metrics</h3>
+<div class="space-y-8">
+<div>
+<div class="flex items-baseline gap-3 mb-1">
+<span class="text-5xl font-sans font-light tracking-tight">11.2%</span>
+<span class="text-emerald-400 font-medium text-sm bg-emerald-400/10 px-2 py-0.5 rounded">+1.93% Boost</span>
+</div>
+<p class="text-gray-500 text-sm font-medium">Current APY (Net of Fees)</p>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div>
+<p class="text-2xl font-sans font-light">$34.2M</p>
+<p class="text-gray-500 text-xs mt-1 uppercase tracking-wide">TVL</p>
+</div>
+<div>
+<p class="text-2xl font-sans font-light">0.00%</p>
+<p class="text-gray-500 text-xs mt-1 uppercase tracking-wide">Max Drawdown</p>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-gray-800">
+<div class="flex justify-between items-center text-xs text-gray-500 font-mono">
+<span>Risk: LOW-MED</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live</span>
+</div>
+</div>
+</div>
+<div class="md:col-span-8 h-80 relative flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<div class="flex items-center gap-4">
+<span class="text-2xl font-light">$1.0266</span>
+<span class="text-emerald-400 text-sm font-mono">+2.58% (75d)</span>
+</div>
+<div class="flex bg-gray-800/50 rounded-lg p-1">
+<button class="px-3 py-1 rounded text-xs text-gray-400 hover:text-white transition">1W</button>
+<button class="px-3 py-1 rounded text-xs bg-gray-700 text-white shadow-sm transition">1M</button>
+<button class="px-3 py-1 rounded text-xs text-gray-400 hover:text-white transition">3M</button>
+<button class="px-3 py-1 rounded text-xs text-gray-400 hover:text-white transition">YTD</button>
+</div>
+</div>
+<div class="flex-grow w-full relative">
+<svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 800 250">
+<defs>
+<linearGradient id="chartGradientDark" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#34D399" stop-opacity="0.15"></stop>
+<stop offset="100%" stop-color="#34D399" stop-opacity="0"></stop>
+</linearGradient>
+<filter height="140%" id="glow" width="140%" x="-20%" y="-20%">
+<feGaussianBlur result="blur" stdDeviation="3"></feGaussianBlur>
+<feComposite in="SourceGraphic" in2="blur" operator="over"></feComposite>
+</filter>
+</defs>
+<line stroke="#374151" stroke-dasharray="2" stroke-width="0.5" x1="0" x2="800" y1="50" y2="50"></line>
+<line stroke="#374151" stroke-dasharray="2" stroke-width="0.5" x1="0" x2="800" y1="125" y2="125"></line>
+<line stroke="#374151" stroke-dasharray="2" stroke-width="0.5" x1="0" x2="800" y1="200" y2="200"></line>
+<path d="M0,220 C80,215 160,210 240,180 C320,150 400,160 480,110 C560,60 640,80 720,40 L800,20 L800,250 L0,250 Z" fill="url(#chartGradientDark)"></path>
+<path d="M0,220 C80,215 160,210 240,180 C320,150 400,160 480,110 C560,60 640,80 720,40 L800,20" fill="none" filter="url(#glow)" stroke="#34D399" stroke-linecap="round" stroke-width="2"></path>
+<circle class="opacity-0 group-hover:opacity-100 transition-opacity duration-300" cx="480" cy="110" fill="#34D399" r="4"></circle>
+<line class="opacity-0 group-hover:opacity-100 transition-opacity duration-300" stroke="#34D399" stroke-dasharray="2" stroke-opacity="0.3" x1="480" x2="480" y1="0" y2="250"></line>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-7 space-y-8">
+<div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-console">
+<h3 class="font-serif text-2xl text-pontus mb-6">Strategy &amp; Composition</h3>
+<div class="prose prose-stone max-w-none text-text-secondary-light">
+<p class="leading-relaxed">
+                            nOPAL provides on-chain exposure to short-term credit card receivables originated through BlackOpal’s regulated payment financing platform. This strategy finances consumer and merchant card settlement flows across established payment networks (Visa, Mastercard).
+                        </p>
+<p class="leading-relaxed">
+                            The strategy incorporates Superstate's basis trading fund (USCC) and Treasury product (USTB) to support redemption management and portfolio stability. With short duration and frequent cash flows, nOPAL is designed to deliver consistent, risk-adjusted real-world income.
+                        </p>
+</div>
+<div class="mt-8 pt-8 border-t border-stone-100">
+<p class="text-xs font-mono uppercase text-stone-400 mb-4 tracking-wider">Yield Sourced From</p>
+<div class="flex flex-wrap gap-4">
+<div class="px-5 py-3 bg-stone-50 border border-stone-200 rounded-lg flex items-center gap-3">
+<div class="w-6 h-6 rounded bg-stone-800"></div>
+<span class="font-bold text-pontus text-sm">BlackOpal</span>
+</div>
+<div class="px-5 py-3 bg-stone-50 border border-stone-200 rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-stone-600">all_inclusive</span>
+<span class="font-bold text-pontus text-sm">Superstate</span>
+</div>
+<div class="px-5 py-3 bg-stone-50 border border-stone-200 rounded-lg flex items-center gap-3">
+<div class="w-6 h-6 rounded-full border-2 border-stone-800"></div>
+<span class="font-serif italic font-bold text-pontus text-sm">Circle</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-4 text-sm font-medium text-pontus">
+<a class="flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-lg">description</span> Prospectus</a>
+<a class="flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-lg">verified_user</span> Audit Report</a>
+<a class="flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-lg">link</span> Contract Address</a>
+</div>
+</div>
+<div class="lg:col-span-5 relative">
+<div class="sticky top-24 bg-white rounded-2xl border border-stone-200 shadow-2xl shadow-stone-200/50 overflow-hidden transform transition-all duration-300 hover:shadow-stone-300/60 hover:-translate-y-1">
+<div class="flex border-b border-stone-100">
+<button class="flex-1 py-5 text-sm font-semibold text-center text-pontus border-b-2 border-pontus-gold bg-pontus-cream/50">
+                            MINT ASSETS
+                        </button>
+<button class="flex-1 py-5 text-sm font-medium text-center text-text-secondary-light hover:bg-stone-50 transition">
+                            REDEEM
+                        </button>
+</div>
+<div class="p-8 space-y-6">
+<div>
+<div class="flex justify-between items-end mb-3">
+<label class="text-xs font-bold text-stone-400 uppercase tracking-wide">Investment Amount</label>
+<span class="text-xs font-mono text-pontus bg-stone-100 px-2 py-1 rounded">Bal: 12,450.00 pUSD</span>
+</div>
+<div class="relative group">
+<input class="w-full bg-white border border-stone-200 rounded-xl py-4 pl-4 pr-36 text-3xl font-serif text-pontus placeholder-stone-300 focus:ring-0 focus:border-pontus transition-colors shadow-inner" placeholder="0.00" type="number"/>
+<div class="absolute right-2 top-2 bottom-2 flex items-center gap-2">
+<button class="text-[10px] font-bold text-stone-400 border border-stone-200 px-2 py-1 rounded hover:bg-stone-50 hover:text-pontus transition">MAX</button>
+<div class="flex items-center gap-2 bg-stone-50 rounded-lg px-3 py-2 border border-stone-200">
+<div class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white shadow-sm">$</div>
+<span class="text-sm font-bold text-pontus">pUSD</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between mt-2">
+<p class="text-xs text-stone-400">≈ $0.00 USD</p>
+</div>
+</div>
+<div class="bg-pontus-cream rounded-xl p-5 border border-stone-100 space-y-4">
+<div class="flex justify-between items-center text-sm">
+<span class="text-stone-500">You Receive</span>
+<div class="flex items-center gap-2">
+<span class="font-bold font-serif text-lg text-pontus">0.00</span>
+<span class="text-xs font-bold bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded">nOPAL</span>
+</div>
+</div>
+<div class="border-t border-stone-200/60 my-2"></div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs">
+<span class="text-stone-400">Exchange Rate</span>
+<span class="font-mono text-stone-600">1 nOPAL = 1.03 pUSD</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-stone-400">Transaction Fee</span>
+<span class="font-mono text-stone-600">Free</span>
+</div>
+</div>
+</div>
+<button class="w-full bg-pontus text-white font-medium text-lg py-4 rounded-xl hover:bg-pontus-light transition shadow-lg shadow-pontus/20 flex items-center justify-center gap-3 group relative overflow-hidden">
+<span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
+<span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">lock</span>
+<span class="font-serif italic tracking-wide">Secure Deposit</span>
+</button>
+<div class="flex items-center justify-center gap-2 text-[10px] text-stone-400 uppercase tracking-widest">
+<span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Encrypted &amp; Audited
+                        </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-pontus text-white py-12 border-t border-gray-800">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-8 h-8 rounded-full bg-pontus-gold text-pontus flex items-center justify-center font-serif font-bold">P</div>
+<span class="font-serif text-xl tracking-tight text-white">Pontus</span>
+</div>
+<p class="text-sm text-gray-400 max-w-xs">Institutional-grade DeFi infrastructure for the discerning investor. Powered by secured real-world assets.</p>
+</div>
+<div class="flex gap-8 text-sm text-gray-400 font-medium">
+<a class="hover:text-pontus-gold transition" href="#">Legal</a>
+<a class="hover:text-pontus-gold transition" href="#">Privacy</a>
+<a class="hover:text-pontus-gold transition" href="#">Support</a>
+</div>
+<div class="text-xs text-gray-600 font-mono">
+            © 2024 PONTUS FINANCIAL
+        </div>
+</div>
+</footer>
+
+</body></html>

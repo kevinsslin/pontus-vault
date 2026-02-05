@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pontus Premium Earn Market</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0f1c2e", // Deep boutique navy
+                        "primary-accent": "#c9a227", // Gold/Bronze for luxury feel
+                        "background-light": "#fdfbf7", // Warm off-white, paper-like
+                        "background-dark": "#0B1120", 
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#1E293B",
+                        "text-light": "#334155",
+                        "text-dark": "#F1F5F9",
+                        "muted-light": "#94a3b8",
+                        "muted-dark": "#94A3B8",
+                        "green-profit": "#059669",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        serif: ["Playfair Display", "serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        'xl': '1rem',
+                        '2xl': '1.5rem',
+                        '3xl': '2rem',
+                    },
+                    boxShadow: {
+                        'soft': '0 8px 30px -4px rgba(0, 0, 0, 0.04)',
+                        'hover': '0 20px 40px -4px rgba(0, 0, 0, 0.08)',
+                        'stack': '0 -10px 40px -10px rgba(0,0,0,0.05)',
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        .sparkline {
+            fill: none;
+            stroke: #10B981;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+        .card-stack-item {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-stack-item:hover {
+            transform: translateY(-8px) scale(1.01);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-sans text-text-light dark:text-text-dark transition-colors duration-200 antialiased">
+<nav class="fixed top-0 w-full z-50 backdrop-blur-xl bg-background-light/90 dark:bg-background-dark/90 border-b border-gray-100 dark:border-gray-800 transition-all duration-300">
+<div class="max-w-6xl mx-auto px-6 lg:px-8">
+<div class="flex justify-between items-center h-24">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-primary dark:bg-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-white dark:text-primary !text-[24px]">account_balance</span>
+</div>
+<div>
+<span class="font-serif font-bold text-2xl text-primary dark:text-white tracking-tight block leading-none">PONTUS</span>
+<span class="text-[10px] uppercase tracking-[0.2em] text-muted-light font-medium">Vault</span>
+</div>
+</div>
+<div class="hidden md:flex items-center space-x-10">
+<a class="text-sm font-medium text-primary hover:text-primary-accent dark:text-white transition-colors relative group" href="#">
+                    Marketplace
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-accent transition-all group-hover:w-full"></span>
+</a>
+<a class="text-sm font-medium text-muted-light hover:text-primary dark:hover:text-white transition-colors" href="#">Portfolio</a>
+<a class="text-sm font-medium text-muted-light hover:text-primary dark:hover:text-white transition-colors" href="#">Analytics</a>
+</div>
+<div class="flex items-center space-x-5">
+<div class="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
+<div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+<span class="text-xs font-semibold text-primary dark:text-gray-300">Gas: 12 gwei</span>
+</div>
+<button class="bg-primary text-white hover:bg-primary/90 px-8 py-3 rounded-xl text-sm font-medium transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30">
+                    Connect
+                </button>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-5xl mx-auto px-6 lg:px-8 py-32 space-y-20">
+<div class="relative">
+<div class="max-w-3xl">
+<div class="flex items-center gap-3 mb-6">
+<span class="px-3 py-1 rounded-full bg-primary/5 dark:bg-white/10 text-primary dark:text-white text-xs font-bold tracking-widest uppercase border border-primary/10 dark:border-white/10">
+                    Premium Yield
+                </span>
+<span class="w-px h-4 bg-gray-300 dark:bg-gray-700"></span>
+<span class="text-xs font-medium text-muted-light tracking-wide uppercase">Institutional Security</span>
+</div>
+<h1 class="font-serif text-5xl md:text-6xl font-bold text-primary dark:text-white mb-6 leading-tight">
+                Curated Vaults for the <br/><span class="italic text-primary-accent relative">
+                    Modern Investor
+                    <svg class="absolute w-full h-3 -bottom-1 left-0 text-primary-accent/20" preserveAspectRatio="none" viewBox="0 0 100 10">
+<path d="M0 5 Q 50 10 100 5" fill="none" stroke="currentColor" stroke-width="2"></path>
+</svg>
+</span>
+</h1>
+<p class="text-muted-light dark:text-muted-dark text-xl leading-relaxed max-w-2xl font-light">
+                Pontus provides exclusive access to institutional-grade DeFi strategies. 
+                Manage your wealth with bespoke vaults optimized for risk-adjusted returns.
+            </p>
+</div>
+</div>
+<div class="space-y-6 pb-20">
+<div class="flex justify-between items-end mb-4 border-b border-gray-100 dark:border-gray-800 pb-4">
+<h2 class="text-lg font-medium text-primary dark:text-white flex items-center gap-2">
+                Available Strategies
+                <span class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs px-2 py-0.5 rounded-full">5 Active</span>
+</h2>
+<div class="flex gap-4 text-sm text-muted-light">
+<button class="hover:text-primary dark:hover:text-white transition-colors flex items-center gap-1">
+                    Sort by APY <span class="material-symbols-outlined text-sm">arrow_downward</span>
+</button>
+<button class="hover:text-primary dark:hover:text-white transition-colors">Risk Level</button>
+</div>
+</div>
+<div class="group card-stack-item relative bg-white dark:bg-card-dark rounded-3xl p-1 shadow-soft hover:shadow-hover border border-gray-100 dark:border-gray-700">
+<div class="absolute -top-3 right-8 bg-primary-accent text-white text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg z-20">
+                Pontus Signature
+            </div>
+<div class="relative overflow-hidden rounded-[1.3rem] p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
+<div class="flex-shrink-0 relative">
+<div class="w-24 h-24 rounded-2xl bg-primary text-white flex items-center justify-center shadow-2xl shadow-primary/20 transform group-hover:rotate-3 transition-transform duration-500">
+<span class="material-symbols-outlined !text-[48px]">diamond</span>
+</div>
+<div class="absolute -bottom-3 -right-3 w-10 h-10 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center border border-gray-100 dark:border-gray-600 shadow-sm">
+<img alt="ETH" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_uxFrvaZZguhkuBEP8AA8bAXtm15eIhnytqnLfiFZ878UcUEK24S8rejYGKYwnRiAW09ZUt3kmJE7v2P3NDuFEqEK7XrIs0B1HJu1LCKCRMKlkkxLTu_BLgcmrFlciy-lRi26nsnS8_ajlLkdMl4cp7j1DoWL5w31IPMHE29khlqYoZxesMtp5BfRK-JyloLtbdbkyYQFY8kiaQ4RloOZ43XUyMNhoeICutUwrgqgE6fafkxtKeXnwXd2ThhiGrlwEv2i0SiD9oU"/>
+</div>
+</div>
+<div class="flex-grow space-y-2 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+<h3 class="text-2xl font-serif font-bold text-primary dark:text-white">Opal Private Credit</h3>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+                            Senior Secured
+                        </span>
+</div>
+<p class="text-muted-light dark:text-muted-dark font-light leading-relaxed max-w-lg">
+                        Direct lending to established fintech originators. Short duration, fully collateralized with 120% asset backing.
+                    </p>
+<div class="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
+<div class="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-sm">verified_user</span> Audited
+                        </div>
+<div class="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-sm">lock_clock</span> 7 Day Unbonding
+                        </div>
+</div>
+</div>
+<div class="flex-shrink-0 w-full md:w-64 bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-sm">
+<div class="flex justify-between items-end mb-2">
+<span class="text-sm font-medium text-muted-light">Net APY</span>
+<span class="text-3xl font-bold text-primary dark:text-white tracking-tight">12.4%</span>
+</div>
+<div class="w-full h-12 mb-4">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 20">
+<path d="M0 15 Q 10 12 20 14 T 40 10 T 60 5 T 80 8 T 100 2" fill="none" stroke="#059669" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+<defs>
+<linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#10B981" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#10B981" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<path d="M0 15 Q 10 12 20 14 T 40 10 T 60 5 T 80 8 T 100 2 V 20 H 0 Z" fill="url(#gradient)" stroke="none"></path>
+</svg>
+</div>
+<button class="w-full py-3 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 group-hover:shadow-lg">
+                        Deposit Assets
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="group card-stack-item bg-white dark:bg-card-dark rounded-3xl p-1 shadow-soft hover:shadow-hover border border-gray-100 dark:border-gray-700">
+<div class="rounded-[1.3rem] p-8 flex flex-col md:flex-row gap-8 items-center h-full">
+<div class="flex-shrink-0 relative">
+<div class="w-20 h-20 rounded-2xl bg-slate-800 text-white flex items-center justify-center shadow-xl transform group-hover:rotate-3 transition-transform duration-500">
+<span class="material-symbols-outlined !text-[40px]">token</span>
+</div>
+</div>
+<div class="flex-grow space-y-1 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+<h3 class="text-xl font-serif font-bold text-primary dark:text-white">Basis Yield Arbitrage</h3>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-100 dark:border-purple-800">
+                            Delta Neutral
+                        </span>
+</div>
+<p class="text-muted-light dark:text-muted-dark text-sm font-light leading-relaxed max-w-lg">
+                        Market-neutral strategy capturing funding rates across perpetual exchanges. Minimal directional exposure.
+                    </p>
+<div class="flex flex-wrap justify-center md:justify-start gap-4 mt-3">
+<span class="text-xs text-muted-light">TVL: <strong class="text-primary dark:text-white">$14.2M</strong></span>
+<span class="text-xs text-muted-light">Risk: <strong class="text-green-600">Low</strong></span>
+</div>
+</div>
+<div class="flex-shrink-0 w-full md:w-auto flex items-center gap-8 md:pr-4">
+<div class="text-right">
+<span class="block text-xs font-medium text-muted-light uppercase tracking-wide">APY</span>
+<span class="text-2xl font-bold text-primary dark:text-white">8.45%</span>
+</div>
+<div class="h-10 w-24">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 20">
+<path d="M0 10 L 20 12 L 40 8 L 60 14 L 80 6 L 100 9" fill="none" stroke="#94a3b8" stroke-width="1.5"></path>
+</svg>
+</div>
+<button class="p-3 rounded-full border border-gray-200 dark:border-gray-700 text-primary dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="group card-stack-item bg-white dark:bg-card-dark rounded-3xl p-1 shadow-soft hover:shadow-hover border border-gray-100 dark:border-gray-700">
+<div class="rounded-[1.3rem] p-8 flex flex-col md:flex-row gap-8 items-center h-full">
+<div class="flex-shrink-0 relative">
+<div class="w-20 h-20 rounded-2xl bg-teal-700 text-white flex items-center justify-center shadow-xl transform group-hover:rotate-3 transition-transform duration-500">
+<span class="material-symbols-outlined !text-[40px]">apartment</span>
+</div>
+</div>
+<div class="flex-grow space-y-1 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+<h3 class="text-xl font-serif font-bold text-primary dark:text-white">Metropolitan Real Estate</h3>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 border border-teal-100 dark:border-teal-800">
+                            RWA
+                        </span>
+</div>
+<p class="text-muted-light dark:text-muted-dark text-sm font-light leading-relaxed max-w-lg">
+                        Tokenized commercial real estate debt. Senior tranche opportunities in NY and London prime markets.
+                    </p>
+<div class="flex flex-wrap justify-center md:justify-start gap-4 mt-3">
+<span class="text-xs text-muted-light">TVL: <strong class="text-primary dark:text-white">$8.5M</strong></span>
+<span class="text-xs text-muted-light">Risk: <strong class="text-yellow-600">Medium</strong></span>
+</div>
+</div>
+<div class="flex-shrink-0 w-full md:w-auto flex items-center gap-8 md:pr-4">
+<div class="text-right">
+<span class="block text-xs font-medium text-muted-light uppercase tracking-wide">APY</span>
+<span class="text-2xl font-bold text-primary dark:text-white">9.12%</span>
+</div>
+<div class="h-10 w-24">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 20">
+<path d="M0 18 L 20 18 L 40 18 L 60 10 L 80 10 L 100 10" fill="none" stroke="#94a3b8" stroke-width="1.5"></path>
+</svg>
+</div>
+<button class="p-3 rounded-full border border-gray-200 dark:border-gray-700 text-primary dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="group card-stack-item bg-white dark:bg-card-dark rounded-3xl p-1 shadow-soft hover:shadow-hover border border-gray-100 dark:border-gray-700">
+<div class="rounded-[1.3rem] p-8 flex flex-col md:flex-row gap-8 items-center h-full">
+<div class="flex-shrink-0 relative">
+<div class="w-20 h-20 rounded-2xl bg-indigo-700 text-white flex items-center justify-center shadow-xl transform group-hover:rotate-3 transition-transform duration-500">
+<span class="material-symbols-outlined !text-[40px]">local_shipping</span>
+</div>
+</div>
+<div class="flex-grow space-y-1 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+<h3 class="text-xl font-serif font-bold text-primary dark:text-white">Global Logistics Trade</h3>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">
+                            Trade Finance
+                        </span>
+</div>
+<p class="text-muted-light dark:text-muted-dark text-sm font-light leading-relaxed max-w-lg">
+                        Short-term financing for international shipping invoices. Insured by AA-rated providers.
+                    </p>
+<div class="flex flex-wrap justify-center md:justify-start gap-4 mt-3">
+<span class="text-xs text-muted-light">TVL: <strong class="text-primary dark:text-white">$6.4M</strong></span>
+<span class="text-xs text-muted-light">Risk: <strong class="text-green-600">Low</strong></span>
+</div>
+</div>
+<div class="flex-shrink-0 w-full md:w-auto flex items-center gap-8 md:pr-4">
+<div class="text-right">
+<span class="block text-xs font-medium text-muted-light uppercase tracking-wide">APY</span>
+<span class="text-2xl font-bold text-primary dark:text-white">10.05%</span>
+</div>
+<div class="h-10 w-24">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 20">
+<path d="M0 15 L 25 10 L 50 12 L 75 5 L 100 2" fill="none" stroke="#94a3b8" stroke-width="1.5"></path>
+</svg>
+</div>
+<button class="p-3 rounded-full border border-gray-200 dark:border-gray-700 text-primary dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="relative mt-8">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-gray-200 dark:border-gray-800"></div>
+</div>
+<div class="relative flex justify-center">
+<span class="bg-background-light dark:bg-background-dark px-4 text-sm text-muted-light uppercase tracking-widest">Upcoming Opportunities</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-60">
+<div class="bg-white dark:bg-card-dark rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 p-6 flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400">
+<span class="material-symbols-outlined">solar_power</span>
+</div>
+<div>
+<h4 class="font-medium text-primary dark:text-white">Green Energy Bonds</h4>
+<p class="text-xs text-muted-light">Launch in Q4 2024</p>
+</div>
+</div>
+<div class="bg-white dark:bg-card-dark rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 p-6 flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400">
+<span class="material-symbols-outlined">corporate_fare</span>
+</div>
+<div>
+<h4 class="font-medium text-primary dark:text-white">Corporate Debt</h4>
+<p class="text-xs text-muted-light">Launch in Q1 2025</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-card-dark py-12">
+<div class="max-w-6xl mx-auto px-6 lg:px-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary dark:bg-white rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white dark:text-primary !text-[18px]">account_balance</span>
+</div>
+<div>
+<span class="font-serif font-bold text-lg text-primary dark:text-white tracking-tight">PONTUS</span>
+</div>
+</div>
+<div class="text-sm text-muted-light">
+<p>© 2024 Pontus Vault. Institutional DeFi Access.</p>
+</div>
+<div class="flex gap-6">
+<a class="text-muted-light hover:text-primary dark:hover:text-white transition-colors" href="#">Terms</a>
+<a class="text-muted-light hover:text-primary dark:hover:text-white transition-colors" href="#">Privacy</a>
+<a class="text-muted-light hover:text-primary dark:hover:text-white transition-colors" href="#">Support</a>
+</div>
+</div>
+</div>
+</footer>
+
+</body></html>
