@@ -21,6 +21,7 @@ export function handleProductCreated(event: ProductCreated): void {
   vault.juniorToken = event.params.juniorToken;
   vault.vault = event.params.vault;
   vault.teller = event.params.teller;
+  vault.accountant = event.params.accountant;
   vault.manager = event.params.manager;
   vault.asset = event.params.asset;
   vault.paramsHash = event.params.paramsHash;

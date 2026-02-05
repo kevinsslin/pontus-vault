@@ -8,6 +8,7 @@
       {"indexed": false, "name": "juniorToken", "type": "address"},
       {"indexed": true, "name": "vault", "type": "address"},
       {"indexed": false, "name": "teller", "type": "address"},
+      {"indexed": false, "name": "accountant", "type": "address"},
       {"indexed": false, "name": "manager", "type": "address"},
       {"indexed": false, "name": "asset", "type": "address"},
       {"indexed": false, "name": "paramsHash", "type": "bytes32"}

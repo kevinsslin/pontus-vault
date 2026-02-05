@@ -6,6 +6,7 @@ type Vault @entity {
   juniorToken: Bytes!
   vault: Bytes!
   teller: Bytes!
+  accountant: Bytes!
   manager: Bytes!
   asset: Bytes!
   paramsHash: Bytes!
