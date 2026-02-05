@@ -43,6 +43,15 @@ export const IndexerVaultSchema = z.object({
   seniorSupply: z.string().nullable().optional(),
   juniorSupply: z.string().nullable().optional(),
   updatedAt: z.string().nullable().optional(),
+  dailySnapshots: z
+    .array(
+      z.object({
+        periodStart: z.string().nullable().optional(),
+        closeSeniorPrice: z.string().nullable().optional(),
+        closeJuniorPrice: z.string().nullable().optional(),
+      })
+    )
+    .optional(),
 });
 export type IndexerVault = z.infer<typeof IndexerVaultSchema>;
 

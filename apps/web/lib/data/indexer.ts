@@ -16,12 +16,56 @@ const INDEXER_QUERY = `
       seniorSupply
       juniorSupply
       updatedAt
+      dailySnapshots(first: 2, orderBy: periodStart, orderDirection: desc) {
+        periodStart
+        closeSeniorPrice
+        closeJuniorPrice
+      }
     }
   }
 `;
 
+const WAD_SCALE = 1e18;
+const SECONDS_PER_YEAR = 31_536_000;
+
 export function normalizeAddress(value: string): string {
   return value.toLowerCase();
+}
+
+function toNumber(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  return parsed;
+}
+
+function annualizedApyBps(
+  latestPriceWad: string | null | undefined,
+  priorPriceWad: string | null | undefined,
+  latestTs: string | null | undefined,
+  priorTs: string | null | undefined
+): string | null {
+  const latestPrice = toNumber(latestPriceWad);
+  const priorPrice = toNumber(priorPriceWad);
+  const latestPeriod = toNumber(latestTs);
+  const priorPeriod = toNumber(priorTs);
+
+  if (!latestPrice || !priorPrice || !latestPeriod || !priorPeriod) {
+    return null;
+  }
+  if (latestPrice <= 0 || priorPrice <= 0 || latestPeriod <= priorPeriod) {
+    return null;
+  }
+
+  const dt = latestPeriod - priorPeriod;
+  const ratio = latestPrice / priorPrice;
+  const annualized = (ratio - 1) * (SECONDS_PER_YEAR / dt);
+  if (!Number.isFinite(annualized)) {
+    return null;
+  }
+
+  const bps = Math.round(annualized * 10_000);
+  return `${bps}`;
 }
 
 export async function fetchIndexerVaults(
@@ -46,8 +90,27 @@ export async function fetchIndexerVaults(
   const vaults = payload.data?.vaults ?? [];
   const map = new Map<string, IndexerVault>();
   for (const vault of vaults) {
+    const latest = vault.dailySnapshots?.[0];
+    const prior = vault.dailySnapshots?.[1];
+    const derivedSeniorApyBps = annualizedApyBps(
+      latest?.closeSeniorPrice,
+      prior?.closeSeniorPrice,
+      latest?.periodStart,
+      prior?.periodStart
+    );
+    const derivedJuniorApyBps = annualizedApyBps(
+      latest?.closeJuniorPrice,
+      prior?.closeJuniorPrice,
+      latest?.periodStart,
+      prior?.periodStart
+    );
+
     const key = normalizeAddress(vault.controller ?? vault.id);
-    map.set(key, vault);
+    map.set(key, {
+      ...vault,
+      seniorApyBps: derivedSeniorApyBps ?? vault.seniorApyBps ?? null,
+      juniorApyBps: derivedJuniorApyBps ?? vault.juniorApyBps ?? null,
+    });
   }
 
   return map;
