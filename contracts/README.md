@@ -3,8 +3,11 @@
 This workspace holds the BoringVault stack integration and tranche wrapper contracts.
 
 **Structure**
-- `src/`: contracts (to be added)
+- `src/tranche/`: tranche controller/factory/registry/token/rate-model contracts
+- `src/libraries/`: constants + OpenFi calldata builder
+- `src/interfaces/`: OpenFi + tranche interfaces
 - `script/Deploy.s.sol`: deployment entrypoint
+- `script/BaseScript.sol`: shared script env helpers
 - `test/unit`: isolated logic tests
 - `test/integration`: full self-deployed BoringVault assembly tests
 - `test/fork`: Atlantic fork tests
@@ -29,6 +32,7 @@ No deploy scripts are run from this repo; we adapt the above patterns into `cont
 ./script/install-deps.sh
 forge build
 forge test
+forge coverage --report summary
 forge fmt
 ```
 
@@ -39,3 +43,8 @@ pnpm --filter @pti/contracts build
 pnpm --filter @pti/contracts test
 pnpm --filter @pti/contracts deploy
 ```
+
+**Test Notes**
+- Integration tests deploy the full BoringVault dependency set (vault + teller + accountant + authority) and wire tranche contracts against that deployment.
+- Fork tests target Pharos Atlantic OpenFi `supply/withdraw` roundtrip via `OpenFiCallBuilder`.
+- Set `PHAROS_RPC_URL` to execute live fork behavior; tests skip the fork path when unset.

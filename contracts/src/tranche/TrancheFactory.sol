@@ -3,44 +3,9 @@ pragma solidity ^0.8.21;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
-
-interface ITrancheControllerInit {
-    struct InitParams {
-        address asset;
-        address vault;
-        address teller;
-        address accountant;
-        address operator;
-        address guardian;
-        address seniorToken;
-        address juniorToken;
-        uint256 seniorRatePerSecondWad;
-        address rateModel;
-        uint256 maxSeniorRatioBps;
-    }
-
-    function initialize(InitParams calldata params) external;
-}
-
-interface ITrancheTokenInit {
-    function initialize(string calldata name, string calldata symbol, uint8 decimals, address controller) external;
-}
-
-interface ITrancheRegistry {
-    struct ProductInfo {
-        address controller;
-        address seniorToken;
-        address juniorToken;
-        address vault;
-        address teller;
-        address accountant;
-        address manager;
-        address asset;
-        bytes32 paramsHash;
-    }
-
-    function registerProduct(ProductInfo calldata info) external returns (uint256 productId);
-}
+import {TrancheController} from "./TrancheController.sol";
+import {TrancheRegistry} from "./TrancheRegistry.sol";
+import {TrancheToken} from "./TrancheToken.sol";
 
 contract TrancheFactory is Ownable {
     error ZeroAddress();
@@ -90,14 +55,14 @@ contract TrancheFactory is Ownable {
         address seniorToken = Clones.clone(tokenImpl);
         address juniorToken = Clones.clone(tokenImpl);
 
-        ITrancheTokenInit(seniorToken)
+        TrancheToken(seniorToken)
             .initialize(config.seniorName, config.seniorSymbol, config.tokenDecimals, controller);
-        ITrancheTokenInit(juniorToken)
+        TrancheToken(juniorToken)
             .initialize(config.juniorName, config.juniorSymbol, config.tokenDecimals, controller);
 
-        ITrancheControllerInit(controller)
+        TrancheController(controller)
             .initialize(
-                ITrancheControllerInit.InitParams({
+                TrancheController.InitParams({
                     asset: config.asset,
                     vault: config.vault,
                     teller: config.teller,
@@ -112,9 +77,9 @@ contract TrancheFactory is Ownable {
                 })
             );
 
-        productId = ITrancheRegistry(registry)
+        productId = TrancheRegistry(registry)
             .registerProduct(
-                ITrancheRegistry.ProductInfo({
+                TrancheRegistry.ProductInfo({
                     controller: controller,
                     seniorToken: seniorToken,
                     juniorToken: juniorToken,

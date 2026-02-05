@@ -12,9 +12,9 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 import {ERC20} from "../../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
 import {AccountantWithRateProviders} from "../../lib/boring-vault/src/base/Roles/AccountantWithRateProviders.sol";
+import {TellerWithMultiAssetSupport} from "../../lib/boring-vault/src/base/Roles/TellerWithMultiAssetSupport.sol";
 
 import {Constants} from "../libraries/Constants.sol";
-import {IBoringVaultTeller} from "../interfaces/IBoringVaultTeller.sol";
 import {IRateModel} from "../interfaces/IRateModel.sol";
 import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
 
@@ -47,7 +47,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
     IERC20 public asset;
     AccountantWithRateProviders public accountant;
-    IBoringVaultTeller public teller;
+    TellerWithMultiAssetSupport public teller;
     ITrancheToken public seniorToken;
     ITrancheToken public juniorToken;
 
@@ -93,7 +93,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         asset = IERC20(params.asset);
         vault = params.vault;
         oneShare = 10 ** IERC20Metadata(params.vault).decimals();
-        teller = IBoringVaultTeller(params.teller);
+        teller = TellerWithMultiAssetSupport(payable(params.teller));
         accountant = AccountantWithRateProviders(params.accountant);
         seniorToken = ITrancheToken(params.seniorToken);
         juniorToken = ITrancheToken(params.juniorToken);
@@ -135,7 +135,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
     function setTeller(address newTeller) external onlyRole(OPERATOR_ROLE) {
         if (newTeller == address(0)) revert ZeroAddress();
         emit TellerUpdated(address(teller), newTeller);
-        teller = IBoringVaultTeller(newTeller);
+        teller = TellerWithMultiAssetSupport(payable(newTeller));
     }
 
     function setMaxSeniorRatioBps(uint256 newRatioBps) external onlyRole(OPERATOR_ROLE) {
