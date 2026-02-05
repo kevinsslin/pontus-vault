@@ -2,4 +2,56 @@ specVersion: 0.0.5
 schema:
   file: ./schema.graphql
 
-dataSources: []
+dataSources:
+  - kind: ethereum
+    name: TrancheRegistry
+    network: pharos-atlantic
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: TrancheRegistry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Vault
+      abis:
+        - name: TrancheRegistry
+          file: ./abis/TrancheRegistry.json
+      eventHandlers:
+        - event: ProductCreated(indexed uint256,indexed address,address,address,indexed address,address,address,address,bytes32)
+          handler: handleProductCreated
+      file: ./src/registry.ts
+
+templates:
+  - kind: ethereum
+    name: TrancheController
+    network: pharos-atlantic
+    source:
+      abi: TrancheController
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Vault
+        - TrancheSnapshot
+        - TrancheEvent
+      abis:
+        - name: TrancheController
+          file: ./abis/TrancheController.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: SeniorDeposited(indexed address,indexed address,uint256,uint256)
+          handler: handleSeniorDeposited
+        - event: JuniorDeposited(indexed address,indexed address,uint256,uint256)
+          handler: handleJuniorDeposited
+        - event: SeniorRedeemed(indexed address,indexed address,uint256,uint256)
+          handler: handleSeniorRedeemed
+        - event: JuniorRedeemed(indexed address,indexed address,uint256,uint256)
+          handler: handleJuniorRedeemed
+        - event: Accrued(uint256,uint256)
+          handler: handleAccrued
+      file: ./src/controller.ts

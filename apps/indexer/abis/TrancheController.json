@@ -1,0 +1,83 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "name": "newSeniorDebt", "type": "uint256"},
+      {"indexed": false, "name": "dt", "type": "uint256"}
+    ],
+    "name": "Accrued",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "name": "caller", "type": "address"},
+      {"indexed": true, "name": "receiver", "type": "address"},
+      {"indexed": false, "name": "assets", "type": "uint256"},
+      {"indexed": false, "name": "shares", "type": "uint256"}
+    ],
+    "name": "SeniorDeposited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "name": "caller", "type": "address"},
+      {"indexed": true, "name": "receiver", "type": "address"},
+      {"indexed": false, "name": "assets", "type": "uint256"},
+      {"indexed": false, "name": "shares", "type": "uint256"}
+    ],
+    "name": "JuniorDeposited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "name": "caller", "type": "address"},
+      {"indexed": true, "name": "receiver", "type": "address"},
+      {"indexed": false, "name": "shares", "type": "uint256"},
+      {"indexed": false, "name": "assets", "type": "uint256"}
+    ],
+    "name": "SeniorRedeemed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "name": "caller", "type": "address"},
+      {"indexed": true, "name": "receiver", "type": "address"},
+      {"indexed": false, "name": "shares", "type": "uint256"},
+      {"indexed": false, "name": "assets", "type": "uint256"}
+    ],
+    "name": "JuniorRedeemed",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "previewV",
+    "outputs": [{"name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "seniorDebt",
+    "outputs": [{"name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "seniorToken",
+    "outputs": [{"name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "juniorToken",
+    "outputs": [{"name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

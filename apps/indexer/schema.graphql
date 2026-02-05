@@ -1,3 +1,57 @@
-type Product @entity {
+type Vault @entity {
   id: ID!
+  productId: BigInt!
+  controller: Bytes!
+  seniorToken: Bytes!
+  juniorToken: Bytes!
+  vault: Bytes!
+  teller: Bytes!
+  manager: Bytes!
+  asset: Bytes!
+  paramsHash: Bytes!
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+  createdTx: Bytes!
+  lastSnapshot: TrancheSnapshot
+  tvl: BigInt
+  seniorPrice: BigInt
+  juniorPrice: BigInt
+  seniorDebt: BigInt
+  seniorSupply: BigInt
+  juniorSupply: BigInt
+  updatedAt: BigInt
+  snapshots: [TrancheSnapshot!]! @derivedFrom(field: "vault")
+  events: [TrancheEvent!]! @derivedFrom(field: "vault")
+}
+
+type TrancheSnapshot @entity {
+  id: ID!
+  vault: Vault!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+  eventType: String!
+  totalValue: BigInt!
+  seniorDebt: BigInt!
+  seniorSupply: BigInt!
+  juniorSupply: BigInt!
+  seniorPrice: BigInt!
+  juniorPrice: BigInt!
+  tvl: BigInt!
+  underwater: Boolean!
+}
+
+type TrancheEvent @entity {
+  id: ID!
+  vault: Vault!
+  type: String!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+  caller: Bytes
+  receiver: Bytes
+  assets: BigInt
+  shares: BigInt
+  seniorDebt: BigInt
+  dt: BigInt
 }

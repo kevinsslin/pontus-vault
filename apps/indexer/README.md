@@ -1,6 +1,6 @@
 # Indexer (Goldsky)
 
-This folder holds the Goldsky subgraph for PTI.
+This folder holds the Goldsky subgraph for Pontus Vault.
 
 **Prereqs**
 - Goldsky CLI installed and authenticated
@@ -16,3 +16,7 @@ pnpm --filter @pti/indexer deploy
 - Product discovery (registry events)
 - Tranche metrics (TVL, prices)
 - Activity feed (deposit/redeem/accrue)
+
+**Config**
+- Update `apps/indexer/subgraph.yaml` with the TrancheRegistry address for the target chain.
+- Ensure the `network` value matches Goldsky's Pharos Atlantic name before deploying.
