@@ -5,13 +5,14 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import {MockAccountant} from "./MockAccountant.sol";
+
 contract MockTeller {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable asset;
+    MockAccountant public immutable accountant;
     uint8 public immutable decimals;
-
-    uint256 public sharePriceWad = 1e18;
 
     uint256 public totalSupply;
     mapping(address => uint256) public balanceOf;
@@ -20,13 +21,10 @@ contract MockTeller {
     event Transfer(address indexed from, address indexed to, uint256 amount);
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
-    constructor(IERC20 asset_) {
+    constructor(IERC20 asset_, MockAccountant accountant_) {
         asset = asset_;
+        accountant = accountant_;
         decimals = 18;
-    }
-
-    function setSharePriceWad(uint256 newPrice) external {
-        sharePriceWad = newPrice;
     }
 
     function approve(address spender, uint256 amount) external returns (bool) {
@@ -51,28 +49,27 @@ contract MockTeller {
         return true;
     }
 
-    function deposit(uint256 assets, address receiver) external returns (uint256 shares) {
+    function deposit(IERC20 depositAsset, uint256 assets, uint256 minMint) external returns (uint256 shares) {
+        require(depositAsset == asset, "ASSET");
         asset.safeTransferFrom(msg.sender, address(this), assets);
-        shares = Math.mulDiv(assets, 1e18, sharePriceWad);
-        _mint(receiver, shares);
+
+        uint256 rate = accountant.getRateInQuoteSafe(asset);
+        shares = Math.mulDiv(assets, 10 ** decimals, rate);
+        require(shares >= minMint, "MIN_MINT");
+        _mint(msg.sender, shares);
     }
 
-    function withdraw(uint256 assets, address receiver) external returns (uint256 sharesBurned) {
-        sharesBurned = Math.mulDiv(assets, 1e18, sharePriceWad);
-        _burn(msg.sender, sharesBurned);
-        asset.safeTransfer(receiver, assets);
-    }
+    function bulkWithdraw(IERC20 withdrawAsset, uint256 shareAmount, uint256 minAssets, address to)
+        external
+        returns (uint256 assetsOut)
+    {
+        require(withdrawAsset == asset, "ASSET");
+        _burn(msg.sender, shareAmount);
 
-    function previewDeposit(uint256 assets) external view returns (uint256 shares) {
-        return Math.mulDiv(assets, 1e18, sharePriceWad);
-    }
-
-    function previewWithdraw(uint256 assets) external view returns (uint256 shares) {
-        return Math.mulDiv(assets, 1e18, sharePriceWad);
-    }
-
-    function previewRedeem(uint256 shares) external view returns (uint256 assets) {
-        return Math.mulDiv(shares, sharePriceWad, 1e18);
+        uint256 rate = accountant.getRateInQuoteSafe(asset);
+        assetsOut = Math.mulDiv(shareAmount, rate, 10 ** decimals);
+        require(assetsOut >= minAssets, "MIN_ASSETS");
+        asset.safeTransfer(to, assetsOut);
     }
 
     function _transfer(address from, address to, uint256 amount) internal {

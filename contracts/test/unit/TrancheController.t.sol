@@ -16,8 +16,8 @@ contract TrancheControllerTest is BaseTest {
         _initActors();
         _initRules();
         _deployCore("USDC", "USDC", 6);
-        teller = new MockTeller(IERC20(address(asset)));
-        _initController(address(teller), address(teller), address(0));
+        teller = new MockTeller(IERC20(address(asset)), mockAccountant);
+        _initController(address(teller), address(teller), address(0), address(mockAccountant));
         _seedBalances(1_000_000e6);
     }
 
@@ -26,7 +26,7 @@ contract TrancheControllerTest is BaseTest {
         _depositJunior(bob, 200e6);
         _depositSenior(alice, 800e6);
 
-        teller.setSharePriceWad(1.1e18);
+        mockAccountant.setRate(IERC20(address(asset)), 1.1e18);
 
         uint256 seniorShares = seniorToken.balanceOf(alice);
         uint256 juniorShares = juniorToken.balanceOf(bob);
@@ -42,7 +42,7 @@ contract TrancheControllerTest is BaseTest {
         _depositJunior(bob, 200e6);
         _depositSenior(alice, 800e6);
 
-        teller.setSharePriceWad(0.7e18);
+        mockAccountant.setRate(IERC20(address(asset)), 0.7e18);
 
         uint256 seniorShares = seniorToken.balanceOf(alice);
         uint256 juniorShares = juniorToken.balanceOf(bob);
@@ -70,7 +70,7 @@ contract TrancheControllerTest is BaseTest {
     function test_depositJunior_revertsWhenUnderwater() public {
         _depositJunior(bob, 200e6);
         _depositSenior(alice, 800e6);
-        teller.setSharePriceWad(0.7e18);
+        mockAccountant.setRate(IERC20(address(asset)), 0.7e18);
 
         vm.startPrank(bob);
         asset.approve(address(controller), 10e6);

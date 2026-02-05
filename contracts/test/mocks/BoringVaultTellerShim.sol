@@ -5,12 +5,12 @@ import {BoringVault} from "../../lib/boring-vault/src/base/BoringVault.sol";
 import {AccountantWithRateProviders} from "../../lib/boring-vault/src/base/Roles/AccountantWithRateProviders.sol";
 import {ERC20} from "../../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
 
-import {ITeller} from "../../src/interfaces/ITeller.sol";
+import {IBoringVaultTeller} from "../../src/interfaces/IBoringVaultTeller.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract BoringVaultTellerAdapter is ITeller {
+contract BoringVaultTellerShim is IBoringVaultTeller {
     using SafeERC20 for IERC20;
 
     BoringVault public immutable vault;
@@ -25,35 +25,30 @@ contract BoringVaultTellerAdapter is ITeller {
         oneShare = 10 ** vault_.decimals();
     }
 
-    function deposit(uint256 assets, address receiver) external returns (uint256 shares) {
+    function deposit(IERC20 depositAsset, uint256 assets, uint256 minMint)
+        external
+        payable
+        returns (uint256 shares)
+    {
+        require(depositAsset == asset, "ASSET");
         uint256 rate = accountant.getRateInQuoteSafe(ERC20(address(asset)));
         shares = Math.mulDiv(assets, oneShare, rate);
+        require(shares >= minMint, "MIN_MINT");
 
         asset.safeTransferFrom(msg.sender, address(this), assets);
         asset.forceApprove(address(vault), assets);
 
-        vault.enter(address(this), ERC20(address(asset)), assets, receiver, shares);
+        vault.enter(address(this), ERC20(address(asset)), assets, msg.sender, shares);
     }
 
-    function withdraw(uint256 assets, address receiver) external returns (uint256 sharesBurned) {
+    function bulkWithdraw(IERC20 withdrawAsset, uint256 shareAmount, uint256 minAssets, address to)
+        external
+        returns (uint256 assetsOut)
+    {
+        require(withdrawAsset == asset, "ASSET");
         uint256 rate = accountant.getRateInQuoteSafe(ERC20(address(asset)));
-        sharesBurned = Math.mulDiv(assets, oneShare, rate);
-
-        vault.exit(receiver, ERC20(address(asset)), assets, msg.sender, sharesBurned);
-    }
-
-    function previewDeposit(uint256 assets) external view returns (uint256 shares) {
-        uint256 rate = accountant.getRateInQuoteSafe(ERC20(address(asset)));
-        return Math.mulDiv(assets, oneShare, rate);
-    }
-
-    function previewWithdraw(uint256 assets) external view returns (uint256 shares) {
-        uint256 rate = accountant.getRateInQuoteSafe(ERC20(address(asset)));
-        return Math.mulDiv(assets, oneShare, rate);
-    }
-
-    function previewRedeem(uint256 shares) external view returns (uint256 assetsOut) {
-        uint256 rate = accountant.getRateInQuoteSafe(ERC20(address(asset)));
-        return Math.mulDiv(shares, rate, oneShare);
+        assetsOut = Math.mulDiv(shareAmount, rate, oneShare);
+        require(assetsOut >= minAssets, "MIN_ASSETS");
+        vault.exit(to, ERC20(address(asset)), assetsOut, msg.sender, shareAmount);
     }
 }

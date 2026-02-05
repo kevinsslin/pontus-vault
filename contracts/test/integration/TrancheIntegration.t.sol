@@ -7,13 +7,13 @@ import {RolesAuthority, Authority} from "../../lib/boring-vault/lib/solmate/src/
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {BaseTest} from "../BaseTest.sol";
-import {BoringVaultTellerAdapter} from "../mocks/BoringVaultTellerAdapter.sol";
+import {BoringVaultTellerShim} from "../mocks/BoringVaultTellerShim.sol";
 
 contract TrancheIntegrationTest is BaseTest {
     BoringVault internal vault;
     AccountantWithRateProviders internal accountant;
     RolesAuthority internal rolesAuthority;
-    BoringVaultTellerAdapter internal adapter;
+    BoringVaultTellerShim internal teller;
 
     function setUp() public {
         _initActors();
@@ -31,11 +31,11 @@ contract TrancheIntegrationTest is BaseTest {
         rolesAuthority.setRoleCapability(MINTER_ROLE, address(vault), BoringVault.enter.selector, true);
         rolesAuthority.setRoleCapability(BURNER_ROLE, address(vault), BoringVault.exit.selector, true);
 
-        adapter = new BoringVaultTellerAdapter(vault, accountant, IERC20(address(asset)));
-        rolesAuthority.setUserRole(address(adapter), MINTER_ROLE, true);
-        rolesAuthority.setUserRole(address(adapter), BURNER_ROLE, true);
+        teller = new BoringVaultTellerShim(vault, accountant, IERC20(address(asset)));
+        rolesAuthority.setUserRole(address(teller), MINTER_ROLE, true);
+        rolesAuthority.setUserRole(address(teller), BURNER_ROLE, true);
 
-        _initController(address(vault), address(adapter), address(0));
+        _initController(address(vault), address(teller), address(0), address(accountant));
         _seedBalances(1_000_000e6);
     }
 

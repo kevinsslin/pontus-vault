@@ -3,7 +3,9 @@ pragma solidity ^0.8.21;
 
 import "forge-std/Test.sol";
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
+import {MockAccountant} from "./mocks/MockAccountant.sol";
 import {TrancheController} from "../src/tranche/TrancheController.sol";
 import {TrancheToken} from "../src/tranche/TrancheToken.sol";
 
@@ -26,6 +28,7 @@ abstract contract BaseTest is Test {
     address internal bob;
 
     MockERC20 internal asset;
+    MockAccountant internal mockAccountant;
     TrancheController internal controller;
     TrancheToken internal seniorToken;
     TrancheToken internal juniorToken;
@@ -46,26 +49,32 @@ abstract contract BaseTest is Test {
 
     function _deployCore(string memory name, string memory symbol, uint8 decimals) internal {
         asset = new MockERC20(name, symbol, decimals);
+        mockAccountant = new MockAccountant();
         controller = new TrancheController();
         seniorToken = new TrancheToken();
         juniorToken = new TrancheToken();
 
         seniorToken.initialize("Pontus Vault Senior USDC S1", "pvS-USDC", decimals, address(controller));
         juniorToken.initialize("Pontus Vault Junior USDC S1", "pvJ-USDC", decimals, address(controller));
+
+        mockAccountant.setRate(IERC20(address(asset)), 1e18);
     }
 
-    function _initController(address vault, address teller, address rateModel) internal {
+    function _initController(address vault, address teller, address rateModel, address accountantAddress) internal {
         controller.initialize(
-            address(asset),
-            vault,
-            teller,
-            operator,
-            guardian,
-            address(seniorToken),
-            address(juniorToken),
-            rules.seniorRatePerSecondWad,
-            rateModel,
-            rules.maxSeniorRatioBps
+            TrancheController.InitParams({
+                asset: address(asset),
+                vault: vault,
+                teller: teller,
+                accountant: accountantAddress,
+                operator: operator,
+                guardian: guardian,
+                seniorToken: address(seniorToken),
+                juniorToken: address(juniorToken),
+                seniorRatePerSecondWad: rules.seniorRatePerSecondWad,
+                rateModel: rateModel,
+                maxSeniorRatioBps: rules.maxSeniorRatioBps
+            })
         );
     }
 
