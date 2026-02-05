@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getVaultById } from "../../../../lib/data/vaults";
 import VaultActionUnavailable from "../../../components/VaultActionUnavailable";
+import WalletConnectButton from "../../../components/WalletConnectButton";
 
 export default async function DepositPage({
   params,
@@ -67,6 +68,12 @@ export default async function DepositPage({
                 Submit deposit
               </button>
             </div>
+            <div className="card-actions">
+              <WalletConnectButton />
+            </div>
+            <p className="micro">
+              Wallet connection is requested only when you are ready to execute.
+            </p>
           </form>
 
           <aside className="card card--spotlight">
