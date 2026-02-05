@@ -1,4 +1,4 @@
-type Vault @entity {
+type Vault @entity(immutable: false) {
   id: ID!
   productId: BigInt!
   controller: Bytes!
@@ -25,7 +25,7 @@ type Vault @entity {
   events: [TrancheEvent!]! @derivedFrom(field: "vault")
 }
 
-type TrancheSnapshot @entity {
+type TrancheSnapshot @entity(immutable: true) {
   id: ID!
   vault: Vault!
   blockNumber: BigInt!
@@ -42,7 +42,7 @@ type TrancheSnapshot @entity {
   underwater: Boolean!
 }
 
-type TrancheEvent @entity {
+type TrancheEvent @entity(immutable: true) {
   id: ID!
   vault: Vault!
   type: String!

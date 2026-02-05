@@ -233,7 +233,7 @@ form.card {
   border: 1px solid var(--stroke);
   background: var(--surface-2);
   font-size: 16px;
-  font-family: var(--font-body), \"Space Grotesk\", sans-serif;
+  font-family: var(--font-body), "Space Grotesk", sans-serif;
 }
 
 .input:focus {
