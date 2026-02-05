@@ -1,4 +1,3 @@
-import { cache } from "react";
 import type {
   ActivityEvent,
   DataSource,
@@ -11,7 +10,7 @@ import { fetchIndexerVaults, normalizeAddress } from "./indexer";
 import { MOCK_ACTIVITY, MOCK_PORTFOLIO, MOCK_VAULTS } from "./mock";
 import { fetchVaultRegistry } from "./supabase";
 
-const DEFAULT_SOURCE: DataSource = "mock";
+const DEFAULT_SOURCE: DataSource = "demo";
 
 type LiveConfig = {
   supabaseUrl: string;
@@ -33,7 +32,8 @@ export function getDataSource(): DataSource {
     process.env.NEXT_PUBLIC_DATA_SOURCE ??
     process.env.DATA_SOURCE ??
     DEFAULT_SOURCE;
-  return value === "live" ? "live" : "mock";
+  if (value === "live") return "live";
+  return "demo";
 }
 
 function getLiveConfig(): LiveConfig {
@@ -61,7 +61,7 @@ function getLiveConfig(): LiveConfig {
   };
 }
 
-const getLiveVaults = cache(async (): Promise<LiveVaultsResult> => {
+async function getLiveVaults(): Promise<LiveVaultsResult> {
   const { supabaseUrl, supabaseKey, indexerUrl } = getLiveConfig();
   const errors: string[] = [];
 
@@ -122,16 +122,16 @@ const getLiveVaults = cache(async (): Promise<LiveVaultsResult> => {
       indexer: indexerUrl,
     },
   };
-});
+}
 
 export async function getVaultsResponse(
   source: DataSource = getDataSource()
 ): Promise<VaultsApiResponse> {
-  if (source === "mock") {
+  if (source === "demo") {
     return VaultsApiResponseSchema.parse({
       generatedAt: new Date().toISOString(),
       source: {
-        supabase: "mock",
+        supabase: "demo",
         indexer: null,
       },
       vaults: MOCK_VAULTS,
@@ -158,6 +158,9 @@ export async function getVaults(
       return orderA - orderB;
     });
   } catch {
+    if (source === "live") {
+      throw new Error("Failed to load live vault data.");
+    }
     return MOCK_VAULTS;
   }
 }

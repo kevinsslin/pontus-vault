@@ -3,21 +3,23 @@ import { getVaults } from "../../lib/data/vaults";
 
 export default async function DiscoverPage() {
   const vaults = await getVaults();
+  const liveCount = vaults.filter((vault) => vault.uiConfig.status === "LIVE").length;
+  const comingSoonCount = vaults.length - liveCount;
 
   return (
     <main className="page">
       <section className="reveal">
         <p className="eyebrow">Discover</p>
-        <h1>Tranche vaults on Pharos</h1>
+        <h1>Tranche marketplace for professional allocators.</h1>
         <p className="muted">
-          Browse live and upcoming products. Metrics update from the indexer, while metadata
-          and status are curated in Supabase.
+          Compare live products and upcoming strategies with one consistent schema for risk labels,
+          route metadata, and onchain metrics.
         </p>
         <div className="card-actions">
-          <span className="chip">LIVE</span>
-          <span className="chip">COMING SOON</span>
-          <span className="chip">OpenFi</span>
-          <span className="chip">RWA</span>
+          <span className="chip">Live: {liveCount}</span>
+          <span className="chip">Coming soon: {comingSoonCount}</span>
+          <span className="chip">OpenFi routes</span>
+          <span className="chip">RWA catalog</span>
         </div>
       </section>
 

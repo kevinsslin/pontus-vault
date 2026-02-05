@@ -14,6 +14,7 @@ Pontus Vault is tranche vault infrastructure on Pharos. It packages yield strate
 - Contracts: Foundry + BoringVault
 - Indexer: Goldsky
 - DB: Supabase
+- Backend: Next.js API routes (thin BFF)
 - Monorepo: pnpm + Turbo
 
 **Repo Structure**
@@ -43,6 +44,7 @@ pnpm dev
 pnpm build
 pnpm test
 pnpm lint
+pnpm --filter @pti/contracts deps
 ```
 
 **BoringVault Dependency**
@@ -54,5 +56,7 @@ forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 -
 
 **Notes**
 - `docs/PRD.md` and `plan.md` are intentionally gitignored per request.
+- Frontend data source is switchable via `DATA_SOURCE` / `NEXT_PUBLIC_DATA_SOURCE` using `demo` or `live`.
+- Contracts test layers include unit, integration (self-deployed BoringVault stack), fork (OpenFi on Atlantic), and invariant suites.
 - If you add a new workspace, update `pnpm-workspace.yaml` and root scripts.
 - Dependencies are pinned to exact versions; update intentionally when needed.

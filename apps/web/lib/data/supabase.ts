@@ -1,25 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
-
-type VaultRegistryRow = {
-  product_id: string;
-  chain: string;
-  name: string;
-  route: string;
-  asset_symbol: string;
-  asset_address: string;
-  controller_address: string;
-  senior_token_address: string;
-  junior_token_address: string;
-  vault_address: string;
-  teller_address: string;
-  manager_address: string;
-  ui_config: Record<string, unknown> | null;
-};
+import {
+  SupabaseVaultRegistryRowSchema,
+  type SupabaseVaultRegistryRow,
+} from "@pti/shared";
 
 export async function fetchVaultRegistry(
   supabaseUrl: string,
   supabaseKey: string
-): Promise<VaultRegistryRow[]> {
+): Promise<SupabaseVaultRegistryRow[]> {
   const supabase = createClient(supabaseUrl, supabaseKey, {
     auth: { persistSession: false },
   });
@@ -29,7 +17,7 @@ export async function fetchVaultRegistry(
     throw new Error(error.message);
   }
 
-  return (data as VaultRegistryRow[]) ?? [];
+  return SupabaseVaultRegistryRowSchema.array().parse(data ?? []);
 }
 
-export type { VaultRegistryRow };
+export type { SupabaseVaultRegistryRow as VaultRegistryRow };

@@ -3,7 +3,7 @@ import { z } from "zod";
 export const VaultStatusSchema = z.enum(["LIVE", "COMING_SOON"]);
 export type VaultStatus = z.infer<typeof VaultStatusSchema>;
 
-export const DataSourceSchema = z.enum(["mock", "live"]);
+export const DataSourceSchema = z.enum(["demo", "live"]);
 export type DataSource = z.infer<typeof DataSourceSchema>;
 
 export const VaultUiConfigSchema = z.object({
@@ -27,6 +27,47 @@ export const VaultMetricsSchema = z.object({
   updatedAt: z.string().nullable(),
 });
 export type VaultMetrics = z.infer<typeof VaultMetricsSchema>;
+
+export const IndexerVaultSchema = z.object({
+  id: z.string(),
+  controller: z.string().nullable().optional(),
+  productId: z.string().nullable().optional(),
+  tvl: z.string().nullable().optional(),
+  seniorPrice: z.string().nullable().optional(),
+  juniorPrice: z.string().nullable().optional(),
+  seniorDebt: z.string().nullable().optional(),
+  seniorSupply: z.string().nullable().optional(),
+  juniorSupply: z.string().nullable().optional(),
+  updatedAt: z.string().nullable().optional(),
+});
+export type IndexerVault = z.infer<typeof IndexerVaultSchema>;
+
+export const IndexerVaultsResponseSchema = z.object({
+  data: z
+    .object({
+      vaults: z.array(IndexerVaultSchema).optional(),
+    })
+    .optional(),
+  errors: z.array(z.object({ message: z.string() })).optional(),
+});
+export type IndexerVaultsResponse = z.infer<typeof IndexerVaultsResponseSchema>;
+
+export const SupabaseVaultRegistryRowSchema = z.object({
+  product_id: z.string(),
+  chain: z.string(),
+  name: z.string(),
+  route: z.string(),
+  asset_symbol: z.string(),
+  asset_address: z.string(),
+  controller_address: z.string(),
+  senior_token_address: z.string(),
+  junior_token_address: z.string(),
+  vault_address: z.string(),
+  teller_address: z.string(),
+  manager_address: z.string(),
+  ui_config: z.record(z.string(), z.unknown()).nullable(),
+});
+export type SupabaseVaultRegistryRow = z.infer<typeof SupabaseVaultRegistryRowSchema>;
 
 export const VaultRecordSchema = z.object({
   productId: z.string(),

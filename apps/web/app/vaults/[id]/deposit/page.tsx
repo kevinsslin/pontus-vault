@@ -14,42 +14,39 @@ export default async function DepositPage({ params }: { params: { id: string } }
     <main className="page">
       <section className="reveal">
         <p className="eyebrow">Deposit</p>
-        <h1>{vault.name}</h1>
-        <p className="muted">Select tranche and amount to deposit.</p>
+        <h1>Allocate into {vault.name}</h1>
+        <p className="muted">
+          Select tranche and amount. Preview output before signing the final transaction.
+        </p>
       </section>
 
       <section className="section reveal delay-1">
-        <div className="grid grid-3">
-          <form className="card" style={{ gridColumn: "span 2" }}>
+        <div className="form-layout">
+          <form className="card" aria-label="Deposit form">
             <h3>Deposit form</h3>
-            <label className="muted" htmlFor="amount">
+
+            <label className="field-label" htmlFor="amount">
               Amount ({vault.assetSymbol})
             </label>
-            <input
-              id="amount"
-              name="amount"
-              type="number"
-              placeholder="0.00"
-              className="input"
-            />
-            <div className="section">
-              <p className="muted">Tranche</p>
-              <div className="card-actions">
-                <label className="chip">
-                  <input type="radio" name="tranche" defaultChecked /> Senior
+            <input id="amount" name="amount" type="number" placeholder="0.00" className="input" />
+
+            <div>
+              <p className="field-label">Tranche</p>
+              <div className="radio-group">
+                <label className="radio-chip">
+                  <input type="radio" name="tranche" defaultChecked />
+                  Senior
                 </label>
-                <label className="chip">
-                  <input type="radio" name="tranche" /> Junior
+                <label className="radio-chip">
+                  <input type="radio" name="tranche" />
+                  Junior
                 </label>
               </div>
             </div>
+
             <div className="card-actions">
-              <button
-                className={`button ${!isLive ? "button--disabled" : ""}`}
-                type="button"
-                disabled={!isLive}
-              >
-                Preview
+              <button className={`button ${!isLive ? "button--disabled" : ""}`} type="button" disabled={!isLive}>
+                Preview output
               </button>
               <button
                 className={`button button--ghost ${!isLive ? "button--disabled" : ""}`}
@@ -60,18 +57,33 @@ export default async function DepositPage({ params }: { params: { id: string } }
               </button>
             </div>
           </form>
-          <div className="card">
-            <h3>Summary</h3>
-            <p className="muted">Status: {vault.uiConfig.status}</p>
-            <p className="muted">Route: {vault.uiConfig.routeLabel}</p>
-            <p className="muted">Risk: {vault.uiConfig.risk}</p>
-            <p className="muted">Note: {vault.uiConfig.banner}</p>
+
+          <aside className="card card--spotlight">
+            <h3>Execution notes</h3>
+            <div className="list-rows">
+              <div className="row">
+                <span className="key">Status</span>
+                <span className="value">{vault.uiConfig.status}</span>
+              </div>
+              <div className="row">
+                <span className="key">Route</span>
+                <span className="value">{vault.uiConfig.routeLabel ?? vault.route}</span>
+              </div>
+              <div className="row">
+                <span className="key">Risk profile</span>
+                <span className="value">{vault.uiConfig.risk ?? "N/A"}</span>
+              </div>
+              <div className="row">
+                <span className="key">Policy</span>
+                <span className="value">{vault.uiConfig.banner ?? "N/A"}</span>
+              </div>
+            </div>
             <div className="card-actions">
               <Link className="button button--ghost" href={`/vaults/${vault.productId}`}>
                 Back to vault
               </Link>
             </div>
-          </div>
+          </aside>
         </div>
       </section>
     </main>

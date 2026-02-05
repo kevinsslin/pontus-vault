@@ -3,13 +3,21 @@ import { getPortfolioSnapshot } from "../../lib/data/vaults";
 
 export default function PortfolioPage() {
   const portfolio = getPortfolioSnapshot();
+  const positionCount = portfolio.positions.length;
 
   return (
     <main className="page">
       <section className="reveal">
         <p className="eyebrow">Portfolio</p>
-        <h1>Your tranche exposure</h1>
-        <p className="muted">Aggregate view across senior and junior positions.</p>
+        <h1>Cross-vault tranche exposure in one ledger.</h1>
+        <p className="muted">
+          Track senior stability sleeves and junior upside sleeves with consistent
+          accounting across all Pontus products.
+        </p>
+        <div className="card-actions">
+          <span className="chip">Positions: {positionCount}</span>
+          <span className="chip">Products: {new Set(portfolio.positions.map((p) => p.productId)).size}</span>
+        </div>
       </section>
 
       <section className="section reveal delay-1">
@@ -17,21 +25,23 @@ export default function PortfolioPage() {
           <div className="card">
             <div className="stat-label">Total value</div>
             <div className="stat-value">{portfolio.totalValue}</div>
+            <p className="muted">Marked-to-model from latest tranche prices.</p>
           </div>
           <div className="card">
             <div className="stat-label">24h change</div>
             <div className="stat-value">{portfolio.dayChange}</div>
+            <p className="muted">Blended daily return across active sleeves.</p>
           </div>
         </div>
       </section>
 
       <section className="section reveal delay-2">
         <div className="card">
-          <h3>Positions</h3>
+          <h3>Position ledger</h3>
           <table className="table">
             <thead>
               <tr>
-                <th>Vault</th>
+                <th>Product</th>
                 <th>Tranche</th>
                 <th>Shares</th>
                 <th>Value</th>
@@ -51,6 +61,9 @@ export default function PortfolioPage() {
             </tbody>
           </table>
           <div className="card-actions">
+            <Link className="button" href="/discover">
+              Discover products
+            </Link>
             <Link className="button button--ghost" href="/discover">
               Add exposure
             </Link>

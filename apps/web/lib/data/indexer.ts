@@ -1,3 +1,8 @@
+import {
+  IndexerVaultsResponseSchema,
+  type IndexerVault,
+} from "@pti/shared";
+
 const INDEXER_QUERY = `
   query Vaults {
     vaults(first: 1000) {
@@ -14,24 +19,6 @@ const INDEXER_QUERY = `
     }
   }
 `;
-
-type IndexerVault = {
-  id: string;
-  controller?: string | null;
-  productId?: string | null;
-  tvl?: string | null;
-  seniorPrice?: string | null;
-  juniorPrice?: string | null;
-  seniorDebt?: string | null;
-  seniorSupply?: string | null;
-  juniorSupply?: string | null;
-  updatedAt?: string | null;
-};
-
-type IndexerResponse = {
-  data?: { vaults?: IndexerVault[] };
-  errors?: { message: string }[];
-};
 
 export function normalizeAddress(value: string): string {
   return value.toLowerCase();
@@ -51,7 +38,7 @@ export async function fetchIndexerVaults(
     throw new Error(`Indexer request failed: ${response.status}`);
   }
 
-  const payload = (await response.json()) as IndexerResponse;
+  const payload = IndexerVaultsResponseSchema.parse(await response.json());
   if (payload.errors && payload.errors.length > 0) {
     throw new Error(payload.errors.map((error) => error.message).join("; "));
   }

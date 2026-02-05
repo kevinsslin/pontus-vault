@@ -11,6 +11,7 @@ export default async function VaultDetailPage({ params }: { params: { id: string
 
   const activity = getActivityForVault(vault.productId);
   const isLive = vault.uiConfig.status === "LIVE";
+  const tags = vault.uiConfig.tags ?? [];
 
   return (
     <main className="page">
@@ -22,43 +23,65 @@ export default async function VaultDetailPage({ params }: { params: { id: string
           <span className={`badge ${isLive ? "badge--live" : "badge--soon"}`}>
             {vault.uiConfig.status}
           </span>
-          <span className="chip">{vault.uiConfig.routeLabel}</span>
-          <span className="chip">Risk: {vault.uiConfig.risk}</span>
+          <span className="chip">{vault.uiConfig.routeLabel ?? vault.route}</span>
+          <span className="chip">Risk: {vault.uiConfig.risk ?? "N/A"}</span>
+          {tags.map((tag) => (
+            <span className="chip" key={tag}>
+              {tag}
+            </span>
+          ))}
         </div>
       </section>
 
       <section className="section reveal delay-1">
         <div className="stat-grid">
-          <div className="card">
+          <article className="card">
             <div className="stat-label">TVL</div>
             <div className="stat-value">{formatUsd(vault.metrics.tvl)}</div>
             <p className="muted">Updated {formatTimestamp(vault.metrics.updatedAt)}</p>
-          </div>
-          <div className="card">
-            <div className="stat-label">Senior Price</div>
+          </article>
+          <article className="card">
+            <div className="stat-label">Senior NAV</div>
             <div className="stat-value">{formatWad(vault.metrics.seniorPrice)}x</div>
-            <p className="muted">Debt {formatUsd(vault.metrics.seniorDebt)}</p>
-          </div>
-          <div className="card">
-            <div className="stat-label">Junior Price</div>
+            <p className="muted">Debt: {formatUsd(vault.metrics.seniorDebt)}</p>
+          </article>
+          <article className="card">
+            <div className="stat-label">Junior NAV</div>
             <div className="stat-value">{formatWad(vault.metrics.juniorPrice)}x</div>
-            <p className="muted">Supply {formatUsd(vault.metrics.juniorSupply)}</p>
-          </div>
+            <p className="muted">Supply: {formatUsd(vault.metrics.juniorSupply)}</p>
+          </article>
         </div>
       </section>
 
       <section className="section reveal delay-2">
-        <div className="grid grid-3">
-          <div className="card">
-            <h3>Underlying</h3>
-            <p className="muted">Asset: {vault.assetSymbol}</p>
-            <p className="muted">Route: {vault.route}</p>
-            <p className="muted">Chain: {vault.chain}</p>
-            <p className="muted">Banner: {vault.uiConfig.banner}</p>
-          </div>
-          <div className="card">
+        <div className="grid grid-2">
+          <article className="card">
+            <h3>Underlying and route</h3>
+            <div className="list-rows">
+              <div className="row">
+                <span className="key">Asset</span>
+                <span className="value">{vault.assetSymbol}</span>
+              </div>
+              <div className="row">
+                <span className="key">Route</span>
+                <span className="value">{vault.route}</span>
+              </div>
+              <div className="row">
+                <span className="key">Chain</span>
+                <span className="value">{vault.chain}</span>
+              </div>
+              <div className="row">
+                <span className="key">Policy note</span>
+                <span className="value">{vault.uiConfig.banner ?? "N/A"}</span>
+              </div>
+            </div>
+          </article>
+
+          <article className="card">
             <h3>Actions</h3>
-            <p className="muted">Deposit or redeem by tranche. Disabled if not LIVE.</p>
+            <p className="muted">
+              Deposit or redeem by tranche. Action routing is enabled only for LIVE products.
+            </p>
             <div className="card-actions">
               <Link
                 className={`button ${!isLive ? "button--disabled" : ""}`}
@@ -77,20 +100,39 @@ export default async function VaultDetailPage({ params }: { params: { id: string
                 Redeem
               </Link>
             </div>
-          </div>
-          <div className="card">
-            <h3>Addresses</h3>
-            <p className="muted">Controller: {vault.controllerAddress}</p>
-            <p className="muted">Senior token: {vault.seniorTokenAddress}</p>
-            <p className="muted">Junior token: {vault.juniorTokenAddress}</p>
-            <p className="muted">Vault: {vault.vaultAddress}</p>
-          </div>
+          </article>
         </div>
       </section>
 
       <section className="section reveal delay-3">
-        <div className="card">
-          <h3>Activity</h3>
+        <article className="card">
+          <h3>Contract wiring</h3>
+          <div className="list-rows">
+            <div className="row">
+              <span className="key">Controller</span>
+              <span className="value">{vault.controllerAddress}</span>
+            </div>
+            <div className="row">
+              <span className="key">Senior token</span>
+              <span className="value">{vault.seniorTokenAddress}</span>
+            </div>
+            <div className="row">
+              <span className="key">Junior token</span>
+              <span className="value">{vault.juniorTokenAddress}</span>
+            </div>
+            <div className="row">
+              <span className="key">Vault / Teller</span>
+              <span className="value">
+                {vault.vaultAddress} / {vault.tellerAddress}
+              </span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="section reveal delay-3">
+        <article className="card">
+          <h3>Activity feed</h3>
           <table className="table">
             <thead>
               <tr>
@@ -113,7 +155,7 @@ export default async function VaultDetailPage({ params }: { params: { id: string
               ))}
             </tbody>
           </table>
-        </div>
+        </article>
       </section>
     </main>
   );
