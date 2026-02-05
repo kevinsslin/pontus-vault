@@ -14,14 +14,16 @@ type Vault @entity(immutable: false) {
   createdAtBlock: BigInt!
   createdTx: Bytes!
   lastSnapshot: TrancheSnapshot
-  tvl: BigInt
-  seniorPrice: BigInt
-  juniorPrice: BigInt
-  seniorDebt: BigInt
-  seniorSupply: BigInt
-  juniorSupply: BigInt
-  updatedAt: BigInt
+  tvl: BigInt!
+  seniorPrice: BigInt!
+  juniorPrice: BigInt!
+  seniorDebt: BigInt!
+  seniorSupply: BigInt!
+  juniorSupply: BigInt!
+  updatedAt: BigInt!
   snapshots: [TrancheSnapshot!]! @derivedFrom(field: "vault")
+  hourlySnapshots: [VaultHourlySnapshot!]! @derivedFrom(field: "vault")
+  dailySnapshots: [VaultDailySnapshot!]! @derivedFrom(field: "vault")
   events: [TrancheEvent!]! @derivedFrom(field: "vault")
 }
 
@@ -55,4 +57,78 @@ type TrancheEvent @entity(immutable: true) {
   shares: BigInt
   seniorDebt: BigInt
   dt: BigInt
+}
+
+type VaultHourlySnapshot @entity(immutable: false) {
+  id: ID!
+  vault: Vault!
+  periodStart: BigInt!
+  periodEnd: BigInt!
+  updatedAt: BigInt!
+  lastTxHash: Bytes!
+  txCount: Int!
+  eventCount: Int!
+  depositCount: Int!
+  redeemCount: Int!
+  accrualCount: Int!
+  seniorDepositAssets: BigInt!
+  juniorDepositAssets: BigInt!
+  seniorRedeemAssets: BigInt!
+  juniorRedeemAssets: BigInt!
+  openTvl: BigInt!
+  highTvl: BigInt!
+  lowTvl: BigInt!
+  closeTvl: BigInt!
+  openSeniorPrice: BigInt!
+  highSeniorPrice: BigInt!
+  lowSeniorPrice: BigInt!
+  closeSeniorPrice: BigInt!
+  openJuniorPrice: BigInt!
+  highJuniorPrice: BigInt!
+  lowJuniorPrice: BigInt!
+  closeJuniorPrice: BigInt!
+  tvl: BigInt!
+  seniorDebt: BigInt!
+  seniorSupply: BigInt!
+  juniorSupply: BigInt!
+  seniorPrice: BigInt!
+  juniorPrice: BigInt!
+  underwater: Boolean!
+}
+
+type VaultDailySnapshot @entity(immutable: false) {
+  id: ID!
+  vault: Vault!
+  periodStart: BigInt!
+  periodEnd: BigInt!
+  updatedAt: BigInt!
+  lastTxHash: Bytes!
+  txCount: Int!
+  eventCount: Int!
+  depositCount: Int!
+  redeemCount: Int!
+  accrualCount: Int!
+  seniorDepositAssets: BigInt!
+  juniorDepositAssets: BigInt!
+  seniorRedeemAssets: BigInt!
+  juniorRedeemAssets: BigInt!
+  openTvl: BigInt!
+  highTvl: BigInt!
+  lowTvl: BigInt!
+  closeTvl: BigInt!
+  openSeniorPrice: BigInt!
+  highSeniorPrice: BigInt!
+  lowSeniorPrice: BigInt!
+  closeSeniorPrice: BigInt!
+  openJuniorPrice: BigInt!
+  highJuniorPrice: BigInt!
+  lowJuniorPrice: BigInt!
+  closeJuniorPrice: BigInt!
+  tvl: BigInt!
+  seniorDebt: BigInt!
+  seniorSupply: BigInt!
+  juniorSupply: BigInt!
+  seniorPrice: BigInt!
+  juniorPrice: BigInt!
+  underwater: Boolean!
 }

@@ -38,6 +38,8 @@ templates:
         - Vault
         - TrancheSnapshot
         - TrancheEvent
+        - VaultHourlySnapshot
+        - VaultDailySnapshot
       abis:
         - name: TrancheController
           file: ./abis/TrancheController.json
