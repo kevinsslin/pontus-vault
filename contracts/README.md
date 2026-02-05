@@ -24,7 +24,7 @@ forge fmt
 
 Use pnpm helpers from the repo root if preferred:
 ```bash
-pnpm --filter @ptvi/contracts build
-pnpm --filter @ptvi/contracts test
-pnpm --filter @ptvi/contracts deploy
+pnpm --filter @pti/contracts build
+pnpm --filter @pti/contracts test
+pnpm --filter @pti/contracts deploy
 ```

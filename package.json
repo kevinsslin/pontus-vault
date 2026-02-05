@@ -8,8 +8,8 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "deploy": "turbo run deploy --filter=@ptvi/contracts",
-    "indexer:deploy": "turbo run deploy --filter=@ptvi/indexer"
+    "deploy": "turbo run deploy --filter=@pti/contracts",
+    "indexer:deploy": "turbo run deploy --filter=@pti/indexer"
   },
   "engines": {
     "node": ">=20"

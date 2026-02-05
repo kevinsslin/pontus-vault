@@ -1,6 +1,6 @@
-# Pontus Vault (PTV)
+# Pontus Vault (PTI)
 
-Hackathon monorepo for Pharos Tranche Vault Infra: BoringVault-based contracts, Goldsky indexer (PTVI), and a Next.js app with Dynamic + Supabase metadata.
+Hackathon monorepo for Pharos Tranche Vault Infra: BoringVault-based contracts, Goldsky indexer, and a Next.js app with Dynamic + Supabase metadata.
 
 **Stack**
 - Frontend: Next.js (App Router)
@@ -11,7 +11,7 @@ Hackathon monorepo for Pharos Tranche Vault Infra: BoringVault-based contracts, 
 
 **Repo Structure**
 - `apps/web`: Next.js app (wallet connect, UI, thin API routes)
-- `apps/indexer`: Goldsky subgraph (PTVI, deployable indexer service)
+- `apps/indexer`: Goldsky subgraph (deployable indexer service)
 - `contracts`: Foundry workspace (BoringVault stack + tranche wrapper)
 - `packages/shared`: shared types/constants
 - `supabase`: schema, migrations, seeds

@@ -4,8 +4,7 @@
 Keep this repo consistent and maintainable: clear structure, pinned tooling, and minimal surprises.
 
 ## Naming
-- Pontus Vault = PTV (core product).
-- Indexer = PTVI.
+- Use PTI consistently for internal naming and package scope.
 
 ## Layout
 - `apps/` deployable apps and services (`apps/web`, `apps/indexer`).
@@ -22,7 +21,7 @@ Keep this repo consistent and maintainable: clear structure, pinned tooling, and
 
 ## Conventions
 - Versions are exact and pinned (no `latest`).
-- Internal package names use `@ptvi/*`.
+- Internal package names use `@pti/*`.
 - Secrets are never committed; use `.env.example`.
 - Shared chain constants live in `packages/shared/src/index.ts`.
 - BoringVault stays as a Foundry dependency in `contracts/lib/boring-vault`.

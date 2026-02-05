@@ -34,10 +34,10 @@ jobs:
           version: stable
 
       - name: Lint (web)
-        run: pnpm --filter @ptvi/web lint
+        run: pnpm --filter @pti/web lint
 
       - name: Build (web)
-        run: pnpm --filter @ptvi/web build
+        run: pnpm --filter @pti/web build
 
       - name: Test (contracts)
-        run: pnpm --filter @ptvi/contracts test
+        run: pnpm --filter @pti/contracts test

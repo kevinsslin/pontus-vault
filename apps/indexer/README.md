@@ -1,15 +1,15 @@
 # Indexer (Goldsky)
 
-This folder holds the Goldsky subgraph for PTVI.
+This folder holds the Goldsky subgraph for PTI.
 
 **Prereqs**
 - Goldsky CLI installed and authenticated
 
 **Commands**
 ```bash
-pnpm --filter @ptvi/indexer codegen
-pnpm --filter @ptvi/indexer build
-pnpm --filter @ptvi/indexer deploy
+pnpm --filter @pti/indexer codegen
+pnpm --filter @pti/indexer build
+pnpm --filter @pti/indexer deploy
 ```
 
 **Responsibilities**
