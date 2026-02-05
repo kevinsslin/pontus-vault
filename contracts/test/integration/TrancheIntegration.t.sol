@@ -6,11 +6,11 @@ import "forge-std/Test.sol";
 import {BoringVault} from "../../lib/boring-vault/src/base/BoringVault.sol";
 import {AccountantWithRateProviders} from "../../lib/boring-vault/src/base/Roles/AccountantWithRateProviders.sol";
 import {RolesAuthority, Authority} from "../../lib/boring-vault/lib/solmate/src/auth/authorities/RolesAuthority.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {JuniorToken} from "../../src/tranche/JuniorToken.sol";
 import {SeniorToken} from "../../src/tranche/SeniorToken.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
-import {IERC20Minimal} from "../../src/interfaces/IERC20Minimal.sol";
 
 import {BoringVaultTellerAdapter} from "../mocks/BoringVaultTellerAdapter.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
@@ -53,7 +53,7 @@ contract TrancheIntegrationTest is Test {
         rolesAuthority.setRoleCapability(MINTER_ROLE, address(vault), BoringVault.enter.selector, true);
         rolesAuthority.setRoleCapability(BURNER_ROLE, address(vault), BoringVault.exit.selector, true);
 
-        adapter = new BoringVaultTellerAdapter(vault, accountant, IERC20Minimal(address(asset)));
+        adapter = new BoringVaultTellerAdapter(vault, accountant, IERC20(address(asset)));
         rolesAuthority.setUserRole(address(adapter), MINTER_ROLE, true);
         rolesAuthority.setUserRole(address(adapter), BURNER_ROLE, true);
 

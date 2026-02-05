@@ -2,6 +2,10 @@
 cache/
 out/
 
+# Vendored deps
+lib/boring-vault/
+lib/forge-std/
+
 # Ignores development broadcast logs
 !/broadcast
 /broadcast/*/31337/

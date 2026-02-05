@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import {IERC20Minimal} from "../../src/interfaces/IERC20Minimal.sol";
-import {MathUtils} from "../../src/libraries/MathUtils.sol";
-import {SafeTransferLib} from "../../src/libraries/SafeTransferLib.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract MockTeller {
-    using SafeTransferLib for IERC20Minimal;
+    using SafeERC20 for IERC20;
 
-    IERC20Minimal public immutable asset;
+    IERC20 public immutable asset;
     uint8 public immutable decimals;
 
     uint256 public sharePriceWad = 1e18;
@@ -20,7 +20,7 @@ contract MockTeller {
     event Transfer(address indexed from, address indexed to, uint256 amount);
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
-    constructor(IERC20Minimal asset_) {
+    constructor(IERC20 asset_) {
         asset = asset_;
         decimals = 18;
     }
@@ -53,26 +53,26 @@ contract MockTeller {
 
     function deposit(uint256 assets, address receiver) external returns (uint256 shares) {
         asset.safeTransferFrom(msg.sender, address(this), assets);
-        shares = MathUtils.mulDivDown(assets, 1e18, sharePriceWad);
+        shares = Math.mulDiv(assets, 1e18, sharePriceWad);
         _mint(receiver, shares);
     }
 
     function withdraw(uint256 assets, address receiver) external returns (uint256 sharesBurned) {
-        sharesBurned = MathUtils.mulDivDown(assets, 1e18, sharePriceWad);
+        sharesBurned = Math.mulDiv(assets, 1e18, sharePriceWad);
         _burn(msg.sender, sharesBurned);
         asset.safeTransfer(receiver, assets);
     }
 
     function previewDeposit(uint256 assets) external view returns (uint256 shares) {
-        return MathUtils.mulDivDown(assets, 1e18, sharePriceWad);
+        return Math.mulDiv(assets, 1e18, sharePriceWad);
     }
 
     function previewWithdraw(uint256 assets) external view returns (uint256 shares) {
-        return MathUtils.mulDivDown(assets, 1e18, sharePriceWad);
+        return Math.mulDiv(assets, 1e18, sharePriceWad);
     }
 
     function previewRedeem(uint256 shares) external view returns (uint256 assets) {
-        return MathUtils.mulDivDown(shares, sharePriceWad, 1e18);
+        return Math.mulDiv(shares, sharePriceWad, 1e18);
     }
 
     function _transfer(address from, address to, uint256 amount) internal {

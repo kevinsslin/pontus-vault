@@ -3,12 +3,12 @@ pragma solidity ^0.8.21;
 
 import "forge-std/Test.sol";
 
-import {AccessControl} from "../../src/libraries/AccessControl.sol";
-import {Pausable} from "../../src/libraries/Pausable.sol";
+import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {JuniorToken} from "../../src/tranche/JuniorToken.sol";
 import {SeniorToken} from "../../src/tranche/SeniorToken.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
-import {IERC20Minimal} from "../../src/interfaces/IERC20Minimal.sol";
 
 import {MockERC20} from "../mocks/MockERC20.sol";
 import {MockTeller} from "../mocks/MockTeller.sol";
@@ -32,7 +32,7 @@ contract TrancheControllerTest is Test {
         bob = makeAddr("bob");
 
         asset = new MockERC20("USDC", "USDC", 6);
-        teller = new MockTeller(IERC20Minimal(address(asset)));
+        teller = new MockTeller(IERC20(address(asset)));
 
         controller = new TrancheController();
         seniorToken = new SeniorToken();
@@ -122,13 +122,13 @@ contract TrancheControllerTest is Test {
 
         vm.startPrank(alice);
         asset.approve(address(controller), 10e6);
-        vm.expectRevert(Pausable.PausedError.selector);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
         controller.depositSenior(10e6, alice);
         vm.stopPrank();
 
         vm.startPrank(alice);
         seniorToken.approve(address(controller), 50e6);
-        vm.expectRevert(Pausable.PausedError.selector);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
         controller.redeemSenior(50e6, alice);
         vm.stopPrank();
 
@@ -139,12 +139,16 @@ contract TrancheControllerTest is Test {
 
     function testRoleChecks() public {
         vm.startPrank(alice);
-        vm.expectRevert(abi.encodeWithSelector(AccessControl.MissingRole.selector, alice, controller.GUARDIAN_ROLE()));
+        vm.expectRevert(
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, alice, controller.GUARDIAN_ROLE())
+        );
         controller.pause();
         vm.stopPrank();
 
         vm.startPrank(bob);
-        vm.expectRevert(abi.encodeWithSelector(AccessControl.MissingRole.selector, bob, controller.OPERATOR_ROLE()));
+        vm.expectRevert(
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, bob, controller.OPERATOR_ROLE())
+        );
         controller.setSeniorRatePerSecondWad(1);
         vm.stopPrank();
     }

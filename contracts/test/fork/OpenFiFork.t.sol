@@ -3,7 +3,7 @@ pragma solidity ^0.8.21;
 
 import "forge-std/Test.sol";
 
-import {IERC20Minimal} from "../../src/interfaces/IERC20Minimal.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IOpenFiPool} from "../../src/interfaces/IOpenFiPool.sol";
 import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
 
@@ -25,7 +25,7 @@ contract OpenFiForkTest is Test {
 
         uint256 amount = 1_000e6;
         deal(USDC, address(this), amount);
-        IERC20Minimal(USDC).approve(POOL, amount);
+        IERC20(USDC).approve(POOL, amount);
 
         (bool ok,) = POOL.call(OpenFiCallBuilder.supplyCalldata(USDC, amount, address(this)));
         assertTrue(ok, "supply failed");
@@ -33,7 +33,7 @@ contract OpenFiForkTest is Test {
         (ok,) = POOL.call(OpenFiCallBuilder.withdrawCalldata(USDC, amount, address(this)));
         assertTrue(ok, "withdraw failed");
 
-        uint256 balanceAfter = IERC20Minimal(USDC).balanceOf(address(this));
+        uint256 balanceAfter = IERC20(USDC).balanceOf(address(this));
         assertGe(balanceAfter, amount - 1);
     }
 }

@@ -3,18 +3,17 @@ pragma solidity ^0.8.21;
 
 import {IRateModel} from "../interfaces/IRateModel.sol";
 import {IRefRateProvider} from "../interfaces/IRefRateProvider.sol";
-import {MathUtils} from "../libraries/MathUtils.sol";
-import {Owned} from "../libraries/Owned.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract FixedRateModel is IRateModel, Owned {
+contract FixedRateModel is IRateModel, Ownable {
     error ZeroRate();
 
     uint256 public ratePerSecondWad;
 
     event RateUpdated(uint256 oldRate, uint256 newRate);
 
-    constructor(address owner_, uint256 ratePerSecondWad_) {
-        _initOwner(owner_);
+    constructor(address owner_, uint256 ratePerSecondWad_) Ownable(owner_) {
         ratePerSecondWad = ratePerSecondWad_;
     }
 
@@ -28,7 +27,7 @@ contract FixedRateModel is IRateModel, Owned {
     }
 }
 
-contract CapSafetyRateModel is IRateModel, Owned {
+contract CapSafetyRateModel is IRateModel, Ownable {
     error InvalidSafetyFactor();
 
     uint256 public capRatePerSecondWad;
@@ -39,8 +38,9 @@ contract CapSafetyRateModel is IRateModel, Owned {
     event SafetyFactorUpdated(uint256 oldFactor, uint256 newFactor);
     event RefRateProviderUpdated(address indexed oldProvider, address indexed newProvider);
 
-    constructor(address owner_, address refRateProvider_, uint256 capRatePerSecondWad_, uint256 safetyFactorWad_) {
-        _initOwner(owner_);
+    constructor(address owner_, address refRateProvider_, uint256 capRatePerSecondWad_, uint256 safetyFactorWad_)
+        Ownable(owner_)
+    {
         _setRefRateProvider(refRateProvider_);
         _setCapRate(capRatePerSecondWad_);
         _setSafetyFactor(safetyFactorWad_);
@@ -63,7 +63,7 @@ contract CapSafetyRateModel is IRateModel, Owned {
             return 0;
         }
         uint256 refRate = IRefRateProvider(refRateProvider).getRatePerSecondWad();
-        uint256 adjusted = MathUtils.mulDivDown(refRate, safetyFactorWad, 1e18);
+        uint256 adjusted = Math.mulDiv(refRate, safetyFactorWad, 1e18);
         return adjusted < capRatePerSecondWad ? adjusted : capRatePerSecondWad;
     }
 

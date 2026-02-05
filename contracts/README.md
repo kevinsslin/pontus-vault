@@ -14,6 +14,14 @@ This workspace holds the BoringVault stack integration and tranche wrapper contr
 ```bash
 forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 --no-git
 ```
+This repo vendors the pinned commit in `contracts/lib/boring-vault`; keep it in place for local builds.
+
+**BoringVault Deployment Helpers (Reference Only)**
+- `contracts/lib/boring-vault/script/ArchitectureDeployments/DeployArcticArchitecture.sol`: baseline wiring for BoringVault + accountant + manager/roles.
+- `contracts/lib/boring-vault/script/DeployTeller.s.sol`: teller deployment flow to adapt for Pharos/Atlantic assets.
+- `contracts/lib/boring-vault/script/DeployDecoderAndSanitizer.s.sol`: decoder/allowlist scaffolding (use for OpenFi selectors).
+
+No deploy scripts are run from this repo; we adapt the above patterns into `contracts/script/Deploy.s.sol`.
 
 **Commands**
 ```bash

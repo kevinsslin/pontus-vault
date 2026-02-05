@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import {Owned} from "../libraries/Owned.sol";
-import {Clones} from "../libraries/Clones.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
 interface ITrancheControllerInit {
     function initialize(
@@ -38,7 +38,7 @@ interface ITrancheRegistry {
     function registerProduct(ProductInfo calldata info) external returns (uint256 productId);
 }
 
-contract TrancheFactory is Owned {
+contract TrancheFactory is Ownable {
     error ZeroAddress();
 
     address public immutable controllerImpl;
@@ -65,9 +65,8 @@ contract TrancheFactory is Owned {
         string juniorSymbol;
     }
 
-    constructor(address owner_, address controllerImpl_, address tokenImpl_, address registry_) {
+    constructor(address owner_, address controllerImpl_, address tokenImpl_, address registry_) Ownable(owner_) {
         if (controllerImpl_ == address(0) || tokenImpl_ == address(0)) revert ZeroAddress();
-        _initOwner(owner_);
         controllerImpl = controllerImpl_;
         tokenImpl = tokenImpl_;
         registry = registry_;

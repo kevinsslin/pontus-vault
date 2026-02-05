@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import {AccessControl} from "../libraries/AccessControl.sol";
 import {Initializable} from "../libraries/Initializable.sol";
-import {Pausable} from "../libraries/Pausable.sol";
-import {ReentrancyGuard} from "../libraries/ReentrancyGuard.sol";
-import {MathUtils} from "../libraries/MathUtils.sol";
-import {SafeTransferLib} from "../libraries/SafeTransferLib.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import {IERC20Minimal} from "../interfaces/IERC20Minimal.sol";
 import {IRateModel} from "../interfaces/IRateModel.sol";
 import {ITeller} from "../interfaces/ITeller.sol";
 import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
 
 contract TrancheController is AccessControl, Initializable, Pausable, ReentrancyGuard {
-    using SafeTransferLib for IERC20Minimal;
+    using SafeERC20 for IERC20;
 
     error ZeroAddress();
     error ZeroAmount();
@@ -29,8 +29,8 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
     uint256 public constant WAD = 1e18;
     uint256 public constant BPS = 10_000;
 
-    IERC20Minimal public asset;
-    IERC20Minimal public vaultShares;
+    IERC20 public asset;
+    IERC20 public vaultShares;
     ITeller public teller;
     ITrancheToken public seniorToken;
     ITrancheToken public juniorToken;
@@ -72,9 +72,9 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         if (seniorToken_ == address(0) || juniorToken_ == address(0)) revert ZeroAddress();
         if (maxSeniorRatioBps_ > BPS) revert InvalidBps();
 
-        asset = IERC20Minimal(asset_);
+        asset = IERC20(asset_);
         vault = vault_;
-        vaultShares = IERC20Minimal(vault_);
+        vaultShares = IERC20(vault_);
         teller = ITeller(teller_);
         seniorToken = ITrancheToken(seniorToken_);
         juniorToken = ITrancheToken(juniorToken_);
@@ -83,7 +83,6 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         maxSeniorRatioBps = maxSeniorRatioBps_;
         lastAccrualTs = block.timestamp;
 
-        _initReentrancyGuard();
         _grantRole(DEFAULT_ADMIN_ROLE, operator);
         _grantRole(OPERATOR_ROLE, operator);
         _grantRole(GUARDIAN_ROLE, guardian);
@@ -135,7 +134,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
             return;
         }
 
-        uint256 interest = MathUtils.mulDivDown(D0, r * dt, WAD);
+        uint256 interest = Math.mulDiv(D0, r * dt, WAD);
         seniorDebt = D0 + interest;
         emit Accrued(seniorDebt, dt);
     }
@@ -155,7 +154,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
         if (S0 == 0) return assetsIn;
         if (seniorValue0 == 0) return 0;
-        return MathUtils.mulDivDown(assetsIn, S0, seniorValue0);
+        return Math.mulDiv(assetsIn, S0, seniorValue0);
     }
 
     function previewDepositJunior(uint256 assetsIn) external view returns (uint256 sharesOut) {
@@ -168,7 +167,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
         if (J0 == 0) return assetsIn;
         if (juniorValue0 == 0) return 0;
-        return MathUtils.mulDivDown(assetsIn, J0, juniorValue0);
+        return Math.mulDiv(assetsIn, J0, juniorValue0);
     }
 
     function previewRedeemSenior(uint256 sharesIn) external view returns (uint256 assetsOut) {
@@ -178,7 +177,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         uint256 S0 = seniorToken.totalSupply();
         if (S0 == 0) return 0;
         uint256 seniorValue0 = _seniorValue(V0, D0);
-        return MathUtils.mulDivDown(sharesIn, seniorValue0, S0);
+        return Math.mulDiv(sharesIn, seniorValue0, S0);
     }
 
     function previewRedeemJunior(uint256 sharesIn) external view returns (uint256 assetsOut) {
@@ -188,7 +187,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         uint256 J0 = juniorToken.totalSupply();
         if (J0 == 0) return 0;
         uint256 juniorValue0 = _juniorValue(V0, D0);
-        return MathUtils.mulDivDown(sharesIn, juniorValue0, J0);
+        return Math.mulDiv(sharesIn, juniorValue0, J0);
     }
 
     function depositSenior(uint256 assetsIn, address receiver)
@@ -210,7 +209,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
             sharesOut = assetsIn;
         } else {
             if (seniorValue0 == 0) revert ZeroValue();
-            sharesOut = MathUtils.mulDivDown(assetsIn, S0, seniorValue0);
+            sharesOut = Math.mulDiv(assetsIn, S0, seniorValue0);
         }
 
         _enforceSeniorRatioCap(V0, D0, assetsIn);
@@ -244,7 +243,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         } else {
             uint256 juniorValue0 = _juniorValue(V0, D0);
             if (juniorValue0 == 0) revert ZeroValue();
-            sharesOut = MathUtils.mulDivDown(assetsIn, J0, juniorValue0);
+            sharesOut = Math.mulDiv(assetsIn, J0, juniorValue0);
         }
 
         asset.safeTransferFrom(msg.sender, address(this), assetsIn);
@@ -271,7 +270,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         uint256 seniorValue0 = _seniorValue(V0, D0);
 
         if (S0 == 0) revert ZeroValue();
-        assetsOut = MathUtils.mulDivDown(sharesIn, seniorValue0, S0);
+        assetsOut = Math.mulDiv(sharesIn, seniorValue0, S0);
 
         seniorToken.burnFrom(msg.sender, sharesIn);
         if (assetsOut != 0) {
@@ -298,7 +297,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         uint256 juniorValue0 = _juniorValue(V0, D0);
 
         if (J0 == 0) revert ZeroValue();
-        assetsOut = MathUtils.mulDivDown(sharesIn, juniorValue0, J0);
+        assetsOut = Math.mulDiv(sharesIn, juniorValue0, J0);
 
         juniorToken.burnFrom(msg.sender, sharesIn);
         if (assetsOut != 0) {
@@ -322,7 +321,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         if (r == 0) return D0;
         uint256 dt = block.timestamp - lastAccrualTs;
         if (dt == 0) return D0;
-        uint256 interest = MathUtils.mulDivDown(D0, r * dt, WAD);
+        uint256 interest = Math.mulDiv(D0, r * dt, WAD);
         return D0 + interest;
     }
 
@@ -338,7 +337,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         if (maxSeniorRatioBps == 0) return;
         uint256 V1 = V0 + assetsIn;
         uint256 D1 = D0 + assetsIn;
-        uint256 ratioBps = MathUtils.mulDivDown(D1, BPS, V1);
+        uint256 ratioBps = Math.mulDiv(D1, BPS, V1);
         if (ratioBps > maxSeniorRatioBps) revert MaxSeniorRatioExceeded();
     }
 }

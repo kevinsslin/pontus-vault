@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import {Owned} from "../libraries/Owned.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TrancheRegistry is Owned {
+contract TrancheRegistry is Ownable {
     error NotFactory();
     error ZeroAddress();
 
@@ -34,8 +34,7 @@ contract TrancheRegistry is Owned {
         bytes32 paramsHash
     );
 
-    constructor(address owner_, address factory_) {
-        _initOwner(owner_);
+    constructor(address owner_, address factory_) Ownable(owner_) {
         factory = factory_;
     }
 
