@@ -7,10 +7,15 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import {ERC20} from "../../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
+import {AccountantWithRateProviders} from "../../lib/boring-vault/src/base/Roles/AccountantWithRateProviders.sol";
+
+import {Constants} from "../libraries/Constants.sol";
+import {IBoringVaultTeller} from "../interfaces/IBoringVaultTeller.sol";
 import {IRateModel} from "../interfaces/IRateModel.sol";
-import {ITeller} from "../interfaces/ITeller.sol";
 import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
 
 contract TrancheController is AccessControl, Initializable, Pausable, ReentrancyGuard {
@@ -26,12 +31,23 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
 
-    uint256 public constant WAD = 1e18;
-    uint256 public constant BPS = 10_000;
+    struct InitParams {
+        address asset;
+        address vault;
+        address teller;
+        address accountant;
+        address operator;
+        address guardian;
+        address seniorToken;
+        address juniorToken;
+        uint256 seniorRatePerSecondWad;
+        address rateModel;
+        uint256 maxSeniorRatioBps;
+    }
 
     IERC20 public asset;
-    IERC20 public vaultShares;
-    ITeller public teller;
+    AccountantWithRateProviders public accountant;
+    IBoringVaultTeller public teller;
     ITrancheToken public seniorToken;
     ITrancheToken public juniorToken;
 
@@ -41,6 +57,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
     uint256 public lastAccrualTs;
     uint256 public maxSeniorRatioBps;
     address public vault;
+    uint256 public oneShare;
 
     event Accrued(uint256 newSeniorDebt, uint256 dt);
     event SeniorRateUpdated(uint256 oldRate, uint256 newRate);
@@ -53,39 +70,48 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
     event SeniorRedeemed(address indexed caller, address indexed receiver, uint256 shares, uint256 assets);
     event JuniorRedeemed(address indexed caller, address indexed receiver, uint256 shares, uint256 assets);
 
-    function initialize(
-        address asset_,
-        address vault_,
-        address teller_,
-        address operator,
-        address guardian,
-        address seniorToken_,
-        address juniorToken_,
-        uint256 seniorRatePerSecondWad_,
-        address rateModel_,
-        uint256 maxSeniorRatioBps_
-    ) external initializer {
-        if (asset_ == address(0) || vault_ == address(0) || teller_ == address(0)) {
+    function initialize(InitParams calldata params) external initializer {
+        _validateInit(params);
+        _setCore(params);
+        _setRates(params);
+        _setRoles(params);
+    }
+
+    function _validateInit(InitParams calldata params) internal pure {
+        if (
+            params.asset == address(0) ||
+            params.vault == address(0) ||
+            params.teller == address(0) ||
+            params.accountant == address(0)
+        ) {
             revert ZeroAddress();
         }
-        if (operator == address(0) || guardian == address(0)) revert ZeroAddress();
-        if (seniorToken_ == address(0) || juniorToken_ == address(0)) revert ZeroAddress();
-        if (maxSeniorRatioBps_ > BPS) revert InvalidBps();
+        if (params.operator == address(0) || params.guardian == address(0)) revert ZeroAddress();
+        if (params.seniorToken == address(0) || params.juniorToken == address(0)) revert ZeroAddress();
+        if (params.maxSeniorRatioBps > Constants.BPS) revert InvalidBps();
+    }
 
-        asset = IERC20(asset_);
-        vault = vault_;
-        vaultShares = IERC20(vault_);
-        teller = ITeller(teller_);
-        seniorToken = ITrancheToken(seniorToken_);
-        juniorToken = ITrancheToken(juniorToken_);
-        seniorRatePerSecondWad = seniorRatePerSecondWad_;
-        rateModel = rateModel_;
-        maxSeniorRatioBps = maxSeniorRatioBps_;
+    function _setCore(InitParams calldata params) internal {
+        asset = IERC20(params.asset);
+        vault = params.vault;
+        oneShare = 10 ** IERC20Metadata(params.vault).decimals();
+        teller = IBoringVaultTeller(params.teller);
+        accountant = AccountantWithRateProviders(params.accountant);
+        seniorToken = ITrancheToken(params.seniorToken);
+        juniorToken = ITrancheToken(params.juniorToken);
         lastAccrualTs = block.timestamp;
+    }
 
-        _grantRole(DEFAULT_ADMIN_ROLE, operator);
-        _grantRole(OPERATOR_ROLE, operator);
-        _grantRole(GUARDIAN_ROLE, guardian);
+    function _setRates(InitParams calldata params) internal {
+        seniorRatePerSecondWad = params.seniorRatePerSecondWad;
+        rateModel = params.rateModel;
+        maxSeniorRatioBps = params.maxSeniorRatioBps;
+    }
+
+    function _setRoles(InitParams calldata params) internal {
+        _grantRole(DEFAULT_ADMIN_ROLE, params.operator);
+        _grantRole(OPERATOR_ROLE, params.operator);
+        _grantRole(GUARDIAN_ROLE, params.guardian);
     }
 
     function pause() external onlyRole(GUARDIAN_ROLE) {
@@ -111,11 +137,11 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
     function setTeller(address newTeller) external onlyRole(OPERATOR_ROLE) {
         if (newTeller == address(0)) revert ZeroAddress();
         emit TellerUpdated(address(teller), newTeller);
-        teller = ITeller(newTeller);
+        teller = IBoringVaultTeller(newTeller);
     }
 
     function setMaxSeniorRatioBps(uint256 newRatioBps) external onlyRole(OPERATOR_ROLE) {
-        if (newRatioBps > BPS) revert InvalidBps();
+        if (newRatioBps > Constants.BPS) revert InvalidBps();
         emit MaxSeniorRatioUpdated(maxSeniorRatioBps, newRatioBps);
         maxSeniorRatioBps = newRatioBps;
     }
@@ -134,15 +160,17 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
             return;
         }
 
-        uint256 interest = Math.mulDiv(D0, r * dt, WAD);
+        uint256 interest = Math.mulDiv(D0, r, Constants.WAD) * dt;
         seniorDebt = D0 + interest;
         emit Accrued(seniorDebt, dt);
     }
 
     function previewV() public view returns (uint256) {
-        uint256 shares = vaultShares.balanceOf(address(this));
+        uint256 shares = IERC20(vault).balanceOf(address(this));
         if (shares == 0) return 0;
-        return teller.previewRedeem(shares);
+        uint256 rate = accountant.getRateInQuoteSafe(ERC20(address(asset)));
+        if (rate == 0) return 0;
+        return Math.mulDiv(shares, rate, oneShare);
     }
 
     function previewDepositSenior(uint256 assetsIn) external view returns (uint256 sharesOut) {
@@ -216,7 +244,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
         asset.safeTransferFrom(msg.sender, address(this), assetsIn);
         asset.forceApprove(address(teller), assetsIn);
-        teller.deposit(assetsIn, address(this));
+        teller.deposit(asset, assetsIn, 0);
 
         seniorDebt = D0 + assetsIn;
         seniorToken.mint(receiver, sharesOut);
@@ -248,7 +276,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
         asset.safeTransferFrom(msg.sender, address(this), assetsIn);
         asset.forceApprove(address(teller), assetsIn);
-        teller.deposit(assetsIn, address(this));
+        teller.deposit(asset, assetsIn, 0);
 
         juniorToken.mint(receiver, sharesOut);
         emit JuniorDeposited(msg.sender, receiver, assetsIn, sharesOut);
@@ -274,8 +302,9 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
         seniorToken.burnFrom(msg.sender, sharesIn);
         if (assetsOut != 0) {
+            uint256 shareAmount = _sharesForAssets(assetsOut);
             seniorDebt = D0 - assetsOut;
-            teller.withdraw(assetsOut, receiver);
+            teller.bulkWithdraw(asset, shareAmount, assetsOut, receiver);
         }
 
         emit SeniorRedeemed(msg.sender, receiver, sharesIn, assetsOut);
@@ -301,7 +330,8 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
         juniorToken.burnFrom(msg.sender, sharesIn);
         if (assetsOut != 0) {
-            teller.withdraw(assetsOut, receiver);
+            uint256 shareAmount = _sharesForAssets(assetsOut);
+            teller.bulkWithdraw(asset, shareAmount, assetsOut, receiver);
         }
 
         emit JuniorRedeemed(msg.sender, receiver, sharesIn, assetsOut);
@@ -321,7 +351,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         if (r == 0) return D0;
         uint256 dt = block.timestamp - lastAccrualTs;
         if (dt == 0) return D0;
-        uint256 interest = Math.mulDiv(D0, r * dt, WAD);
+        uint256 interest = Math.mulDiv(D0, r, Constants.WAD) * dt;
         return D0 + interest;
     }
 
@@ -337,7 +367,17 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         if (maxSeniorRatioBps == 0) return;
         uint256 V1 = V0 + assetsIn;
         uint256 D1 = D0 + assetsIn;
-        uint256 ratioBps = Math.mulDiv(D1, BPS, V1);
+        uint256 ratioBps = Math.mulDiv(D1, Constants.BPS, V1);
         if (ratioBps > maxSeniorRatioBps) revert MaxSeniorRatioExceeded();
+    }
+
+    function _sharesForAssets(uint256 assets) internal view returns (uint256) {
+        uint256 rate = accountant.getRateInQuoteSafe(ERC20(address(asset)));
+        if (rate == 0) return 0;
+        uint256 shares = Math.mulDiv(assets, oneShare, rate);
+        if (Math.mulDiv(shares, rate, oneShare) < assets) {
+            shares += 1;
+        }
+        return shares;
     }
 }

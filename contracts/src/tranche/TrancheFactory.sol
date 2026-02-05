@@ -5,18 +5,21 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
 interface ITrancheControllerInit {
-    function initialize(
-        address asset,
-        address vault,
-        address teller,
-        address operator,
-        address guardian,
-        address seniorToken,
-        address juniorToken,
-        uint256 seniorRatePerSecondWad,
-        address rateModel,
-        uint256 maxSeniorRatioBps
-    ) external;
+    struct InitParams {
+        address asset;
+        address vault;
+        address teller;
+        address accountant;
+        address operator;
+        address guardian;
+        address seniorToken;
+        address juniorToken;
+        uint256 seniorRatePerSecondWad;
+        address rateModel;
+        uint256 maxSeniorRatioBps;
+    }
+
+    function initialize(InitParams calldata params) external;
 }
 
 interface ITrancheTokenInit {
@@ -30,6 +33,7 @@ interface ITrancheRegistry {
         address juniorToken;
         address vault;
         address teller;
+        address accountant;
         address manager;
         address asset;
         bytes32 paramsHash;
@@ -52,6 +56,7 @@ contract TrancheFactory is Ownable {
         address asset;
         address vault;
         address teller;
+        address accountant;
         address manager;
         address operator;
         address guardian;
@@ -92,16 +97,19 @@ contract TrancheFactory is Ownable {
 
         ITrancheControllerInit(controller)
             .initialize(
-                config.asset,
-                config.vault,
-                config.teller,
-                config.operator,
-                config.guardian,
-                seniorToken,
-                juniorToken,
-                config.seniorRatePerSecondWad,
-                config.rateModel,
-                config.maxSeniorRatioBps
+                ITrancheControllerInit.InitParams({
+                    asset: config.asset,
+                    vault: config.vault,
+                    teller: config.teller,
+                    accountant: config.accountant,
+                    operator: config.operator,
+                    guardian: config.guardian,
+                    seniorToken: seniorToken,
+                    juniorToken: juniorToken,
+                    seniorRatePerSecondWad: config.seniorRatePerSecondWad,
+                    rateModel: config.rateModel,
+                    maxSeniorRatioBps: config.maxSeniorRatioBps
+                })
             );
 
         productId = ITrancheRegistry(registry)
@@ -112,6 +120,7 @@ contract TrancheFactory is Ownable {
                     juniorToken: juniorToken,
                     vault: config.vault,
                     teller: config.teller,
+                    accountant: config.accountant,
                     manager: config.manager,
                     asset: config.asset,
                     paramsHash: config.paramsHash

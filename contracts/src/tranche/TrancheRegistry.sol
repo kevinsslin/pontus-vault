@@ -13,6 +13,7 @@ contract TrancheRegistry is Ownable {
         address juniorToken;
         address vault;
         address teller;
+        address accountant;
         address manager;
         address asset;
         bytes32 paramsHash;
@@ -29,6 +30,7 @@ contract TrancheRegistry is Ownable {
         address juniorToken,
         address indexed vault,
         address teller,
+        address accountant,
         address manager,
         address asset,
         bytes32 paramsHash
@@ -59,6 +61,7 @@ contract TrancheRegistry is Ownable {
             info.juniorToken,
             info.vault,
             info.teller,
+            info.accountant,
             info.manager,
             info.asset,
             info.paramsHash
