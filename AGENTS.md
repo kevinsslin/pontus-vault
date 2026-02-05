@@ -3,6 +3,10 @@
 ## Purpose
 Keep this repo consistent and maintainable: clear structure, pinned tooling, and minimal surprises.
 
+## Naming
+- Pontus Vault = PTV (core product).
+- Indexer = PTVI.
+
 ## Layout
 - `apps/` deployable apps and services (`apps/web`, `apps/indexer`).
 - `packages/` shared code (`packages/shared`).
@@ -22,6 +26,8 @@ Keep this repo consistent and maintainable: clear structure, pinned tooling, and
 - Secrets are never committed; use `.env.example`.
 - Shared chain constants live in `packages/shared/src/index.ts`.
 - BoringVault stays as a Foundry dependency in `contracts/lib/boring-vault`.
+- If repo structure changes, update `README.md` and `pnpm-workspace.yaml`.
+- Keep changes scoped and avoid large refactors unless required.
 
 ## Project-Specific Notes
 - `apps/web`: Next.js App Router. Keep API routes thin.
