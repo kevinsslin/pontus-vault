@@ -3,9 +3,6 @@
 ## Purpose
 Keep this repo consistent and maintainable: clear structure, pinned tooling, and minimal surprises.
 
-## Naming
-- Use PTI consistently for internal naming and package scope.
-
 ## Layout
 - `apps/` deployable apps and services (`apps/web`, `apps/indexer`).
 - `packages/` shared code (`packages/shared`).

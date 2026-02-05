@@ -1,6 +1,13 @@
-# Pontus Vault (PTI)
+# Pontus Vault
 
-Hackathon monorepo for Pharos Tranche Vault Infra: BoringVault-based contracts, Goldsky indexer, and a Next.js app with Dynamic + Supabase metadata.
+Pontus Vault is tranche vault infrastructure on Pharos. It packages yield strategies into tiered vault products that are easy to understand, integrate, and distribute.
+
+**Overview**
+- Tiered risk/return products backed by the same strategy pool
+- A consistent vault interface for pricing, performance, and redemptions
+- A strategy library spanning DeFi and real-world yield (treasuries, money markets, private credit, market-neutral, etc.)
+- Yield that accrues into value automatically (no “claim yield” UX)
+- White-label distribution for wallets, exchanges, and fintechs
 
 **Stack**
 - Frontend: Next.js (App Router)
