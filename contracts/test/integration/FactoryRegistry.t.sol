@@ -20,8 +20,8 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
     TrancheRegistry internal registry;
     TrancheFactory internal factory;
 
-    function setUp() public {
-        _setUpIntegrationCore();
+    function setUp() public override {
+        super.setUp();
 
         owner = makeAddr("owner");
         manager = makeAddr("manager");

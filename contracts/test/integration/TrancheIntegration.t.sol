@@ -5,8 +5,8 @@ import {IntegrationTest} from "./IntegrationTest.sol";
 import {TestConstants} from "../utils/Constants.sol";
 
 contract TrancheIntegrationTest is IntegrationTest {
-    function setUp() public {
-        _setUpIntegrationCore();
+    function setUp() public override {
+        super.setUp();
         _wireControllerToBoringVault(address(0));
         _seedBalances(TestConstants.DEFAULT_INITIAL_BALANCE);
     }

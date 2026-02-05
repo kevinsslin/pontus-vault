@@ -34,6 +34,12 @@ abstract contract BaseTest is Test {
     TrancheToken internal seniorToken;
     TrancheToken internal juniorToken;
 
+    function setUp() public virtual {
+        _initActors();
+        _initRules();
+        _deployCore();
+    }
+
     function _initActors() internal {
         operator = makeAddr("operator");
         guardian = makeAddr("guardian");

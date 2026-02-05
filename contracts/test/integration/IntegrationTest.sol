@@ -21,10 +21,8 @@ abstract contract IntegrationTest is BaseTest {
     RolesAuthority internal rolesAuthority;
     WETH internal weth;
 
-    function _setUpIntegrationCore() internal {
-        _initActors();
-        _initRules();
-        _deployCore();
+    function setUp() public virtual override {
+        super.setUp();
         _deployBoringVaultStack();
     }
 
