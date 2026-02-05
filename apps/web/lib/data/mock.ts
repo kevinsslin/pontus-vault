@@ -26,12 +26,14 @@ export const MOCK_VAULTS: VaultRecord[] = [
     },
     metrics: {
       tvl: "12500000000000",
+      seniorApyBps: "835",
+      juniorApyBps: "1725",
       seniorPrice: "1005000000000000000",
       juniorPrice: "1090000000000000000",
       seniorDebt: "8000000000000",
       seniorSupply: "8000000000000",
       juniorSupply: "4000000000000",
-      updatedAt: "1738790400",
+      updatedAt: "1762327200",
     },
   },
   {
@@ -59,6 +61,8 @@ export const MOCK_VAULTS: VaultRecord[] = [
     },
     metrics: {
       tvl: null,
+      seniorApyBps: "640",
+      juniorApyBps: "1310",
       seniorPrice: null,
       juniorPrice: null,
       seniorDebt: null,
@@ -92,6 +96,8 @@ export const MOCK_VAULTS: VaultRecord[] = [
     },
     metrics: {
       tvl: null,
+      seniorApyBps: "980",
+      juniorApyBps: "2180",
       seniorPrice: null,
       juniorPrice: null,
       seniorDebt: null,

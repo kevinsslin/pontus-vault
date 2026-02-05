@@ -1,9 +1,9 @@
 # Pontus Vault
 
-Pontus Vault is tranche vault infrastructure on Pharos. It packages yield strategies into tiered vault products that are easy to understand, integrate, and distribute.
+Pontus Vault is tranche vault infrastructure on Pharos. It packages yield strategies into tiered vault structures that are easy to understand, integrate, and distribute.
 
 **Overview**
-- Tiered risk/return products backed by the same strategy pool
+- Tiered risk/return vault sleeves backed by the same strategy pool
 - A consistent vault interface for pricing, performance, and redemptions
 - A strategy library spanning DeFi and real-world yield (treasuries, money markets, private credit, market-neutral, etc.)
 - Yield that accrues into value automatically (no “claim yield” UX)

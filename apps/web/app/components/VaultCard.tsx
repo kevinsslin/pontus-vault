@@ -1,6 +1,13 @@
 import Link from "next/link";
 import type { VaultRecord } from "@pti/shared";
-import { formatTimestamp, formatUsd, formatWad } from "../../lib/format";
+import {
+  apySpreadBps,
+  formatBps,
+  formatRelativeTimestamp,
+  formatUsd,
+  formatWad,
+} from "../../lib/format";
+import TokenBadge from "./TokenBadge";
 
 function seniorRatioBps(vault: VaultRecord): bigint | null {
   if (!vault.metrics.tvl || !vault.metrics.seniorDebt) return null;
@@ -21,17 +28,19 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
   const ratioBps = seniorRatioBps(vault);
   const ratioPct = ratioBps === null ? null : Number(ratioBps) / 100;
   const ratioWidth = ratioPct === null ? 0 : Math.max(0, Math.min(ratioPct, 100));
+  const juniorPct = ratioPct === null ? null : Math.max(0, 100 - ratioPct);
+  const updatedLabel = formatRelativeTimestamp(vault.metrics.updatedAt);
 
   return (
     <article className="card vault-card">
       <div className="vault-card__top">
         <span className={`badge ${isLive ? "badge--live" : "badge--soon"}`}>{status}</span>
-        <span className="chip">{vault.assetSymbol}</span>
+        <TokenBadge symbol={vault.assetSymbol} />
       </div>
 
       <div>
         <h3>{vault.name}</h3>
-        <p className="muted">{vault.uiConfig.summary ?? "Structured yield product."}</p>
+        <p className="muted">{vault.uiConfig.summary ?? "Structured yield vault."}</p>
       </div>
 
       <div className="card-actions">
@@ -42,6 +51,23 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
             {tag}
           </span>
         ))}
+      </div>
+
+      <div className="yield-grid">
+        <div className="yield-item yield-item--senior">
+          <span className="stat-label">Senior APY</span>
+          <span className="yield-value">{formatBps(vault.metrics.seniorApyBps ?? null)}</span>
+        </div>
+        <div className="yield-item yield-item--junior">
+          <span className="stat-label">Junior APY</span>
+          <span className="yield-value">{formatBps(vault.metrics.juniorApyBps ?? null)}</span>
+        </div>
+        <div className="yield-item">
+          <span className="stat-label">Spread</span>
+          <span className="yield-value">
+            {apySpreadBps(vault.metrics.seniorApyBps ?? null, vault.metrics.juniorApyBps ?? null)}
+          </span>
+        </div>
       </div>
 
       <div className="stat-grid">
@@ -61,13 +87,17 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
 
       <div className="risk-meter">
         <div className="risk-meter__labels">
-          <span className="stat-label">Senior Coverage</span>
+          <span className="stat-label">Tranche Mix</span>
           <span className="stat-value">{ratioPct === null ? "—" : `${ratioPct.toFixed(2)}%`}</span>
         </div>
         <div className="risk-meter__track" aria-hidden="true">
           <span className="risk-meter__fill" style={{ width: `${ratioWidth}%` }} />
         </div>
-        <p className="muted">Updated {formatTimestamp(vault.metrics.updatedAt)}</p>
+        <div className="risk-meter__split">
+          <span>Senior {ratioPct === null ? "—" : `${ratioPct.toFixed(2)}%`}</span>
+          <span>Junior {juniorPct === null ? "—" : `${juniorPct.toFixed(2)}%`}</span>
+        </div>
+        <p className="micro">Updated {updatedLabel}</p>
       </div>
 
       <div className="card-actions">

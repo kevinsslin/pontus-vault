@@ -19,6 +19,8 @@ export type VaultUiConfig = z.infer<typeof VaultUiConfigSchema>;
 
 export const VaultMetricsSchema = z.object({
   tvl: z.string().nullable(),
+  seniorApyBps: z.string().nullable().optional(),
+  juniorApyBps: z.string().nullable().optional(),
   seniorPrice: z.string().nullable(),
   juniorPrice: z.string().nullable(),
   seniorDebt: z.string().nullable(),
@@ -33,6 +35,8 @@ export const IndexerVaultSchema = z.object({
   controller: z.string().nullable().optional(),
   vaultId: z.string().nullable().optional(),
   tvl: z.string().nullable().optional(),
+  seniorApyBps: z.string().nullable().optional(),
+  juniorApyBps: z.string().nullable().optional(),
   seniorPrice: z.string().nullable().optional(),
   juniorPrice: z.string().nullable().optional(),
   seniorDebt: z.string().nullable().optional(),

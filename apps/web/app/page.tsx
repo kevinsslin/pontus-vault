@@ -1,15 +1,57 @@
+import Image from "next/image";
 import Link from "next/link";
 import VaultCard from "./components/VaultCard";
 import { getVaults } from "../lib/data/vaults";
 import { formatUsd, formatWad } from "../lib/format";
 
-const PARTNER_LOGOS = [
-  { mark: "OF", name: "OpenFi" },
-  { mark: "PL", name: "Plume" },
-  { mark: "ON", name: "Ondo" },
-  { mark: "SU", name: "Superstate" },
-  { mark: "CF", name: "Centrifuge" },
-  { mark: "SR", name: "Securitize" },
+const PARTNERS = [
+  { name: "OpenFi", logo: "/partners/openfi.png", href: "https://openfi.xyz" },
+  { name: "Plume", logo: "/partners/plume.png", href: "https://plumenetwork.xyz" },
+  { name: "Ondo", logo: "/partners/ondo.png", href: "https://ondo.finance" },
+  { name: "Superstate", logo: "/partners/superstate.png", href: "https://superstate.co" },
+  { name: "Centrifuge", logo: "/partners/centrifuge.png", href: "https://centrifuge.io" },
+  { name: "Securitize", logo: "/partners/securitize.png", href: "https://securitize.io" },
+];
+
+const WORKFLOW_STEPS = [
+  {
+    step: "01",
+    title: "Open App",
+    body: "Connect your wallet and load your allocator profile.",
+  },
+  {
+    step: "02",
+    title: "Vault Discovery",
+    body: "Compare live vaults by APY, tranche mix, and route quality.",
+  },
+  {
+    step: "03",
+    title: "Tranche Execution",
+    body: "Select senior or junior lane and execute deposit or redeem.",
+  },
+  {
+    step: "04",
+    title: "Portfolio Intelligence",
+    body: "Monitor NAV, APY spread, and allocation shifts in one view.",
+  },
+];
+
+const INVESTOR_LANES = [
+  {
+    title: "Senior Focus",
+    subtitle: "Capital stability",
+    body: "Target lower volatility with tighter downside exposure.",
+  },
+  {
+    title: "Balanced Split",
+    subtitle: "Income optimization",
+    body: "Blend senior carry with junior upside in one allocation policy.",
+  },
+  {
+    title: "Junior Focus",
+    subtitle: "Return acceleration",
+    body: "Take higher beta against structured downside boundaries.",
+  },
 ];
 
 function totalTvl(vaults: Awaited<ReturnType<typeof getVaults>>): string {
@@ -34,6 +76,18 @@ function averageSeniorPrice(vaults: Awaited<ReturnType<typeof getVaults>>): stri
   return (total / BigInt(prices.length)).toString();
 }
 
+function apyBand(vaults: Awaited<ReturnType<typeof getVaults>>): string {
+  const rates = vaults.flatMap((vault) => {
+    const values = [vault.metrics.seniorApyBps, vault.metrics.juniorApyBps];
+    return values.filter((value): value is string => Boolean(value)).map((value) => Number(value));
+  });
+
+  if (rates.length === 0) return "—";
+  const min = Math.min(...rates);
+  const max = Math.max(...rates);
+  return `${(min / 100).toFixed(2)}% - ${(max / 100).toFixed(2)}%`;
+}
+
 export default async function HomePage() {
   const vaults = await getVaults();
   const featured = vaults.slice(0, 3);
@@ -41,25 +95,26 @@ export default async function HomePage() {
   const tvl = totalTvl(vaults);
   const avgSenior = averageSeniorPrice(liveVaults);
   const avgSeniorLabel = avgSenior ? `${formatWad(avgSenior)}x` : "—";
+  const band = apyBand(liveVaults);
 
   return (
     <main className="page">
       <section className="hero reveal">
         <div className="hero__content">
           <p className="eyebrow">Pontus Vault</p>
-          <h1>One click to structured yield across DeFi and RWA routes.</h1>
+          <h1>Structured yield vaults for professional capital on Pharos.</h1>
           <p className="muted">
-            Pontus packages institutional-style tranche products for Pharos: senior sleeves for
-            capital stability, junior sleeves for upside capture, and transparent accounting from
-            indexer to execution.
+            Pontus gives allocators a clean way to split exposure into senior and junior tranches,
+            route capital into curated DeFi and RWA channels, and track performance with one
+            coherent data plane.
           </p>
           <div className="hero__line" />
           <div className="card-actions">
             <Link className="button" href="/discover">
-              Start discovery
+              Open app
             </Link>
-            <Link className="button button--ghost" href="/portfolio">
-              Open portfolio
+            <Link className="button button--ghost" href="/discover">
+              Go to vault discovery
             </Link>
           </div>
 
@@ -70,21 +125,33 @@ export default async function HomePage() {
             </div>
             <div className="trust-item">
               <span className="label">Execution model</span>
-              <span className="value">Tranche-native routing</span>
+              <span className="value">Tranche-native vault routing</span>
             </div>
             <div className="trust-item">
               <span className="label">Data plane</span>
-              <span className="value">Goldsky + Supabase</span>
+              <span className="value">MonkVault Data + Goldsky</span>
             </div>
           </div>
 
           <div className="partner-marquee" aria-label="Ecosystem integrations">
             <div className="partner-track">
-              {[...PARTNER_LOGOS, ...PARTNER_LOGOS].map((partner, index) => (
-                <span className="partner-pill" key={`${partner.name}-${index}`}>
-                  <span className="partner-mark">{partner.mark}</span>
+              {[...PARTNERS, ...PARTNERS].map((partner, index) => (
+                <a
+                  className="partner-pill"
+                  href={partner.href}
+                  key={`${partner.name}-${index}`}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Image
+                    src={partner.logo}
+                    alt={`${partner.name} logo`}
+                    width={22}
+                    height={22}
+                    className="partner-logo"
+                  />
                   {partner.name}
-                </span>
+                </a>
               ))}
             </div>
           </div>
@@ -99,7 +166,7 @@ export default async function HomePage() {
               <span className="value">{formatUsd(tvl)}</span>
             </div>
             <div className="kpi">
-              <span className="label">Live products</span>
+              <span className="label">Live vaults</span>
               <span className="value">{liveVaults.length}</span>
             </div>
             <div className="kpi">
@@ -107,60 +174,63 @@ export default async function HomePage() {
               <span className="value">{avgSeniorLabel}</span>
             </div>
             <div className="kpi">
-              <span className="label">Upcoming</span>
-              <span className="value">{vaults.length - liveVaults.length}</span>
+              <span className="label">Expected APY band</span>
+              <span className="value">{band}</span>
             </div>
           </div>
-          <p className="muted">Indexing, metadata, and execution paths are kept interface-consistent.</p>
+          <p className="muted">
+            Discovery, execution, and reporting keep the same schema from indexer to UI.
+          </p>
         </aside>
+      </section>
+
+      <section className="section reveal delay-1">
+        <div className="section-title">
+          <h2>Operating model</h2>
+        </div>
+        <div className="grid grid-4">
+          {WORKFLOW_STEPS.map((item) => (
+            <article className="card card--spotlight ops-card" key={item.step}>
+              <span className="ops-step">{item.step}</span>
+              <h3>{item.title}</h3>
+              <p className="muted">{item.body}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="section reveal delay-2">
         <div className="section-title">
-          <h2>How Pontus works</h2>
+          <h2>Execution architecture</h2>
         </div>
-        <div className="grid grid-3">
-          <div className="card card--spotlight">
-            <h3>Design tranches</h3>
-            <p className="muted">
-              Compose senior and junior sleeves with explicit caps, waterfalls, and policy labels.
-            </p>
-          </div>
-          <div className="card card--spotlight">
-            <h3>Route capital</h3>
-            <p className="muted">
-              Allocate through allowlisted paths such as OpenFi lending and future RWA adapters.
-            </p>
-          </div>
-          <div className="card card--spotlight">
-            <h3>Read performance</h3>
-            <p className="muted">
-              Consume event snapshots, hourly and daily aggregates, and portfolio-ready metrics.
-            </p>
-          </div>
-        </div>
+        <article className="card architecture">
+          <div className="arch-node">Wallet + Policy</div>
+          <span className="arch-arrow">→</span>
+          <div className="arch-node">Vault Discovery</div>
+          <span className="arch-arrow">→</span>
+          <div className="arch-node">Tranche Controller</div>
+          <span className="arch-arrow">→</span>
+          <div className="arch-node">OpenFi / RWA Routes</div>
+        </article>
       </section>
 
       <section className="section reveal delay-2">
-        <div className="insight-band">
-          <div>
-            <p className="eyebrow">Why it matters</p>
-            <h3>Institutional structure, onchain speed.</h3>
-            <p className="muted">
-              Pontus turns complex routing and tranche accounting into a clean vault interface your
-              treasury team can operate without bespoke tooling.
-            </p>
-          </div>
-          <div className="insight-band__stats">
-            <div className="kpi">
-              <span className="label">Composable routes</span>
-              <span className="value">OpenFi + RWA</span>
-            </div>
-            <div className="kpi">
-              <span className="label">Risk layers</span>
-              <span className="value">Senior / Junior</span>
-            </div>
-          </div>
+        <div className="section-title">
+          <h2>Choose your lane</h2>
+        </div>
+        <div className="grid grid-3">
+          {INVESTOR_LANES.map((lane) => (
+            <article className="card" key={lane.title}>
+              <p className="eyebrow">{lane.subtitle}</p>
+              <h3>{lane.title}</h3>
+              <p className="muted">{lane.body}</p>
+              <div className="card-actions">
+                <Link className="button button--ghost" href="/discover">
+                  Enter discovery
+                </Link>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 

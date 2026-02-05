@@ -3,8 +3,13 @@ import { notFound } from "next/navigation";
 import { getVaultById } from "../../../../lib/data/vaults";
 import VaultActionUnavailable from "../../../components/VaultActionUnavailable";
 
-export default async function RedeemPage({ params }: { params: { id: string } }) {
-  const vault = await getVaultById(params.id);
+export default async function RedeemPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const vault = await getVaultById(id);
   if (!vault) {
     notFound();
   }

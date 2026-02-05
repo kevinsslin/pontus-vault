@@ -104,6 +104,8 @@ async function getLiveVaults(): Promise<LiveVaultsResult> {
       uiConfig: normalizeVaultUiConfig(row.ui_config),
       metrics: {
         tvl: metrics?.tvl ?? null,
+        seniorApyBps: metrics?.seniorApyBps ?? null,
+        juniorApyBps: metrics?.juniorApyBps ?? null,
         seniorPrice: metrics?.seniorPrice ?? null,
         juniorPrice: metrics?.juniorPrice ?? null,
         seniorDebt: metrics?.seniorDebt ?? null,

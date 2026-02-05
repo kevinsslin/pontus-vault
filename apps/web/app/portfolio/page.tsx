@@ -12,7 +12,7 @@ export default function PortfolioPage() {
         <h1>Cross-vault tranche exposure in one ledger.</h1>
         <p className="muted">
           Track senior stability sleeves and junior upside sleeves with consistent
-          accounting across all Pontus products.
+          accounting across all Pontus vaults.
         </p>
         <div className="card-actions">
           <span className="chip">Positions: {positionCount}</span>
@@ -41,7 +41,7 @@ export default function PortfolioPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Product</th>
+                <th>Vault</th>
                 <th>Tranche</th>
                 <th>Shares</th>
                 <th>Value</th>
@@ -62,7 +62,7 @@ export default function PortfolioPage() {
           </table>
           <div className="card-actions">
             <Link className="button" href="/discover">
-              Discover products
+              Discover vaults
             </Link>
             <Link className="button button--ghost" href="/discover">
               Add exposure
