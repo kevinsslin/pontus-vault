@@ -18,7 +18,7 @@ This workspace holds the BoringVault stack integration and tranche wrapper contr
 forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 --no-git
 ```
 This repo vendors the pinned commit in `contracts/lib/boring-vault`; keep it in place for local builds.
-`script/install-deps.sh` also applies a deterministic teller-import patch needed for Foundry coverage/lint compatibility.
+`script/install-deps.sh` applies a minimal, deterministic teller import patch because Foundry cannot safely remap BoringVault's `src/...` imports in this workspace.
 
 **BoringVault Deployment Helpers (Reference Only)**
 - `contracts/lib/boring-vault/script/ArchitectureDeployments/DeployArcticArchitecture.sol`: baseline wiring for BoringVault + accountant + manager/roles.

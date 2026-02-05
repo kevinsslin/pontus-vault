@@ -3,17 +3,25 @@ set -euo pipefail
 
 # Foundry dependencies are vendored locally but intentionally gitignored.
 # Keep installs pinned so CI and local environments resolve the same code.
-forge install foundry-rs/forge-std@1801b0541f4fda118a10798fd3486bb7051c5dd6 --no-git
-forge install OpenZeppelin/openzeppelin-contracts@v5.5.0 --no-git
-forge install OpenZeppelin/openzeppelin-contracts-upgradeable@v5.5.0 --no-git
-forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 --no-git -j 8
+if [[ ! -d "lib/forge-std" ]]; then
+  forge install foundry-rs/forge-std@1801b0541f4fda118a10798fd3486bb7051c5dd6 --no-git
+fi
 
-# Normalize BoringVault teller imports for Foundry solar coverage/lint compatibility.
+if [[ ! -d "lib/openzeppelin-contracts" ]]; then
+  forge install OpenZeppelin/openzeppelin-contracts@v5.5.0 --no-git
+fi
+
+if [[ ! -d "lib/openzeppelin-contracts-upgradeable" ]]; then
+  forge install OpenZeppelin/openzeppelin-contracts-upgradeable@v5.5.0 --no-git
+fi
+
+if [[ ! -d "lib/boring-vault" ]]; then
+  forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 --no-git -j 8
+fi
+
+# BoringVault's teller file imports "src/..." paths. Foundry cannot safely remap
+# the "src/" prefix in this workspace, so normalize to relative imports.
 teller_file="lib/boring-vault/src/base/Roles/TellerWithMultiAssetSupport.sol"
 if [[ -f "${teller_file}" ]]; then
-  sed -i.bak 's|from "src/base/BoringVault.sol"|from "../BoringVault.sol"|g' "${teller_file}"
-  sed -i.bak 's|from "src/base/Roles/AccountantWithRateProviders.sol"|from "./AccountantWithRateProviders.sol"|g' "${teller_file}"
-  sed -i.bak 's|from "src/interfaces/BeforeTransferHook.sol"|from "../../interfaces/BeforeTransferHook.sol"|g' "${teller_file}"
-  sed -i.bak 's|from "src/interfaces/IPausable.sol"|from "../../interfaces/IPausable.sol"|g' "${teller_file}"
-  rm -f "${teller_file}.bak"
+  perl -0pi -e 's#from "src/base/BoringVault\.sol"#from "../BoringVault.sol"#g; s#from "src/base/Roles/AccountantWithRateProviders\.sol"#from "./AccountantWithRateProviders.sol"#g; s#from "src/interfaces/BeforeTransferHook\.sol"#from "../../interfaces/BeforeTransferHook.sol"#g; s#from "src/interfaces/IPausable\.sol"#from "../../interfaces/IPausable.sol"#g' "${teller_file}"
 fi
