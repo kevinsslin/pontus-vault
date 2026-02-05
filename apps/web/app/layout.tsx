@@ -4,6 +4,7 @@ import { Cormorant_Garamond, Sora } from "next/font/google";
 import SiteHeader from "./components/SiteHeader";
 import SiteFooter from "./components/SiteFooter";
 import AppProviders from "./components/AppProviders";
+import Atmosphere from "./components/Atmosphere";
 
 const displayFont = Cormorant_Garamond({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className={`${displayFont.variable} ${bodyFont.variable}`}>
         <AppProviders>
           <div className="shell">
+            <Atmosphere />
             <SiteHeader />
             {children}
             <SiteFooter />

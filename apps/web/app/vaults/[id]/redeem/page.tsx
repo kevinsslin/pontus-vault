@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getVaultById } from "../../../../lib/data/vaults";
+import VaultActionUnavailable from "../../../components/VaultActionUnavailable";
 
 export default async function RedeemPage({ params }: { params: { id: string } }) {
   const vault = await getVaultById(params.id);
@@ -20,6 +21,15 @@ export default async function RedeemPage({ params }: { params: { id: string } })
         </p>
       </section>
 
+      {!isLive ? (
+        <VaultActionUnavailable
+          vaultId={vault.vaultId}
+          vaultName={vault.name}
+          status={vault.uiConfig.status}
+          routeLabel={vault.uiConfig.routeLabel ?? vault.route}
+          actionLabel="redeem"
+        />
+      ) : (
       <section className="section reveal delay-1">
         <div className="form-layout">
           <form className="card" aria-label="Redeem form">
@@ -45,14 +55,10 @@ export default async function RedeemPage({ params }: { params: { id: string } })
             </div>
 
             <div className="card-actions">
-              <button className={`button ${!isLive ? "button--disabled" : ""}`} type="button" disabled={!isLive}>
+              <button className="button" type="button">
                 Preview output
               </button>
-              <button
-                className={`button button--ghost ${!isLive ? "button--disabled" : ""}`}
-                type="button"
-                disabled={!isLive}
-              >
+              <button className="button button--ghost" type="button">
                 Submit redeem
               </button>
             </div>
@@ -86,6 +92,7 @@ export default async function RedeemPage({ params }: { params: { id: string } })
           </aside>
         </div>
       </section>
+      )}
     </main>
   );
 }

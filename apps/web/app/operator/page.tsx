@@ -10,12 +10,12 @@ export default async function OperatorPage() {
         <p className="eyebrow">Operator</p>
         <h1>Policy console for tranche routing.</h1>
         <p className="muted">
-          Configure route permissions, caps, and safety controls for each product.
+          Configure route permissions, caps, and safety controls for each vault.
           Execution buttons are disabled in this build until live operators are wired.
         </p>
         <div className="card-actions">
-          <span className="chip">Live products: {liveCount}</span>
-          <span className="chip">Total products: {vaults.length}</span>
+          <span className="chip">Live vaults: {liveCount}</span>
+          <span className="chip">Total vaults: {vaults.length}</span>
           <span className="chip">Role: Operator</span>
         </div>
       </section>

@@ -31,6 +31,11 @@ export default async function VaultDetailPage({ params }: { params: { id: string
             </span>
           ))}
         </div>
+        <div className="journey">
+          <span className="chip chip--soft">1. Review vault profile</span>
+          <span className="chip chip--soft">2. Pick tranche side</span>
+          <span className="chip chip--soft">3. Execute deposit or redeem</span>
+        </div>
       </section>
 
       <section className="section reveal delay-1">
@@ -78,28 +83,35 @@ export default async function VaultDetailPage({ params }: { params: { id: string
           </article>
 
           <article className="card">
-            <h3>Actions</h3>
-            <p className="muted">
-              Deposit or redeem by tranche. Action routing is enabled only for LIVE products.
-            </p>
-            <div className="card-actions">
-              <Link
-                className={`button ${!isLive ? "button--disabled" : ""}`}
-                href={isLive ? `/vaults/${vault.vaultId}/deposit` : "#"}
-                aria-disabled={!isLive}
-                tabIndex={isLive ? 0 : -1}
-              >
-                Deposit
-              </Link>
-              <Link
-                className={`button button--ghost ${!isLive ? "button--disabled" : ""}`}
-                href={isLive ? `/vaults/${vault.vaultId}/redeem` : "#"}
-                aria-disabled={!isLive}
-                tabIndex={isLive ? 0 : -1}
-              >
-                Redeem
-              </Link>
-            </div>
+            <h3>Execution flow</h3>
+            {isLive ? (
+              <>
+                <p className="muted">
+                  This vault is live. Continue to tranche actions from here. Deposit and redeem are
+                  intentionally hidden from listing pages to keep the flow explicit.
+                </p>
+                <div className="card-actions">
+                  <Link className="button" href={`/vaults/${vault.vaultId}/deposit`}>
+                    Deposit
+                  </Link>
+                  <Link className="button button--ghost" href={`/vaults/${vault.vaultId}/redeem`}>
+                    Redeem
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="muted">
+                  This vault is still in onboarding. You can review configuration and history, but
+                  transaction actions are not enabled yet.
+                </p>
+                <div className="card-actions">
+                  <Link className="button button--ghost" href="/discover">
+                    Browse live vaults
+                  </Link>
+                </div>
+              </>
+            )}
           </article>
         </div>
       </section>

@@ -12,7 +12,7 @@ export default async function DiscoverPage() {
         <p className="eyebrow">Discover</p>
         <h1>Tranche marketplace for professional allocators.</h1>
         <p className="muted">
-          Compare live products and upcoming strategies with one consistent schema for risk labels,
+          Compare live vaults and upcoming strategies with one consistent schema for risk labels,
           route metadata, and onchain metrics.
         </p>
         <div className="card-actions">

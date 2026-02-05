@@ -11,7 +11,7 @@ export default function SiteFooter() {
           </p>
           <p className="muted">
             Tranche infrastructure for professional allocators on Pharos. Discover,
-            allocate, and monitor structured yield products through one interface.
+            allocate, and monitor structured yield vaults through one interface.
           </p>
         </div>
         <div className="site-footer__links">

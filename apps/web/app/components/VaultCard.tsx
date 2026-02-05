@@ -1,11 +1,26 @@
 import Link from "next/link";
 import type { VaultRecord } from "@pti/shared";
-import { formatUsd, formatWad } from "../../lib/format";
+import { formatTimestamp, formatUsd, formatWad } from "../../lib/format";
+
+function seniorRatioBps(vault: VaultRecord): bigint | null {
+  if (!vault.metrics.tvl || !vault.metrics.seniorDebt) return null;
+  try {
+    const tvl = BigInt(vault.metrics.tvl);
+    const seniorDebt = BigInt(vault.metrics.seniorDebt);
+    if (tvl === 0n) return null;
+    return (seniorDebt * 10_000n) / tvl;
+  } catch {
+    return null;
+  }
+}
 
 export default function VaultCard({ vault }: { vault: VaultRecord }) {
   const status = vault.uiConfig.status;
   const isLive = status === "LIVE";
   const tags = vault.uiConfig.tags?.slice(0, 2) ?? [];
+  const ratioBps = seniorRatioBps(vault);
+  const ratioPct = ratioBps === null ? null : Number(ratioBps) / 100;
+  const ratioWidth = ratioPct === null ? 0 : Math.max(0, Math.min(ratioPct, 100));
 
   return (
     <article className="card vault-card">
@@ -44,18 +59,24 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
         </div>
       </div>
 
+      <div className="risk-meter">
+        <div className="risk-meter__labels">
+          <span className="stat-label">Senior Coverage</span>
+          <span className="stat-value">{ratioPct === null ? "—" : `${ratioPct.toFixed(2)}%`}</span>
+        </div>
+        <div className="risk-meter__track" aria-hidden="true">
+          <span className="risk-meter__fill" style={{ width: `${ratioWidth}%` }} />
+        </div>
+        <p className="muted">Updated {formatTimestamp(vault.metrics.updatedAt)}</p>
+      </div>
+
       <div className="card-actions">
         <Link className="button" href={`/vaults/${vault.vaultId}`}>
-          Open vault
+          {isLive ? "Enter vault" : "View preview"}
         </Link>
-        <Link
-          className={`button button--ghost ${!isLive ? "button--disabled" : ""}`}
-          href={isLive ? `/vaults/${vault.vaultId}/deposit` : "#"}
-          aria-disabled={!isLive}
-          tabIndex={isLive ? 0 : -1}
-        >
-          Deposit
-        </Link>
+        <p className="flow-note">
+          Deposit and redeem actions are available inside the vault detail page.
+        </p>
       </div>
     </article>
   );

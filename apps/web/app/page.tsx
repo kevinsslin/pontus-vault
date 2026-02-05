@@ -40,6 +40,7 @@ export default async function HomePage() {
   const liveVaults = vaults.filter((vault) => vault.uiConfig.status === "LIVE");
   const tvl = totalTvl(vaults);
   const avgSenior = averageSeniorPrice(liveVaults);
+  const avgSeniorLabel = avgSenior ? `${formatWad(avgSenior)}x` : "—";
 
   return (
     <main className="page">
@@ -52,6 +53,7 @@ export default async function HomePage() {
             capital stability, junior sleeves for upside capture, and transparent accounting from
             indexer to execution.
           </p>
+          <div className="hero__line" />
           <div className="card-actions">
             <Link className="button" href="/discover">
               Start discovery
@@ -59,6 +61,21 @@ export default async function HomePage() {
             <Link className="button button--ghost" href="/portfolio">
               Open portfolio
             </Link>
+          </div>
+
+          <div className="trust-strip">
+            <div className="trust-item">
+              <span className="label">Settlement chain</span>
+              <span className="value">Pharos Atlantic</span>
+            </div>
+            <div className="trust-item">
+              <span className="label">Execution model</span>
+              <span className="value">Tranche-native routing</span>
+            </div>
+            <div className="trust-item">
+              <span className="label">Data plane</span>
+              <span className="value">Goldsky + Supabase</span>
+            </div>
           </div>
 
           <div className="partner-marquee" aria-label="Ecosystem integrations">
@@ -87,7 +104,7 @@ export default async function HomePage() {
             </div>
             <div className="kpi">
               <span className="label">Senior NAV</span>
-              <span className="value">{formatWad(avgSenior)}x</span>
+              <span className="value">{avgSeniorLabel}</span>
             </div>
             <div className="kpi">
               <span className="label">Upcoming</span>
@@ -120,6 +137,29 @@ export default async function HomePage() {
             <p className="muted">
               Consume event snapshots, hourly and daily aggregates, and portfolio-ready metrics.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section reveal delay-2">
+        <div className="insight-band">
+          <div>
+            <p className="eyebrow">Why it matters</p>
+            <h3>Institutional structure, onchain speed.</h3>
+            <p className="muted">
+              Pontus turns complex routing and tranche accounting into a clean vault interface your
+              treasury team can operate without bespoke tooling.
+            </p>
+          </div>
+          <div className="insight-band__stats">
+            <div className="kpi">
+              <span className="label">Composable routes</span>
+              <span className="value">OpenFi + RWA</span>
+            </div>
+            <div className="kpi">
+              <span className="label">Risk layers</span>
+              <span className="value">Senior / Junior</span>
+            </div>
           </div>
         </div>
       </section>
