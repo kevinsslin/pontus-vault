@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Cormorant_Garamond, Sora } from "next/font/google";
 import SiteHeader from "./components/SiteHeader";
 import SiteFooter from "./components/SiteFooter";
+import AppProviders from "./components/AppProviders";
 
 const displayFont = Cormorant_Garamond({
   subsets: ["latin"],
@@ -26,11 +27,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className={`${displayFont.variable} ${bodyFont.variable}`}>
-        <div className="shell">
-          <SiteHeader />
-          {children}
-          <SiteFooter />
-        </div>
+        <AppProviders>
+          <div className="shell">
+            <SiteHeader />
+            {children}
+            <SiteFooter />
+          </div>
+        </AppProviders>
       </body>
     </html>
   );

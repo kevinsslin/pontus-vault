@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getDataSource } from "../../lib/data/vaults";
+import WalletConnectButton from "./WalletConnectButton";
 
 export default function SiteHeader() {
   const dataSource = getDataSource();
@@ -27,9 +28,7 @@ export default function SiteHeader() {
 
         <div className="site-header__actions">
           <span className="pill">{dataSource === "live" ? "Live data" : "Demo data"}</span>
-          <button className="button button--ghost" type="button">
-            Connect Wallet
-          </button>
+          <WalletConnectButton />
         </div>
       </div>
     </header>
