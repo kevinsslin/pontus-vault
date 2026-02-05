@@ -1,46 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import "forge-std/Test.sol";
-
 import {BoringVault} from "../../lib/boring-vault/src/base/BoringVault.sol";
 import {AccountantWithRateProviders} from "../../lib/boring-vault/src/base/Roles/AccountantWithRateProviders.sol";
 import {RolesAuthority, Authority} from "../../lib/boring-vault/lib/solmate/src/auth/authorities/RolesAuthority.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {JuniorToken} from "../../src/tranche/JuniorToken.sol";
-import {SeniorToken} from "../../src/tranche/SeniorToken.sol";
-import {TrancheController} from "../../src/tranche/TrancheController.sol";
-
+import {BaseTrancheTest} from "../BaseTrancheTest.sol";
 import {BoringVaultTellerAdapter} from "../mocks/BoringVaultTellerAdapter.sol";
-import {MockERC20} from "../mocks/MockERC20.sol";
 
-contract TrancheIntegrationTest is Test {
-    uint8 internal constant MINTER_ROLE = 7;
-    uint8 internal constant BURNER_ROLE = 8;
-
-    MockERC20 internal asset;
+contract TrancheIntegrationTest is BaseTrancheTest {
     BoringVault internal vault;
     AccountantWithRateProviders internal accountant;
     RolesAuthority internal rolesAuthority;
     BoringVaultTellerAdapter internal adapter;
 
-    TrancheController internal controller;
-    SeniorToken internal seniorToken;
-    JuniorToken internal juniorToken;
-
-    address internal operator;
-    address internal guardian;
-    address internal alice;
-    address internal bob;
-
     function setUp() public {
-        operator = address(this);
-        guardian = address(this);
-        alice = makeAddr("alice");
-        bob = makeAddr("bob");
-
-        asset = new MockERC20("USDC", "USDC", 6);
+        _initActors();
+        _initRules();
+        _deployCore("USDC", "USDC", 6);
         vault = new BoringVault(address(this), "Boring Vault", "BV", 18);
 
         accountant = new AccountantWithRateProviders(
@@ -57,31 +35,11 @@ contract TrancheIntegrationTest is Test {
         rolesAuthority.setUserRole(address(adapter), MINTER_ROLE, true);
         rolesAuthority.setUserRole(address(adapter), BURNER_ROLE, true);
 
-        controller = new TrancheController();
-        seniorToken = new SeniorToken();
-        juniorToken = new JuniorToken();
-
-        seniorToken.initialize("Pontus Vault Senior USDC S1", "pvS-USDC", 6, address(controller));
-        juniorToken.initialize("Pontus Vault Junior USDC S1", "pvJ-USDC", 6, address(controller));
-
-        controller.initialize(
-            address(asset),
-            address(vault),
-            address(adapter),
-            operator,
-            guardian,
-            address(seniorToken),
-            address(juniorToken),
-            0,
-            address(0),
-            8000
-        );
-
-        asset.mint(alice, 1_000_000e6);
-        asset.mint(bob, 1_000_000e6);
+        _initController(address(vault), address(adapter), address(0));
+        _seedBalances(1_000_000e6);
     }
 
-    function testDepositRedeemViaBoringVaultStack() public {
+    function test_depositRedeem_roundtripViaBoringVaultStack() public {
         _depositJunior(alice, 200e6);
         _depositSenior(bob, 800e6);
 
@@ -99,17 +57,5 @@ contract TrancheIntegrationTest is Test {
         assertEq(vault.balanceOf(address(controller)), 200e18);
     }
 
-    function _depositSenior(address user, uint256 amount) internal {
-        vm.startPrank(user);
-        asset.approve(address(controller), amount);
-        controller.depositSenior(amount, user);
-        vm.stopPrank();
-    }
-
-    function _depositJunior(address user, uint256 amount) internal {
-        vm.startPrank(user);
-        asset.approve(address(controller), amount);
-        controller.depositJunior(amount, user);
-        vm.stopPrank();
-    }
+    // deposit helpers come from BaseTrancheTest
 }

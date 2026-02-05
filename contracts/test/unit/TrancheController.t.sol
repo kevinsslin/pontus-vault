@@ -1,64 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import "forge-std/Test.sol";
-
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {JuniorToken} from "../../src/tranche/JuniorToken.sol";
-import {SeniorToken} from "../../src/tranche/SeniorToken.sol";
+
+import {BaseTrancheTest} from "../BaseTrancheTest.sol";
+import {MockTeller} from "../mocks/MockTeller.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
 
-import {MockERC20} from "../mocks/MockERC20.sol";
-import {MockTeller} from "../mocks/MockTeller.sol";
-
-contract TrancheControllerTest is Test {
-    MockERC20 internal asset;
+contract TrancheControllerTest is BaseTrancheTest {
     MockTeller internal teller;
-    TrancheController internal controller;
-    SeniorToken internal seniorToken;
-    JuniorToken internal juniorToken;
-
-    address internal operator;
-    address internal guardian;
-    address internal alice;
-    address internal bob;
 
     function setUp() public {
-        operator = makeAddr("operator");
-        guardian = makeAddr("guardian");
-        alice = makeAddr("alice");
-        bob = makeAddr("bob");
-
-        asset = new MockERC20("USDC", "USDC", 6);
+        _initActors();
+        _initRules();
+        _deployCore("USDC", "USDC", 6);
         teller = new MockTeller(IERC20(address(asset)));
-
-        controller = new TrancheController();
-        seniorToken = new SeniorToken();
-        juniorToken = new JuniorToken();
-
-        seniorToken.initialize("Pontus Vault Senior USDC S1", "pvS-USDC", 6, address(controller));
-        juniorToken.initialize("Pontus Vault Junior USDC S1", "pvJ-USDC", 6, address(controller));
-
-        controller.initialize(
-            address(asset),
-            address(teller),
-            address(teller),
-            operator,
-            guardian,
-            address(seniorToken),
-            address(juniorToken),
-            0,
-            address(0),
-            8000
-        );
-
-        asset.mint(alice, 1_000_000e6);
-        asset.mint(bob, 1_000_000e6);
+        _initController(address(teller), address(teller), address(0));
+        _seedBalances(1_000_000e6);
     }
 
-    function testWaterfallSeniorCappedJuniorResidual() public {
+    // preview + valuation rules
+    function test_previewRedeemSenior_juniorAbsorbsLosses() public {
         _depositJunior(bob, 200e6);
         _depositSenior(alice, 800e6);
 
@@ -74,7 +38,7 @@ contract TrancheControllerTest is Test {
         assertEq(juniorAssets, 300e6);
     }
 
-    function testLossAbsorptionJuniorWiped() public {
+    function test_previewRedeemJunior_isZeroWhenUnderwater() public {
         _depositJunior(bob, 200e6);
         _depositSenior(alice, 800e6);
 
@@ -90,7 +54,8 @@ contract TrancheControllerTest is Test {
         assertEq(seniorAssets, 700e6);
     }
 
-    function testMaxSeniorRatioCap() public {
+    // depositSenior rules
+    function test_depositSenior_revertsWhenMaxSeniorRatioExceeded() public {
         _depositJunior(alice, 200e6);
         _depositSenior(bob, 800e6);
 
@@ -101,7 +66,8 @@ contract TrancheControllerTest is Test {
         vm.stopPrank();
     }
 
-    function testUnderwaterJuniorDepositReverts() public {
+    // depositJunior rules
+    function test_depositJunior_revertsWhenUnderwater() public {
         _depositJunior(bob, 200e6);
         _depositSenior(alice, 800e6);
         teller.setSharePriceWad(0.7e18);
@@ -113,7 +79,8 @@ contract TrancheControllerTest is Test {
         vm.stopPrank();
     }
 
-    function testPauseBlocksDepositsAndRedeems() public {
+    // pause rules
+    function test_pause_blocksDepositsAndRedeems() public {
         _depositJunior(bob, 50e6);
         _depositSenior(alice, 100e6);
 
@@ -137,7 +104,8 @@ contract TrancheControllerTest is Test {
         _depositSenior(alice, 10e6);
     }
 
-    function testRoleChecks() public {
+    // access control rules
+    function test_roleChecks() public {
         vm.startPrank(alice);
         vm.expectRevert(
             abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, alice, controller.GUARDIAN_ROLE())
@@ -153,17 +121,5 @@ contract TrancheControllerTest is Test {
         vm.stopPrank();
     }
 
-    function _depositSenior(address user, uint256 amount) internal {
-        vm.startPrank(user);
-        asset.approve(address(controller), amount);
-        controller.depositSenior(amount, user);
-        vm.stopPrank();
-    }
-
-    function _depositJunior(address user, uint256 amount) internal {
-        vm.startPrank(user);
-        asset.approve(address(controller), amount);
-        controller.depositJunior(amount, user);
-        vm.stopPrank();
-    }
+    // deposit helpers come from BaseTrancheTest
 }
