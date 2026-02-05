@@ -1,0 +1,11 @@
+{
+  "name": "@ptvi/indexer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "codegen": "goldsky subgraph codegen",
+    "build": "goldsky subgraph build",
+    "deploy": "goldsky subgraph deploy pharos-vault --path ."
+  }
+}
