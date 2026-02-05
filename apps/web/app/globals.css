@@ -327,6 +327,11 @@ p {
   background: rgba(255, 255, 255, 0.7);
 }
 
+.chip,
+.pill {
+  max-width: 100%;
+}
+
 .token-badge {
   position: relative;
   display: inline-flex;
@@ -625,6 +630,15 @@ p {
   gap: 10px;
 }
 
+.vault-meta {
+  gap: 8px;
+}
+
+.vault-meta .chip {
+  max-width: 100%;
+  letter-spacing: 0.04em;
+}
+
 .flow-note {
   margin: 0;
   font-size: 12px;
@@ -636,6 +650,31 @@ p {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.journey .chip {
+  white-space: normal;
+  text-wrap: balance;
+}
+
+.vault-title {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+  display: block;
+  white-space: normal;
+}
+
+.vault-title__text {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.vault-title__text--mobile {
+  display: none;
 }
 
 .section-title {
@@ -769,7 +808,7 @@ p {
 
 .yield-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -849,7 +888,7 @@ p {
 
 .detail-yield-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -1174,6 +1213,56 @@ a:focus-visible {
 }
 
 @media (max-width: 760px) {
+  h1 {
+    font-size: clamp(30px, 9vw, 40px);
+    line-height: 1.08;
+  }
+
+  .vault-title {
+    font-size: clamp(26px, 8.2vw, 34px);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .vault-title__text {
+    display: block;
+    width: 100%;
+  }
+
+  .vault-title__text--desktop {
+    display: none;
+  }
+
+  .vault-title__text--mobile {
+    display: block;
+  }
+
+  .chip,
+  .pill {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    padding: 5px 9px;
+  }
+
+  .journey .chip {
+    text-transform: none;
+    letter-spacing: 0.02em;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .journey {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .vault-meta .chip {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    padding: 5px 8px;
+  }
+
   .page {
     padding: 20px 18px 90px;
   }

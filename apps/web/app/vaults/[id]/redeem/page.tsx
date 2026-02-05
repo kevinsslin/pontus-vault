@@ -21,7 +21,9 @@ export default async function RedeemPage({
     <main className="page">
       <section className="reveal">
         <p className="eyebrow">Redeem</p>
-        <h1>Redeem from {vault.name}</h1>
+        <h1 className="vault-title">
+          <span className="vault-title__text">Redeem from {vault.name}</span>
+        </h1>
         <p className="muted">
           Choose tranche and share amount. Preview redeem output before executing.
         </p>

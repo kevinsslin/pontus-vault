@@ -21,7 +21,9 @@ export default async function DepositPage({
     <main className="page">
       <section className="reveal">
         <p className="eyebrow">Deposit</p>
-        <h1>Allocate into {vault.name}</h1>
+        <h1 className="vault-title">
+          <span className="vault-title__text">Allocate into {vault.name}</span>
+        </h1>
         <p className="muted">
           Select tranche and amount. Preview output before signing the final transaction.
         </p>

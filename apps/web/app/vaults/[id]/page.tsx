@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getActivityForVault, getVaultById } from "../../../lib/data/vaults";
 import {
-  apySpreadBps,
   formatBps,
   formatRelativeTimestamp,
   formatTimestamp,
@@ -37,29 +36,27 @@ export default async function VaultDetailPage({
 
   const activity = getActivityForVault(vault.vaultId);
   const isLive = vault.uiConfig.status === "LIVE";
-  const tags = vault.uiConfig.tags ?? [];
   const seniorMix = seniorMixPercent(vault.metrics.tvl, vault.metrics.seniorDebt);
   const juniorMix = seniorMix === null ? null : Math.max(0, 100 - seniorMix);
   const updatedLabel = formatRelativeTimestamp(vault.metrics.updatedAt);
+  const mobileVaultTitle = vault.name.replace(/^Pontus Vault\s+/i, "").trim() || vault.name;
 
   return (
     <main className="page">
       <section className="reveal">
         <p className="eyebrow">Vault detail</p>
-        <h1>{vault.name}</h1>
+        <h1 className="vault-title">
+          <span className="vault-title__text vault-title__text--desktop">{vault.name}</span>
+          <span className="vault-title__text vault-title__text--mobile">{mobileVaultTitle}</span>
+        </h1>
         <p className="muted">{vault.uiConfig.summary}</p>
-        <div className="card-actions">
+        <div className="card-actions vault-meta">
           <span className={`badge ${isLive ? "badge--live" : "badge--soon"}`}>
             {vault.uiConfig.status}
           </span>
           <TokenBadge symbol={vault.assetSymbol} />
           <span className="chip">{vault.uiConfig.routeLabel ?? vault.route}</span>
           <span className="chip">Risk: {vault.uiConfig.risk ?? "N/A"}</span>
-          {tags.map((tag) => (
-            <span className="chip" key={tag}>
-              {tag}
-            </span>
-          ))}
         </div>
         <div className="journey">
           <span className="chip chip--soft">1. Review vault profile</span>
@@ -79,13 +76,6 @@ export default async function VaultDetailPage({
             <div className="stat-label">Junior APY</div>
             <div className="yield-value">{formatBps(vault.metrics.juniorApyBps ?? null)}</div>
             <p className="micro">Junior side absorbs volatility for upside.</p>
-          </article>
-          <article className="card card--priority">
-            <div className="stat-label">Yield spread</div>
-            <div className="yield-value">
-              {apySpreadBps(vault.metrics.seniorApyBps ?? null, vault.metrics.juniorApyBps ?? null)}
-            </div>
-            <p className="micro">Junior minus senior expected yield.</p>
           </article>
         </div>
       </section>

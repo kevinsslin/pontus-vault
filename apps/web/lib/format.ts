@@ -60,15 +60,6 @@ export function formatBps(value: string | null): string {
   return `${(bps / 100).toFixed(2)}%`;
 }
 
-export function apySpreadBps(seniorBps: string | null, juniorBps: string | null): string {
-  if (!seniorBps || !juniorBps) return "—";
-  const senior = Number(seniorBps);
-  const junior = Number(juniorBps);
-  if (!Number.isFinite(senior) || !Number.isFinite(junior)) return "—";
-  const spread = (junior - senior) / 100;
-  return `${spread.toFixed(2)}%`;
-}
-
 export function formatTimestamp(value: string | null): string {
   if (!value) return "—";
   const seconds = Number(value);

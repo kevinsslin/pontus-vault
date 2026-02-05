@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { VaultRecord } from "@pti/shared";
 import {
-  apySpreadBps,
   formatBps,
   formatRelativeTimestamp,
   formatUsd,
@@ -24,7 +23,7 @@ function seniorRatioBps(vault: VaultRecord): bigint | null {
 export default function VaultCard({ vault }: { vault: VaultRecord }) {
   const status = vault.uiConfig.status;
   const isLive = status === "LIVE";
-  const tags = vault.uiConfig.tags?.slice(0, 2) ?? [];
+  const tags = vault.uiConfig.tags?.slice(0, 1) ?? [];
   const ratioBps = seniorRatioBps(vault);
   const ratioPct = ratioBps === null ? null : Number(ratioBps) / 100;
   const ratioWidth = ratioPct === null ? 0 : Math.max(0, Math.min(ratioPct, 100));
@@ -61,12 +60,6 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
         <div className="yield-item yield-item--junior">
           <span className="stat-label">Junior APY</span>
           <span className="yield-value">{formatBps(vault.metrics.juniorApyBps ?? null)}</span>
-        </div>
-        <div className="yield-item">
-          <span className="stat-label">Spread</span>
-          <span className="yield-value">
-            {apySpreadBps(vault.metrics.seniorApyBps ?? null, vault.metrics.juniorApyBps ?? null)}
-          </span>
         </div>
       </div>
 
