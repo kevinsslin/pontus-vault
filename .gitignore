@@ -38,3 +38,6 @@ docs/PRD.md
 
 # Turbo
 .turbo/
+
+logs/
+hooks/
