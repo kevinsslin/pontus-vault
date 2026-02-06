@@ -82,7 +82,7 @@ contract OpenFiCallBuilderTest is Test {
         assertEq(pool.supplyAsset(), asset);
         assertEq(pool.supplyAmount(), amount);
         assertEq(pool.supplyOnBehalfOf(), onBehalfOf);
-        assertEq(pool.supplyReferralCode(), 0);
+        assertEq(pool.supplyReferralCode(), TestConstants.OPENFI_REFERRAL_CODE);
     }
 
     function test_withdrawCalldata_executesWithExpectedArguments() public {

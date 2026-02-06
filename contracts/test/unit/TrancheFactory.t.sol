@@ -46,7 +46,7 @@ contract TrancheFactoryTest is Test {
         vm.expectRevert(TrancheFactory.ZeroAddress.selector);
         new ERC1967Proxy(
             address(factoryImpl),
-            abi.encodeCall(TrancheFactory.initialize, (owner, address(0), address(tokenImpl), registry))
+            abi.encodeCall(TrancheFactory.initialize, (owner, TestConstants.ZERO_ADDRESS, address(tokenImpl), registry))
         );
     }
 
@@ -55,20 +55,22 @@ contract TrancheFactoryTest is Test {
         vm.expectRevert(TrancheFactory.ZeroAddress.selector);
         new ERC1967Proxy(
             address(factoryImpl),
-            abi.encodeCall(TrancheFactory.initialize, (owner, address(controllerImpl), address(0), registry))
+            abi.encodeCall(
+                TrancheFactory.initialize, (owner, address(controllerImpl), TestConstants.ZERO_ADDRESS, registry)
+            )
         );
     }
 
     function test_setRegistry_revertsForNonOwner() public {
         vm.prank(outsider);
         vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, outsider));
-        factory.setRegistry(address(2));
+        factory.setRegistry(TestConstants.CONFIG_VAULT);
     }
 
     function test_setRegistry_revertsOnZeroAddress() public {
         vm.prank(owner);
         vm.expectRevert(TrancheFactory.ZeroAddress.selector);
-        factory.setRegistry(address(0));
+        factory.setRegistry(TestConstants.ZERO_ADDRESS);
     }
 
     function test_createTrancheVault_revertsWhenRegistryIsUnset() public {
@@ -78,7 +80,8 @@ contract TrancheFactoryTest is Test {
                 new ERC1967Proxy(
                     address(factoryImpl),
                     abi.encodeCall(
-                        TrancheFactory.initialize, (owner, address(controllerImpl), address(tokenImpl), address(0))
+                        TrancheFactory.initialize,
+                        (owner, address(controllerImpl), address(tokenImpl), TestConstants.ZERO_ADDRESS)
                     )
                 )
             )
@@ -132,16 +135,16 @@ contract TrancheFactoryTest is Test {
     function _defaultConfig() internal pure returns (TrancheFactory.TrancheVaultConfig memory) {
         return TrancheFactory.TrancheVaultConfig({
             paramsHash: bytes32(0),
-            asset: address(1),
-            vault: address(2),
-            teller: address(3),
-            accountant: address(4),
-            manager: address(5),
-            operator: address(6),
-            guardian: address(7),
+            asset: TestConstants.CONFIG_ASSET,
+            vault: TestConstants.CONFIG_VAULT,
+            teller: TestConstants.CONFIG_TELLER,
+            accountant: TestConstants.CONFIG_ACCOUNTANT,
+            manager: TestConstants.CONFIG_MANAGER,
+            operator: TestConstants.CONFIG_OPERATOR,
+            guardian: TestConstants.CONFIG_GUARDIAN,
             tokenDecimals: TestConstants.USDC_DECIMALS,
-            seniorRatePerSecondWad: 0,
-            rateModel: address(0),
+            seniorRatePerSecondWad: TestConstants.DEFAULT_SENIOR_RATE_PER_SECOND_WAD,
+            rateModel: TestConstants.ZERO_ADDRESS,
             maxSeniorRatioBps: TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS,
             seniorName: TestDefaults.SENIOR_TOKEN_NAME,
             seniorSymbol: TestDefaults.SENIOR_TOKEN_SYMBOL,

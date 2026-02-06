@@ -34,7 +34,10 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
         TrancheRegistry registryImpl = new TrancheRegistry();
         registry = TrancheRegistry(
             address(
-                new ERC1967Proxy(address(registryImpl), abi.encodeCall(TrancheRegistry.initialize, (owner, address(0))))
+                new ERC1967Proxy(
+                    address(registryImpl),
+                    abi.encodeCall(TrancheRegistry.initialize, (owner, TestConstants.ZERO_ADDRESS))
+                )
             )
         );
 
@@ -101,8 +104,8 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
             operator: operator,
             guardian: guardian,
             tokenDecimals: TestConstants.USDC_DECIMALS,
-            seniorRatePerSecondWad: 0,
-            rateModel: address(0),
+            seniorRatePerSecondWad: TestConstants.DEFAULT_SENIOR_RATE_PER_SECOND_WAD,
+            rateModel: TestConstants.ZERO_ADDRESS,
             maxSeniorRatioBps: TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS,
             seniorName: TestDefaults.SENIOR_TOKEN_NAME,
             seniorSymbol: TestDefaults.SENIOR_TOKEN_SYMBOL,

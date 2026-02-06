@@ -30,13 +30,18 @@ contract TrancheTokenTest is Test {
         TrancheToken another = new TrancheToken();
         vm.expectRevert(TrancheToken.ZeroAddress.selector);
         another.initialize(
-            TestDefaults.SENIOR_TOKEN_NAME, TestDefaults.SENIOR_TOKEN_SYMBOL, TestConstants.USDC_DECIMALS, address(0)
+            TestDefaults.SENIOR_TOKEN_NAME,
+            TestDefaults.SENIOR_TOKEN_SYMBOL,
+            TestConstants.USDC_DECIMALS,
+            TestConstants.ZERO_ADDRESS
         );
     }
 
     function test_initialize_revertsOnSecondCall() public {
         vm.expectRevert(Initializable.InvalidInitialization.selector);
-        token.initialize("Again", "AGAIN", 6, controller);
+        token.initialize(
+            TestDefaults.TOKEN_REINIT_NAME, TestDefaults.TOKEN_REINIT_SYMBOL, TestConstants.USDC_DECIMALS, controller
+        );
     }
 
     function test_mint_revertsForNonController() public {

@@ -32,48 +32,52 @@ contract RateModelTest is Test {
     }
 
     function test_fixedRateModel_ownerCanUpdateRate() public {
-        FixedRateModel model = new FixedRateModel(owner, 100);
-        assertEq(model.getRatePerSecondWad(), 100);
+        FixedRateModel model = new FixedRateModel(owner, TestConstants.FIXED_RATE_INITIAL);
+        assertEq(model.getRatePerSecondWad(), TestConstants.FIXED_RATE_INITIAL);
 
         vm.prank(owner);
-        model.setRatePerSecondWad(250);
-        assertEq(model.getRatePerSecondWad(), 250);
+        model.setRatePerSecondWad(TestConstants.FIXED_RATE_UPDATED);
+        assertEq(model.getRatePerSecondWad(), TestConstants.FIXED_RATE_UPDATED);
     }
 
     function test_fixedRateModel_revertsForNonOwner() public {
-        FixedRateModel model = new FixedRateModel(owner, 100);
+        FixedRateModel model = new FixedRateModel(owner, TestConstants.FIXED_RATE_INITIAL);
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, alice));
-        model.setRatePerSecondWad(250);
+        model.setRatePerSecondWad(TestConstants.FIXED_RATE_UPDATED);
     }
 
     function test_capSafetyRateModel_appliesSafetyFactorAndCap() public {
-        CapSafetyRateModel model = new CapSafetyRateModel(owner, address(refProvider), 1000, 8e17);
+        CapSafetyRateModel model = new CapSafetyRateModel(
+            owner, address(refProvider), TestConstants.CAP_MODEL_CAP, TestConstants.CAP_MODEL_SAFETY_DEFAULT
+        );
 
-        refProvider.setRatePerSecondWad(900);
-        assertEq(model.getRatePerSecondWad(), 720);
+        refProvider.setRatePerSecondWad(TestConstants.CAP_MODEL_REF_LOW);
+        assertEq(model.getRatePerSecondWad(), TestConstants.CAP_MODEL_EXPECTED_LOW);
 
-        refProvider.setRatePerSecondWad(2_000);
-        assertEq(model.getRatePerSecondWad(), 1000);
+        refProvider.setRatePerSecondWad(TestConstants.CAP_MODEL_REF_HIGH);
+        assertEq(model.getRatePerSecondWad(), TestConstants.CAP_MODEL_CAP);
     }
 
     function test_capSafetyRateModel_ownerCanUpdateParams() public {
-        CapSafetyRateModel model = new CapSafetyRateModel(owner, address(refProvider), 1000, 8e17);
+        CapSafetyRateModel model = new CapSafetyRateModel(
+            owner, address(refProvider), TestConstants.CAP_MODEL_CAP, TestConstants.CAP_MODEL_SAFETY_DEFAULT
+        );
 
         vm.startPrank(owner);
-        model.setCapRatePerSecondWad(900);
-        model.setSafetyFactorWad(5e17);
-        model.setRefRateProvider(address(0));
+        model.setCapRatePerSecondWad(TestConstants.CAP_MODEL_REF_LOW);
+        model.setSafetyFactorWad(TestConstants.CAP_MODEL_SAFETY_UPDATED);
+        model.setRefRateProvider(TestConstants.ZERO_ADDRESS);
         vm.stopPrank();
 
-        assertEq(model.capRatePerSecondWad(), 900);
-        assertEq(model.safetyFactorWad(), 5e17);
-        assertEq(model.refRateProvider(), address(0));
+        assertEq(model.capRatePerSecondWad(), TestConstants.CAP_MODEL_REF_LOW);
+        assertEq(model.safetyFactorWad(), TestConstants.CAP_MODEL_SAFETY_UPDATED);
+        assertEq(model.refRateProvider(), TestConstants.ZERO_ADDRESS);
         assertEq(model.getRatePerSecondWad(), 0);
     }
 
     function test_capSafetyRateModel_revertsForInvalidSafetyFactor() public {
         vm.expectRevert(CapSafetyRateModel.InvalidSafetyFactor.selector);
-        new CapSafetyRateModel(owner, address(refProvider), 1000, TestConstants.ONE_WAD + 1);
+        new CapSafetyRateModel(owner, address(refProvider), TestConstants.CAP_MODEL_CAP, TestConstants.ONE_WAD + 1);
     }
 }

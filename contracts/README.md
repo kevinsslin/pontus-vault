@@ -50,7 +50,21 @@ pnpm --filter @pti/contracts test
 pnpm --filter @pti/contracts deploy
 pnpm --filter @pti/contracts deploy:infra
 pnpm --filter @pti/contracts deploy:vault
+pnpm --filter @pti/contracts verify:contract
 ```
+
+**Verification (Blockscan API)**
+- Source `.env` from `script/.env.example`.
+- Set `BLOCKSCAN_API_KEY`, `CHAIN_ID`, and `VERIFY_VERIFIER_URL`.
+- Verify a contract:
+```bash
+cd contracts
+source script/.env.example
+CONTRACT_ADDRESS=0xYourContract \
+CONTRACT_ID=src/tranche/TrancheRegistry.sol:TrancheRegistry \
+pnpm verify:contract
+```
+- For constructor contracts, set `CONSTRUCTOR_ARGS` with ABI-encoded hex.
 
 **Test Notes**
 - `test/utils/Constants.sol`: shared numeric values for test amounts/rates/bounds.

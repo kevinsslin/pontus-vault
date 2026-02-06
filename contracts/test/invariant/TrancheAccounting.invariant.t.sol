@@ -43,7 +43,7 @@ contract TrancheHandler is Test {
     function depositSeniorAsAlice(uint256 amountSeed) external {
         uint256 balance = asset.balanceOf(alice);
         if (balance == 0) return;
-        uint256 amount = bound(amountSeed, 1, balance);
+        uint256 amount = bound(amountSeed, TestConstants.INVARIANT_MIN_BOUND, balance);
         vm.startPrank(alice);
         asset.approve(address(controller), amount);
         try controller.depositSenior(amount, alice) {} catch {}
@@ -53,7 +53,7 @@ contract TrancheHandler is Test {
     function depositJuniorAsBob(uint256 amountSeed) external {
         uint256 balance = asset.balanceOf(bob);
         if (balance == 0) return;
-        uint256 amount = bound(amountSeed, 1, balance);
+        uint256 amount = bound(amountSeed, TestConstants.INVARIANT_MIN_BOUND, balance);
         vm.startPrank(bob);
         asset.approve(address(controller), amount);
         try controller.depositJunior(amount, bob) {} catch {}
@@ -63,7 +63,7 @@ contract TrancheHandler is Test {
     function redeemSeniorAsAlice(uint256 shareSeed) external {
         uint256 shares = seniorToken.balanceOf(alice);
         if (shares == 0) return;
-        uint256 redeemShares = bound(shareSeed, 1, shares);
+        uint256 redeemShares = bound(shareSeed, TestConstants.INVARIANT_MIN_BOUND, shares);
         vm.startPrank(alice);
         seniorToken.approve(address(controller), redeemShares);
         try controller.redeemSenior(redeemShares, alice) {} catch {}
@@ -73,7 +73,7 @@ contract TrancheHandler is Test {
     function redeemJuniorAsBob(uint256 shareSeed) external {
         uint256 shares = juniorToken.balanceOf(bob);
         if (shares == 0) return;
-        uint256 redeemShares = bound(shareSeed, 1, shares);
+        uint256 redeemShares = bound(shareSeed, TestConstants.INVARIANT_MIN_BOUND, shares);
         vm.startPrank(bob);
         juniorToken.approve(address(controller), redeemShares);
         try controller.redeemJunior(redeemShares, bob) {} catch {}
@@ -81,7 +81,7 @@ contract TrancheHandler is Test {
     }
 
     function updateRate(uint96 rateSeed) external {
-        uint256 rate = bound(uint256(rateSeed), 6e17, 12e17);
+        uint256 rate = bound(uint256(rateSeed), TestConstants.INVARIANT_RATE_MIN, TestConstants.INVARIANT_RATE_MAX);
         accountant.setRate(IERC20(address(asset)), rate);
     }
 }
@@ -93,7 +93,7 @@ contract TrancheAccountingInvariantTest is StdInvariant, BaseTest {
         super.setUp();
 
         MockTeller teller = new MockTeller(IERC20(address(asset)), mockAccountant);
-        _initController(address(teller), address(teller), address(0), address(mockAccountant));
+        _initController(address(teller), address(teller), TestConstants.ZERO_ADDRESS, address(mockAccountant));
 
         _seedBalances(TestConstants.DEFAULT_INITIAL_BALANCE);
         _depositJunior(bob, TestConstants.INVARIANT_JUNIOR_BOOTSTRAP);

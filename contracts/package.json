@@ -10,6 +10,7 @@
     "fmt": "forge fmt",
     "deploy": "forge script script/DeployInfra.s.sol --broadcast --rpc-url $PHAROS_RPC_URL",
     "deploy:infra": "forge script script/DeployInfra.s.sol --broadcast --rpc-url $PHAROS_RPC_URL",
-    "deploy:vault": "forge script script/DeployTrancheVault.s.sol --broadcast --rpc-url $PHAROS_RPC_URL"
+    "deploy:vault": "forge script script/DeployTrancheVault.s.sol --broadcast --rpc-url $PHAROS_RPC_URL",
+    "verify:contract": "./script/verify-contract.sh"
   }
 }

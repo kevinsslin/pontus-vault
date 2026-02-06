@@ -8,6 +8,8 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 
 import {TrancheRegistry} from "../../src/tranche/TrancheRegistry.sol";
 import {TrancheRegistryV2} from "../mocks/TrancheRegistryV2.sol";
+import {TestConstants} from "../utils/Constants.sol";
+import {TestDefaults} from "../utils/Defaults.sol";
 
 contract TrancheRegistryTest is Test {
     TrancheRegistry internal registry;
@@ -43,7 +45,7 @@ contract TrancheRegistryTest is Test {
     function test_setFactory_revertsOnZeroAddress() public {
         vm.prank(owner);
         vm.expectRevert(TrancheRegistry.ZeroAddress.selector);
-        registry.setFactory(address(0));
+        registry.setFactory(TestConstants.ZERO_ADDRESS);
     }
 
     function test_setFactory_updatesFactory() public {
@@ -82,8 +84,8 @@ contract TrancheRegistryTest is Test {
     function test_getTrancheVaults_paginates() public {
         TrancheRegistry.TrancheVaultInfo memory info0 = _sampleTrancheVault();
         TrancheRegistry.TrancheVaultInfo memory info1 = _sampleTrancheVault();
-        info1.controller = address(0x2001);
-        info1.paramsHash = keccak256("sample-2");
+        info1.controller = TestConstants.SAMPLE_CONTROLLER_ALT;
+        info1.paramsHash = TestDefaults.SAMPLE_PARAMS_HASH_2;
 
         vm.startPrank(factory);
         registry.registerTrancheVault(info0);
@@ -123,15 +125,15 @@ contract TrancheRegistryTest is Test {
 
     function _sampleTrancheVault() internal pure returns (TrancheRegistry.TrancheVaultInfo memory) {
         return TrancheRegistry.TrancheVaultInfo({
-            controller: address(0x1001),
-            seniorToken: address(0x1002),
-            juniorToken: address(0x1003),
-            vault: address(0x1004),
-            teller: address(0x1005),
-            accountant: address(0x1006),
-            manager: address(0x1007),
-            asset: address(0x1008),
-            paramsHash: keccak256("sample")
+            controller: TestConstants.SAMPLE_CONTROLLER,
+            seniorToken: TestConstants.SAMPLE_SENIOR_TOKEN,
+            juniorToken: TestConstants.SAMPLE_JUNIOR_TOKEN,
+            vault: TestConstants.SAMPLE_VAULT,
+            teller: TestConstants.SAMPLE_TELLER,
+            accountant: TestConstants.SAMPLE_ACCOUNTANT,
+            manager: TestConstants.SAMPLE_MANAGER,
+            asset: TestConstants.SAMPLE_ASSET,
+            paramsHash: TestDefaults.SAMPLE_PARAMS_HASH
         });
     }
 }

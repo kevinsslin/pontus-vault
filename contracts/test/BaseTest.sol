@@ -12,9 +12,6 @@ import {TestConstants} from "./utils/Constants.sol";
 import {TestDefaults} from "./utils/Defaults.sol";
 
 abstract contract BaseTest is Test {
-    uint8 internal constant MINTER_ROLE = 7;
-    uint8 internal constant BURNER_ROLE = 8;
-
     // Rules mirror the high-level invariants we expect for any tranche product.
     struct RuleSet {
         uint256 maxSeniorRatioBps;
@@ -41,14 +38,17 @@ abstract contract BaseTest is Test {
     }
 
     function _initActors() internal {
-        operator = makeAddr("operator");
-        guardian = makeAddr("guardian");
-        alice = makeAddr("alice");
-        bob = makeAddr("bob");
+        operator = makeAddr(TestDefaults.ACTOR_OPERATOR);
+        guardian = makeAddr(TestDefaults.ACTOR_GUARDIAN);
+        alice = makeAddr(TestDefaults.ACTOR_ALICE);
+        bob = makeAddr(TestDefaults.ACTOR_BOB);
     }
 
     function _initRules() internal {
-        rules = RuleSet({maxSeniorRatioBps: TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS, seniorRatePerSecondWad: 0});
+        rules = RuleSet({
+            maxSeniorRatioBps: TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS,
+            seniorRatePerSecondWad: TestConstants.DEFAULT_SENIOR_RATE_PER_SECOND_WAD
+        });
     }
 
     function _deployCore() internal {
