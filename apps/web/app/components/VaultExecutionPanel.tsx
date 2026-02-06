@@ -35,10 +35,7 @@ export default function VaultExecutionPanel({
       <div className="execution-toolbar">
         <div className="execution-toolbar__copy">
           <p className="eyebrow">Execution</p>
-          <h3>{isDeposit ? "Allocate into this vault" : "Redeem from this vault"}</h3>
-          <p className="muted">
-            Stay on one screen: review metrics, choose tranche, and execute when ready.
-          </p>
+          <h3>{isDeposit ? "Execute deposit" : "Execute redeem"}</h3>
         </div>
         <div className="execution-segment" role="tablist" aria-label="Execution mode">
           <button
@@ -64,7 +61,7 @@ export default function VaultExecutionPanel({
 
       <div className="form-layout">
         <form className="card execution-form" aria-label={`${actionLabel} form`}>
-          <h3>{actionLabel} form</h3>
+          <h3>Order ticket</h3>
 
           <label className="field-label" htmlFor={amountId}>
             {inputLabel}
@@ -104,22 +101,14 @@ export default function VaultExecutionPanel({
 
           <div className="card-actions">
             <button className="button" type="button">
-              Preview output
-            </button>
-            <button className="button button--ghost" type="button">
               {submitLabel}
             </button>
-          </div>
-          <div className="card-actions">
             <WalletConnectButton />
           </div>
-          <p className="micro">
-            Wallet connection is requested only when you are ready to execute.
-          </p>
         </form>
 
         <aside className="card card--spotlight execution-notes">
-          <h3>Execution notes</h3>
+          <h3>Ticket summary</h3>
           <div className="execution-notes__grid">
             <div className="execution-note">
               <span className="label">Action</span>
@@ -134,16 +123,8 @@ export default function VaultExecutionPanel({
               <span className="value">{selectedApy}</span>
             </div>
             <div className="execution-note">
-              <span className="label">Asset</span>
-              <span className="value">{vault.assetSymbol}</span>
-            </div>
-            <div className="execution-note">
               <span className="label">Route</span>
               <span className="value">{routeLabel}</span>
-            </div>
-            <div className="execution-note">
-              <span className="label">Policy</span>
-              <span className="value">{vault.uiConfig.banner ?? "N/A"}</span>
             </div>
           </div>
         </aside>

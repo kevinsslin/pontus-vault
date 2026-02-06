@@ -44,16 +44,52 @@ const INVESTOR_LANES = [
     title: "Senior Focus",
     subtitle: "Capital stability",
     body: "Target lower volatility with tighter downside exposure.",
+    cta: "View senior-priority vaults",
+    href: "/discover?focus=senior",
+    seniorShare: 82,
+    juniorShare: 18,
+    signal: "Expected APY: 6% to 9%",
   },
   {
     title: "Balanced Split",
     subtitle: "Income optimization",
     body: "Blend senior carry with junior upside in one allocation policy.",
+    cta: "Compare blended profiles",
+    href: "/discover?focus=balanced",
+    seniorShare: 64,
+    juniorShare: 36,
+    signal: "Expected APY: 8% to 13%",
   },
   {
     title: "Junior Focus",
     subtitle: "Return acceleration",
     body: "Take higher beta against structured downside boundaries.",
+    cta: "Explore high-upside lanes",
+    href: "/discover?focus=junior",
+    seniorShare: 35,
+    juniorShare: 65,
+    signal: "Expected APY: 11% to 19%",
+  },
+];
+
+const STACK_LAYERS = [
+  {
+    layer: "Layer 03",
+    title: "Risk Tranching Layer",
+    body: "Package risk into senior and junior slices so each allocator chooses a defined payoff profile.",
+    tags: ["Senior sleeve", "Junior sleeve", "Risk budgeted"],
+  },
+  {
+    layer: "Layer 02",
+    title: "Vault Orchestration Layer",
+    body: "Aggregate routes, policy controls, and accounting into one coherent vault product surface.",
+    tags: ["Policy engine", "Unified NAV", "Execution controls"],
+  },
+  {
+    layer: "Layer 01",
+    title: "Yield Sources Layer",
+    body: "Connect productive base assets across DeFi and RWA channels where real yield is generated.",
+    tags: ["Lending markets", "Treasury/RWA", "Credit routes"],
   },
 ];
 
@@ -186,8 +222,13 @@ export default async function HomePage() {
       </section>
 
       <section className="section reveal delay-1">
-        <div className="section-title">
+        <div className="section-copy">
+          <p className="eyebrow">Operating model</p>
           <h2>Operating model</h2>
+          <p className="muted">
+            Pontus keeps each stage explicit: profile the allocator, compare routes, execute by
+            tranche, then monitor performance with one consistent interpretation layer.
+          </p>
         </div>
         <div className="grid grid-4">
           {WORKFLOW_STEPS.map((item) => (
@@ -201,23 +242,40 @@ export default async function HomePage() {
       </section>
 
       <section className="section reveal delay-2">
-        <div className="section-title">
-          <h2>Capital flow</h2>
+        <div className="section-copy">
+          <p className="eyebrow">Vault stack</p>
+          <h2>Three layers, one investable product surface.</h2>
+          <p className="muted">
+            Pontus separates where yield is produced, how vaults orchestrate that yield, and how
+            risk is finally distributed to users. This makes the product understandable and auditable.
+          </p>
         </div>
-        <article className="card architecture">
-          <div className="arch-node">Mandate setup</div>
-          <span className="arch-arrow">→</span>
-          <div className="arch-node">Vault Discovery</div>
-          <span className="arch-arrow">→</span>
-          <div className="arch-node">Tranche allocation</div>
-          <span className="arch-arrow">→</span>
-          <div className="arch-node">Yield channels</div>
-        </article>
+        <div className="stack-rail">
+          {STACK_LAYERS.map((stage) => (
+            <article className="card stack-tier" key={stage.title}>
+              <span className="stack-tier__layer">{stage.layer}</span>
+              <h3>{stage.title}</h3>
+              <p className="muted">{stage.body}</p>
+              <div className="card-actions">
+                {stage.tags.map((tag) => (
+                  <span className="chip chip--soft" key={tag}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="section reveal delay-2">
-        <div className="section-title">
+        <div className="section-copy">
+          <p className="eyebrow">Allocation styles</p>
           <h2>Choose your lane</h2>
+          <p className="muted">
+            Pick the mandate shape that matches your risk appetite, then jump directly into
+            discovery with that lens applied.
+          </p>
         </div>
         <div className="grid grid-3">
           {INVESTOR_LANES.map((lane) => (
@@ -225,9 +283,18 @@ export default async function HomePage() {
               <p className="eyebrow">{lane.subtitle}</p>
               <h3>{lane.title}</h3>
               <p className="muted">{lane.body}</p>
+              <div className="lane-split" aria-hidden="true">
+                <span className="lane-split__senior" style={{ width: `${lane.seniorShare}%` }} />
+                <span className="lane-split__junior" style={{ width: `${lane.juniorShare}%` }} />
+              </div>
+              <div className="lane-metrics">
+                <span>{`Senior ${lane.seniorShare}%`}</span>
+                <span>{`Junior ${lane.juniorShare}%`}</span>
+              </div>
+              <p className="micro lane-signal">{lane.signal}</p>
               <div className="card-actions">
-                <Link className="button button--ghost" href="/discover">
-                  Enter discovery
+                <Link className="button button--ghost" href={lane.href}>
+                  {lane.cta}
                 </Link>
               </div>
             </article>

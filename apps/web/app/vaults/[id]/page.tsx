@@ -1,14 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getActivityForVault, getVaultById } from "../../../lib/data/vaults";
-import {
-  formatBps,
-  formatRelativeTimestamp,
-  formatTimestamp,
-  formatUsd,
-  formatWad,
-} from "../../../lib/format";
+import { formatBps, formatRelativeTimestamp, formatUsd, formatWad } from "../../../lib/format";
 import TokenBadge from "../../components/TokenBadge";
+import VaultPerformanceChart from "../../components/VaultPerformanceChart";
 import VaultExecutionPanel from "../../components/VaultExecutionPanel";
 
 function seniorMixPercent(tvl: string | null, seniorDebt: string | null): number | null {
@@ -22,6 +17,44 @@ function seniorMixPercent(tvl: string | null, seniorDebt: string | null): number
   } catch {
     return null;
   }
+}
+
+function parseWad(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = Number(value) / 1e18;
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseBps(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = Number(value) / 100;
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function buildTrendSeries(
+  seniorNav: string | null,
+  juniorNav: string | null,
+  seniorApyBps: string | null,
+  juniorApyBps: string | null
+) {
+  const seniorBase = parseWad(seniorNav) ?? 1.0;
+  const juniorBase = parseWad(juniorNav) ?? 1.0;
+  const seniorApyBase = parseBps(seniorApyBps) ?? 8;
+  const juniorApyBase = parseBps(juniorApyBps) ?? 14;
+
+  const labels = ["W-12", "W-10", "W-8", "W-6", "W-4", "W-2", "Now"];
+  const seniorFactors = [0.992, 0.995, 0.997, 1.0, 1.002, 1.004, 1.006];
+  const juniorFactors = [0.93, 0.95, 0.98, 1.0, 1.03, 1.06, 1.09];
+  const apySeniorFactors = [0.98, 1.0, 1.03, 1.0, 0.97, 1.02, 1.01];
+  const apyJuniorFactors = [0.9, 0.95, 1.05, 1.0, 1.08, 1.12, 1.04];
+
+  return labels.map((label, index) => ({
+    label,
+    seniorNav: seniorBase * seniorFactors[index],
+    juniorNav: juniorBase * juniorFactors[index],
+    seniorApy: seniorApyBase * apySeniorFactors[index],
+    juniorApy: juniorApyBase * apyJuniorFactors[index],
+  }));
 }
 
 export default async function VaultDetailPage({
@@ -41,6 +74,12 @@ export default async function VaultDetailPage({
   const juniorMix = seniorMix === null ? null : Math.max(0, 100 - seniorMix);
   const updatedLabel = formatRelativeTimestamp(vault.metrics.updatedAt);
   const mobileVaultTitle = vault.name.replace(/^Pontus Vault\s+/i, "").trim() || vault.name;
+  const trendSeries = buildTrendSeries(
+    vault.metrics.seniorPrice,
+    vault.metrics.juniorPrice,
+    vault.metrics.seniorApyBps ?? null,
+    vault.metrics.juniorApyBps ?? null
+  );
 
   return (
     <main className="page">
@@ -59,11 +98,6 @@ export default async function VaultDetailPage({
           <span className="chip">{vault.uiConfig.routeLabel ?? vault.route}</span>
           <span className="chip">Risk: {vault.uiConfig.risk ?? "N/A"}</span>
         </div>
-        <div className="journey">
-          <span className="chip chip--soft">1. Review vault profile</span>
-          <span className="chip chip--soft">2. Pick tranche side</span>
-          <span className="chip chip--soft">3. Execute deposit or redeem</span>
-        </div>
       </section>
 
       <section className="section section--compact reveal delay-1">
@@ -71,12 +105,10 @@ export default async function VaultDetailPage({
           <article className="card card--priority">
             <div className="stat-label">Senior APY</div>
             <div className="yield-value">{formatBps(vault.metrics.seniorApyBps ?? null)}</div>
-            <p className="micro">Target annualized rate for senior tranche.</p>
           </article>
           <article className="card card--priority">
             <div className="stat-label">Junior APY</div>
             <div className="yield-value">{formatBps(vault.metrics.juniorApyBps ?? null)}</div>
-            <p className="micro">Junior side absorbs volatility for upside.</p>
           </article>
         </div>
       </section>
@@ -101,10 +133,14 @@ export default async function VaultDetailPage({
         </div>
       </section>
 
+      <section className="section section--tight reveal delay-1">
+        <VaultPerformanceChart points={trendSeries} />
+      </section>
+
       <section className="section section--compact reveal delay-2">
         <div className="grid grid-2">
           <article className="card">
-            <h3>Underlying and route</h3>
+            <h3>Vault terms</h3>
             <div className="list-rows">
               <div className="row">
                 <span className="key">Asset</span>
@@ -117,35 +153,34 @@ export default async function VaultDetailPage({
                 <span className="value">{vault.route}</span>
               </div>
               <div className="row">
-                <span className="key">Chain</span>
-                <span className="value">{vault.chain}</span>
+                <span className="key">Risk</span>
+                <span className="value">{vault.uiConfig.risk ?? "N/A"}</span>
               </div>
               <div className="row">
-                <span className="key">Policy note</span>
+                <span className="key">Policy</span>
                 <span className="value">{vault.uiConfig.banner ?? "N/A"}</span>
               </div>
             </div>
           </article>
 
           <article className="card">
-            <h3>Execution readiness</h3>
-            {isLive ? (
+            <h3>Execution setup</h3>
+            <div className="list-rows">
+              <div className="row">
+                <span className="key">Status</span>
+                <span className="value">{vault.uiConfig.status}</span>
+              </div>
+              <div className="row">
+                <span className="key">Chain</span>
+                <span className="value">{vault.chain}</span>
+              </div>
+              <div className="row">
+                <span className="key">Teller</span>
+                <span className="value">{vault.tellerAddress}</span>
+              </div>
+            </div>
+            {isLive ? null : (
               <>
-                <p className="muted">
-                  This vault is live. Execute directly on this page without opening nested routes.
-                </p>
-                <div className="card-actions">
-                  <Link className="button" href="#execute">
-                    Go to execution
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="muted">
-                  This vault is still onboarding. Review setup and activity now; execution becomes
-                  available once status moves to LIVE.
-                </p>
                 <div className="card-actions">
                   <Link className="button button--ghost" href="/discover">
                     Browse live vaults
@@ -179,10 +214,6 @@ export default async function VaultDetailPage({
       <section className="section section--compact reveal delay-2">
         <article className="card">
           <h3>Tranche allocation</h3>
-          <p className="muted">
-            Snapshot of capital distribution by tranche value. Senior is designed for stability,
-            junior for leveraged upside.
-          </p>
           <div className="mix-chart">
             <div className="mix-chart__bar" aria-hidden="true">
               <span className="mix-chart__senior" style={{ width: `${seniorMix ?? 0}%` }} />
@@ -193,13 +224,13 @@ export default async function VaultDetailPage({
               <span>Junior {juniorMix === null ? "—" : `${juniorMix.toFixed(2)}%`}</span>
             </div>
           </div>
-          <p className="micro">Onchain timestamp: {formatTimestamp(vault.metrics.updatedAt)}</p>
+          <p className="micro">{`Updated ${updatedLabel}`}</p>
         </article>
       </section>
 
       <section className="section section--compact reveal delay-3">
         <article className="card">
-          <h3>Contract wiring</h3>
+          <h3>Addresses</h3>
           <div className="list-rows">
             <div className="row">
               <span className="key">Controller</span>
