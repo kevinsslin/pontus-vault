@@ -132,32 +132,9 @@ export default async function HomePage() {
               <span className="value">Institutional-grade vault packaging</span>
             </div>
           </div>
-
-          <div className="partner-marquee" aria-label="Featured ecosystem integrations">
-            <div className="partner-track">
-              {[...PARTNERS, ...PARTNERS].map((partner, index) => (
-                <a
-                  className="partner-pill"
-                  href={partner.href}
-                  key={`${partner.name}-${index}`}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <Image
-                    src={partner.logo}
-                    alt={`${partner.name} logo`}
-                    width={40}
-                    height={40}
-                    className="partner-logo"
-                  />
-                  {partner.name}
-                </a>
-              ))}
-            </div>
-          </div>
         </div>
 
-        <aside className="hero__panel reveal delay-1">
+        <aside className="hero__panel hero__panel--compact reveal delay-1">
           <p className="eyebrow">Platform snapshot</p>
           <h3>Capital routing with tranche-native controls.</h3>
           <div className="hero__kpi">
@@ -182,6 +159,29 @@ export default async function HomePage() {
             Discovery, allocation, and reporting stay aligned in one decision-ready interface.
           </p>
         </aside>
+
+        <div className="partner-marquee hero__marquee" aria-label="Featured ecosystem integrations">
+          <div className="partner-track">
+            {[...PARTNERS, ...PARTNERS].map((partner, index) => (
+              <a
+                className="partner-pill"
+                href={partner.href}
+                key={`${partner.name}-${index}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <Image
+                  src={partner.logo}
+                  alt={`${partner.name} logo`}
+                  width={66}
+                  height={66}
+                  className="partner-logo"
+                />
+                {partner.name}
+              </a>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="section reveal delay-1">
