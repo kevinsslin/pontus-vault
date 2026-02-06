@@ -384,33 +384,28 @@ p {
 }
 
 .partner-pill {
-  font-size: 14px;
-  letter-spacing: 0.03em;
-  text-transform: none;
-  font-weight: 600;
-  padding: 12px 18px;
-  gap: 12px;
-  border-color: rgba(15, 91, 151, 0.22);
-  background: linear-gradient(150deg, rgba(255, 255, 255, 0.93), rgba(228, 244, 255, 0.82));
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
   white-space: nowrap;
-  transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+  transition: transform 0.24s ease, opacity 0.24s ease;
 }
 
 .partner-pill:hover {
-  transform: translateY(-2px) scale(1.02);
-  border-color: rgba(27, 107, 166, 0.38);
-  box-shadow: 0 10px 18px rgba(20, 88, 142, 0.18);
+  transform: translateY(-1px);
+  opacity: 0.92;
 }
 
 .partner-logo {
-  width: 126px;
-  height: 56px;
-  border-radius: 10px;
+  width: auto;
+  height: 54px;
+  max-width: 220px;
+  border-radius: 0;
   object-fit: contain;
-  padding: 6px;
-  background: white;
-  border: 1px solid rgba(14, 84, 139, 0.16);
-  box-shadow: 0 8px 14px rgba(16, 78, 129, 0.22);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
   flex-shrink: 0;
 }
 
@@ -642,16 +637,16 @@ p {
   overflow: hidden;
   border-radius: 18px;
   border: 1px solid rgba(14, 88, 146, 0.24);
-  background: rgba(255, 255, 255, 0.84);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(228, 242, 255, 0.18));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 20px 36px rgba(12, 71, 119, 0.14);
-  padding: 16px 0;
+  padding: 14px 0;
 }
 
 .partner-track {
   display: flex;
-  gap: 16px;
+  gap: 26px;
   width: max-content;
-  padding: 0 18px 4px;
+  padding: 0 24px 2px;
   animation: partner-marquee 42s linear infinite;
   will-change: transform;
 }
@@ -1330,15 +1325,12 @@ a:focus-visible {
   }
 
   .partner-pill {
-    font-size: 12px;
-    padding: 8px 12px;
-    gap: 8px;
+    padding: 6px 10px;
   }
 
   .partner-logo {
-    width: 96px;
-    height: 42px;
-    border-radius: 8px;
+    height: 40px;
+    max-width: 160px;
   }
 
   .journey .chip {

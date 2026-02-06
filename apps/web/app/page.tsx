@@ -5,17 +5,15 @@ import { getVaults } from "../lib/data/vaults";
 import { formatRelativeTimestamp, formatUsd, formatWad } from "../lib/format";
 
 const PARTNERS = [
-  { name: "Pharos", logo: "/partners/pharos.png", href: "https://pharosnetwork.xyz" },
-  { name: "OpenFi", logo: "/partners/openfi.png", href: "https://openfi.xyz" },
-  { name: "Plume", logo: "/partners/plume.png", href: "https://plumenetwork.xyz" },
-  { name: "Ondo", logo: "/partners/ondo.png", href: "https://ondo.finance" },
-  { name: "Superstate", logo: "/partners/superstate.png", href: "https://superstate.co" },
-  { name: "Centrifuge", logo: "/partners/centrifuge.png", href: "https://centrifuge.io" },
-  { name: "Securitize", logo: "/partners/securitize.png", href: "https://securitize.io" },
-  { name: "Sky", logo: "/partners/sky.svg", href: "https://sky.money" },
-  { name: "BlockTower", logo: "/partners/blocktower.svg", href: "https://blocktower.com" },
-  { name: "Parafi", logo: "/partners/parafi.svg", href: "https://parafi.com" },
-  { name: "Janus Henderson", logo: "/partners/janus-henderson.svg", href: "https://www.janushenderson.com" },
+  { name: "Pharos", logo: "/partners/pharos.png", href: "https://pharosnetwork.xyz", width: 190, height: 48 },
+  { name: "Plume", logo: "/partners/plume-wordmark.png", href: "https://plumenetwork.xyz", width: 188, height: 64 },
+  { name: "Ondo", logo: "/partners/ondo.svg", href: "https://ondo.finance", width: 184, height: 60 },
+  { name: "Superstate", logo: "/partners/superstate-wordmark.png", href: "https://superstate.co", width: 220, height: 40 },
+  { name: "Centrifuge", logo: "/partners/centrifuge.svg", href: "https://centrifuge.io", width: 95, height: 31 },
+  { name: "Sky", logo: "/partners/sky.svg", href: "https://sky.money", width: 84, height: 35 },
+  { name: "BlockTower", logo: "/partners/blocktower.svg", href: "https://blocktower.com", width: 194, height: 62 },
+  { name: "Parafi", logo: "/partners/parafi.svg", href: "https://parafi.com", width: 194, height: 62 },
+  { name: "Janus Henderson", logo: "/partners/janus-henderson.svg", href: "https://www.janushenderson.com", width: 194, height: 62 },
 ];
 
 const WORKFLOW_STEPS = [
@@ -175,12 +173,12 @@ export default async function HomePage() {
               >
                 <Image
                   src={partner.logo}
-                  alt={`${partner.name} logo`}
-                  width={84}
-                  height={44}
+                  alt={`${partner.name} wordmark`}
+                  width={partner.width}
+                  height={partner.height}
                   className="partner-logo"
                 />
-                {partner.name}
+                <span className="sr-only">{partner.name}</span>
               </a>
             ))}
           </div>
