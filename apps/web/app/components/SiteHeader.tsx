@@ -14,8 +14,14 @@ export default function SiteHeader() {
               Pontus <span className="muted">Vault</span>
             </span>
           </Link>
-          <span className="chip chip--soft">
-            <span className="live-dot" /> Pharos Atlantic
+          <span className="chip chip--soft site-header__network">
+            <span className="live-dot" />
+            <span className="site-header__network-label site-header__network-label--desktop">
+              Pharos Atlantic
+            </span>
+            <span className="site-header__network-label site-header__network-label--mobile">
+              Atlantic
+            </span>
           </span>
         </div>
 

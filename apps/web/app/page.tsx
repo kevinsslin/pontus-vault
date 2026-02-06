@@ -2,15 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import VaultCard from "./components/VaultCard";
 import { getVaults } from "../lib/data/vaults";
-import { formatUsd, formatWad } from "../lib/format";
+import { formatRelativeTimestamp, formatUsd, formatWad } from "../lib/format";
 
 const PARTNERS = [
+  { name: "Pharos", logo: "/partners/pharos.png", href: "https://pharosnetwork.xyz" },
   { name: "OpenFi", logo: "/partners/openfi.png", href: "https://openfi.xyz" },
   { name: "Plume", logo: "/partners/plume.png", href: "https://plumenetwork.xyz" },
   { name: "Ondo", logo: "/partners/ondo.png", href: "https://ondo.finance" },
   { name: "Superstate", logo: "/partners/superstate.png", href: "https://superstate.co" },
   { name: "Centrifuge", logo: "/partners/centrifuge.png", href: "https://centrifuge.io" },
   { name: "Securitize", logo: "/partners/securitize.png", href: "https://securitize.io" },
+  { name: "Sky", logo: "/partners/sky.svg", href: "https://sky.money" },
+  { name: "BlockTower", logo: "/partners/blocktower.svg", href: "https://blocktower.com" },
+  { name: "Parafi", logo: "/partners/parafi.svg", href: "https://parafi.com" },
+  { name: "Janus Henderson", logo: "/partners/janus-henderson.svg", href: "https://www.janushenderson.com" },
 ];
 
 const WORKFLOW_STEPS = [
@@ -76,16 +81,13 @@ function averageSeniorPrice(vaults: Awaited<ReturnType<typeof getVaults>>): stri
   return (total / BigInt(prices.length)).toString();
 }
 
-function apyBand(vaults: Awaited<ReturnType<typeof getVaults>>): string {
-  const rates = vaults.flatMap((vault) => {
-    const values = [vault.metrics.seniorApyBps, vault.metrics.juniorApyBps];
-    return values.filter((value): value is string => Boolean(value)).map((value) => Number(value));
-  });
-
-  if (rates.length === 0) return "—";
-  const min = Math.min(...rates);
-  const max = Math.max(...rates);
-  return `${(min / 100).toFixed(2)}% - ${(max / 100).toFixed(2)}%`;
+function latestUpdatedAt(vaults: Awaited<ReturnType<typeof getVaults>>): string {
+  const freshest = vaults.reduce((latest, vault) => {
+    const ts = Number(vault.metrics.updatedAt ?? 0);
+    if (!Number.isFinite(ts)) return latest;
+    return ts > latest ? ts : latest;
+  }, 0);
+  return freshest > 0 ? formatRelativeTimestamp(String(freshest)) : "—";
 }
 
 export default async function HomePage() {
@@ -95,7 +97,8 @@ export default async function HomePage() {
   const tvl = totalTvl(vaults);
   const avgSenior = averageSeniorPrice(liveVaults);
   const avgSeniorLabel = avgSenior ? `${formatWad(avgSenior)}x` : "—";
-  const band = apyBand(liveVaults);
+  const liveCountLabel = `${liveVaults.length} vault${liveVaults.length === 1 ? "" : "s"} live`;
+  const updateLabel = latestUpdatedAt(liveVaults);
 
   return (
     <main className="page">
@@ -108,7 +111,6 @@ export default async function HomePage() {
             route capital into curated DeFi and RWA channels, and track performance with one
             coherent performance view.
           </p>
-          <div className="hero__line" />
           <div className="card-actions">
             <Link className="button" href="/discover">
               Open app
@@ -137,22 +139,23 @@ export default async function HomePage() {
         <aside className="hero__panel hero__panel--compact reveal delay-1">
           <p className="eyebrow">Platform snapshot</p>
           <h3>Capital routing with tranche-native controls.</h3>
-          <div className="hero__kpi">
-            <div className="kpi">
-              <span className="label">Vault TVL</span>
-              <span className="value">{formatUsd(tvl)}</span>
+          <div className="hero__aum-card">
+            <span className="label">Total AUM</span>
+            <span className="hero__aum-value">{formatUsd(tvl)}</span>
+            <span className="hero__aum-note">{liveCountLabel}</span>
+          </div>
+          <div className="hero__mini">
+            <div className="mini">
+              <span>Live vaults</span>
+              <strong>{liveVaults.length}</strong>
             </div>
-            <div className="kpi">
-              <span className="label">Live vaults</span>
-              <span className="value">{liveVaults.length}</span>
+            <div className="mini">
+              <span>Senior NAV</span>
+              <strong>{avgSeniorLabel}</strong>
             </div>
-            <div className="kpi">
-              <span className="label">Senior NAV</span>
-              <span className="value">{avgSeniorLabel}</span>
-            </div>
-            <div className="kpi">
-              <span className="label">Expected APY band</span>
-              <span className="value">{band}</span>
+            <div className="mini">
+              <span>Last update</span>
+              <strong>{updateLabel}</strong>
             </div>
           </div>
           <p className="muted">
@@ -173,8 +176,8 @@ export default async function HomePage() {
                 <Image
                   src={partner.logo}
                   alt={`${partner.name} logo`}
-                  width={66}
-                  height={66}
+                  width={84}
+                  height={44}
                   className="partner-logo"
                 />
                 {partner.name}
