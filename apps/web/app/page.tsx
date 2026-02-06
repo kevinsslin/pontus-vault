@@ -106,7 +106,7 @@ export default async function HomePage() {
           <p className="muted">
             Pontus gives allocators a clean way to split exposure into senior and junior tranches,
             route capital into curated DeFi and RWA channels, and track performance with one
-            coherent data plane.
+            coherent performance view.
           </p>
           <div className="hero__line" />
           <div className="card-actions">
@@ -120,20 +120,20 @@ export default async function HomePage() {
 
           <div className="trust-strip">
             <div className="trust-item">
-              <span className="label">Settlement chain</span>
-              <span className="value">Pharos Atlantic</span>
+              <span className="label">Capital profile</span>
+              <span className="value">Senior and junior sleeves</span>
             </div>
             <div className="trust-item">
-              <span className="label">Execution model</span>
-              <span className="value">Tranche-native vault routing</span>
+              <span className="label">Risk controls</span>
+              <span className="value">Policy-driven downside boundaries</span>
             </div>
             <div className="trust-item">
-              <span className="label">Data plane</span>
-              <span className="value">MonkVault Data + Goldsky</span>
+              <span className="label">Distribution ready</span>
+              <span className="value">Institutional-grade vault packaging</span>
             </div>
           </div>
 
-          <div className="partner-marquee" aria-label="Ecosystem integrations">
+          <div className="partner-marquee" aria-label="Featured ecosystem integrations">
             <div className="partner-track">
               {[...PARTNERS, ...PARTNERS].map((partner, index) => (
                 <a
@@ -146,8 +146,8 @@ export default async function HomePage() {
                   <Image
                     src={partner.logo}
                     alt={`${partner.name} logo`}
-                    width={22}
-                    height={22}
+                    width={40}
+                    height={40}
                     className="partner-logo"
                   />
                   {partner.name}
@@ -179,7 +179,7 @@ export default async function HomePage() {
             </div>
           </div>
           <p className="muted">
-            Discovery, execution, and reporting keep the same schema from indexer to UI.
+            Discovery, allocation, and reporting stay aligned in one decision-ready interface.
           </p>
         </aside>
       </section>
@@ -201,16 +201,16 @@ export default async function HomePage() {
 
       <section className="section reveal delay-2">
         <div className="section-title">
-          <h2>Execution architecture</h2>
+          <h2>Capital flow</h2>
         </div>
         <article className="card architecture">
-          <div className="arch-node">Wallet + Policy</div>
+          <div className="arch-node">Mandate setup</div>
           <span className="arch-arrow">→</span>
           <div className="arch-node">Vault Discovery</div>
           <span className="arch-arrow">→</span>
-          <div className="arch-node">Tranche Controller</div>
+          <div className="arch-node">Tranche allocation</div>
           <span className="arch-arrow">→</span>
-          <div className="arch-node">OpenFi / RWA Routes</div>
+          <div className="arch-node">Yield channels</div>
         </article>
       </section>
 
