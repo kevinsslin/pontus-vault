@@ -6,8 +6,8 @@ solc_version = "0.8.21"
 auto_detect_remappings = false
 remappings = [
   "forge-std/=lib/forge-std/src/",
-  "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
-  "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
+  "@openzeppelin/contracts/=lib/oz-contracts-v5/contracts/",
+  "@openzeppelin/contracts-upgradeable/=lib/oz-contracts-upgradeable-v5/contracts/",
   "@solmate/=lib/boring-vault/lib/solmate/src/"
 ]
 

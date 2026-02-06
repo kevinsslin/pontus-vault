@@ -14,6 +14,14 @@ abstract contract BaseScript is Script {
         return vm.envOr(key, defaultValue);
     }
 
+    function _envString(string memory key, string memory defaultValue) internal view returns (string memory) {
+        return vm.envOr(key, defaultValue);
+    }
+
+    function _envBytes32(string memory key, bytes32 defaultValue) internal view returns (bytes32) {
+        return vm.envOr(key, defaultValue);
+    }
+
     function _requireAddress(address value, string memory key) internal pure {
         if (value == address(0)) revert MissingConfig(key);
     }

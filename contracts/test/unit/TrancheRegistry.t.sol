@@ -2,9 +2,12 @@
 pragma solidity ^0.8.21;
 
 import {Test} from "forge-std/Test.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {TrancheRegistry} from "../../src/tranche/TrancheRegistry.sol";
+import {TrancheRegistryV2} from "../mocks/TrancheRegistryV2.sol";
 
 contract TrancheRegistryTest is Test {
     TrancheRegistry internal registry;
@@ -17,12 +20,23 @@ contract TrancheRegistryTest is Test {
         owner = makeAddr("owner");
         factory = makeAddr("factory");
         outsider = makeAddr("outsider");
-        registry = new TrancheRegistry(owner, factory);
+
+        TrancheRegistry registryImpl = new TrancheRegistry();
+        registry = TrancheRegistry(
+            address(
+                new ERC1967Proxy(address(registryImpl), abi.encodeCall(TrancheRegistry.initialize, (owner, factory)))
+            )
+        );
+    }
+
+    function test_initialize_revertsWhenCalledTwice() public {
+        vm.expectRevert(Initializable.InvalidInitialization.selector);
+        registry.initialize(owner, factory);
     }
 
     function test_setFactory_revertsForNonOwner() public {
         vm.prank(outsider);
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, outsider));
+        vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, outsider));
         registry.setFactory(makeAddr("newFactory"));
     }
 
@@ -82,6 +96,29 @@ contract TrancheRegistryTest is Test {
 
         TrancheRegistry.TrancheVaultInfo[] memory emptyPage = registry.getTrancheVaults(3, 10);
         assertEq(emptyPage.length, 0);
+    }
+
+    function test_upgradeToAndCall_revertsForNonOwner() public {
+        TrancheRegistryV2 newImpl = new TrancheRegistryV2();
+
+        vm.prank(outsider);
+        vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, outsider));
+        registry.upgradeToAndCall(address(newImpl), "");
+    }
+
+    function test_upgradeToAndCall_preservesState() public {
+        TrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
+
+        vm.prank(factory);
+        registry.registerTrancheVault(info);
+
+        TrancheRegistryV2 newImpl = new TrancheRegistryV2();
+        vm.prank(owner);
+        registry.upgradeToAndCall(address(newImpl), "");
+
+        assertEq(registry.factory(), factory);
+        assertEq(registry.trancheVaultCount(), 1);
+        assertEq(TrancheRegistryV2(address(registry)).version(), 2);
     }
 
     function _sampleTrancheVault() internal pure returns (TrancheRegistry.TrancheVaultInfo memory) {

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TrancheFactory} from "../../src/tranche/TrancheFactory.sol";
 import {TrancheRegistry} from "../../src/tranche/TrancheRegistry.sol";
@@ -30,8 +31,25 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
         controllerImpl = new TrancheController();
         tokenImpl = new TrancheToken();
 
-        registry = new TrancheRegistry(owner, address(0));
-        factory = new TrancheFactory(owner, address(controllerImpl), address(tokenImpl), address(registry));
+        TrancheRegistry registryImpl = new TrancheRegistry();
+        registry = TrancheRegistry(
+            address(
+                new ERC1967Proxy(address(registryImpl), abi.encodeCall(TrancheRegistry.initialize, (owner, address(0))))
+            )
+        );
+
+        TrancheFactory factoryImpl = new TrancheFactory();
+        factory = TrancheFactory(
+            address(
+                new ERC1967Proxy(
+                    address(factoryImpl),
+                    abi.encodeCall(
+                        TrancheFactory.initialize,
+                        (owner, address(controllerImpl), address(tokenImpl), address(registry))
+                    )
+                )
+            )
+        );
 
         vm.prank(owner);
         registry.setFactory(address(factory));
@@ -68,7 +86,7 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
         TrancheFactory.TrancheVaultConfig memory config = _defaultConfig(bytes32(0));
 
         vm.prank(outsider);
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, outsider));
+        vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, outsider));
         factory.createTrancheVault(config);
     }
 

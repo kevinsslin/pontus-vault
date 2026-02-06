@@ -7,12 +7,12 @@ if [[ ! -d "lib/forge-std" ]]; then
   forge install foundry-rs/forge-std@1801b0541f4fda118a10798fd3486bb7051c5dd6 --no-git
 fi
 
-if [[ ! -d "lib/openzeppelin-contracts" ]]; then
-  forge install OpenZeppelin/openzeppelin-contracts@v5.5.0 --no-git
+if [[ ! -d "lib/oz-contracts-v5" ]]; then
+  forge install oz-contracts-v5=OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git -j 8
 fi
 
-if [[ ! -d "lib/openzeppelin-contracts-upgradeable" ]]; then
-  forge install OpenZeppelin/openzeppelin-contracts-upgradeable@v5.5.0 --no-git
+if [[ ! -d "lib/oz-contracts-upgradeable-v5" ]]; then
+  forge install oz-contracts-upgradeable-v5=OpenZeppelin/openzeppelin-contracts-upgradeable@v5.0.2 --no-git -j 8
 fi
 
 if [[ ! -d "lib/boring-vault" ]]; then

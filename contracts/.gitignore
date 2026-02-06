@@ -7,6 +7,10 @@ lib/boring-vault/
 lib/forge-std/
 lib/openzeppelin-contracts/
 lib/openzeppelin-contracts-upgradeable/
+lib/oz-contracts/
+lib/oz-contracts-upgradeable/
+lib/oz-contracts-v5/
+lib/oz-contracts-upgradeable-v5/
 
 # Ignores development broadcast logs
 !/broadcast

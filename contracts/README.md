@@ -6,12 +6,18 @@ This workspace holds the BoringVault stack integration and tranche wrapper contr
 - `src/tranche/`: tranche controller/factory/registry/token/rate-model contracts
 - `src/libraries/`: constants + OpenFi calldata builder
 - `src/interfaces/`: OpenFi + tranche interfaces
-- `script/Deploy.s.sol`: deployment entrypoint
+- `script/DeployInfra.s.sol`: one-time infra deploy (UUPS `TrancheRegistry` + `TrancheFactory` proxies + implementations)
+- `script/DeployTrancheVault.s.sol`: per-vault deploy (BoringVault set + tranche vault creation)
+- `script/Deploy.s.sol`: backward-compatible alias to `DeployInfra.s.sol`
 - `script/BaseScript.sol`: shared script env helpers
 - `test/unit`: isolated logic tests
 - `test/integration`: full self-deployed BoringVault assembly tests
 - `test/fork`: Atlantic fork tests
 - `test/invariant`: property-based tests
+
+**Upgradeability**
+- `TrancheRegistry` and `TrancheFactory` are deployed behind UUPS proxies.
+- Both contracts use ERC-7201 namespaced storage (`@custom:storage-location`) instead of storage gaps.
 
 **BoringVault Dependency**
 ```bash
@@ -25,7 +31,7 @@ This repo vendors the pinned commit in `contracts/lib/boring-vault`; keep it in 
 - `contracts/lib/boring-vault/script/DeployTeller.s.sol`: teller deployment flow to adapt for Pharos/Atlantic assets.
 - `contracts/lib/boring-vault/script/DeployDecoderAndSanitizer.s.sol`: decoder/allowlist scaffolding (use for OpenFi selectors).
 
-No deploy scripts are run from this repo; we adapt the above patterns into `contracts/script/Deploy.s.sol`.
+No deploy scripts are run automatically from CI; use the scripts locally when you are ready to broadcast.
 
 **Commands**
 ```bash
@@ -42,6 +48,8 @@ pnpm --filter @pti/contracts deps
 pnpm --filter @pti/contracts build
 pnpm --filter @pti/contracts test
 pnpm --filter @pti/contracts deploy
+pnpm --filter @pti/contracts deploy:infra
+pnpm --filter @pti/contracts deploy:vault
 ```
 
 **Test Notes**
