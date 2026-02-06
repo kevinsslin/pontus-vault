@@ -1398,6 +1398,130 @@ a:focus-visible {
   align-content: start;
 }
 
+.operator-panel,
+.operator-history,
+.operator-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.operator-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field span {
+  font-size: 12px;
+  font-weight: 620;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pv-ink-500);
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--pv-line-strong);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--pv-ink-900);
+  font-family: var(--font-body), "Sora", sans-serif;
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: 2px solid rgba(31, 103, 157, 0.32);
+  outline-offset: 2px;
+  border-color: rgba(10, 52, 95, 0.44);
+}
+
+.operator-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.operator-item {
+  border: 1px solid var(--pv-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: var(--pv-shadow-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  text-align: left;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.operator-item:hover {
+  border-color: rgba(10, 52, 95, 0.25);
+}
+
+.operator-step-list {
+  display: grid;
+  gap: 12px;
+}
+
+.operator-step {
+  border: 1px solid var(--pv-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.operator-step__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.operator-step__head h4 {
+  font-size: 21px;
+}
+
+.operator-mono {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--pv-line);
+  background: rgba(5, 25, 46, 0.03);
+  color: var(--pv-ink-700);
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  word-break: break-all;
+}
+
+.operator-error {
+  margin: 0;
+  color: #b2312b;
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.operator-info {
+  margin: 0;
+  color: var(--pv-accent);
+  font-size: 13px;
+  font-weight: 560;
+}
+
 .execution-notes {
   display: grid;
   gap: 12px;
@@ -1812,6 +1936,11 @@ a:focus-visible {
   .grid-3,
   .grid-2,
   .grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .operator-grid,
+  .operator-list {
     grid-template-columns: 1fr;
   }
 

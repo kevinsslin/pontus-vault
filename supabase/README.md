@@ -1,3 +1,11 @@
 # Supabase
 
-This folder will contain migrations, RLS policies, and seeds for metadata tables only.
+This folder contains migrations, RLS policies, and seed data for:
+
+- Metadata tables (`vault_registry`, `watchlists`)
+- Operator audit trail tables (`operator_operations`, `operator_operation_steps`)
+
+Operator table goals:
+- Persist operation intent (`job_type`, `idempotency_key`, `requested_by`)
+- Persist step-level execution (`status`, `tx_hash`, `proof`, `error_*`)
+- Enable replay/review after demo runs

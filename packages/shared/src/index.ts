@@ -29,3 +29,4 @@ export const PHAROS_ATLANTIC = {
 } as const;
 
 export * from "./vaults";
+export * from "./operator";
