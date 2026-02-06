@@ -9,6 +9,7 @@ import {
   formatWad,
 } from "../../../lib/format";
 import TokenBadge from "../../components/TokenBadge";
+import VaultExecutionPanel from "../../components/VaultExecutionPanel";
 
 function seniorMixPercent(tvl: string | null, seniorDebt: string | null): number | null {
   if (!tvl || !seniorDebt) return null;
@@ -65,7 +66,7 @@ export default async function VaultDetailPage({
         </div>
       </section>
 
-      <section className="section reveal delay-1">
+      <section className="section section--compact reveal delay-1">
         <div className="detail-yield-grid">
           <article className="card card--priority">
             <div className="stat-label">Senior APY</div>
@@ -80,7 +81,7 @@ export default async function VaultDetailPage({
         </div>
       </section>
 
-      <section className="section reveal delay-1">
+      <section className="section section--tight reveal delay-1">
         <div className="stat-grid">
           <article className="card">
             <div className="stat-label">TVL</div>
@@ -100,7 +101,7 @@ export default async function VaultDetailPage({
         </div>
       </section>
 
-      <section className="section reveal delay-2">
+      <section className="section section--compact reveal delay-2">
         <div className="grid grid-2">
           <article className="card">
             <h3>Underlying and route</h3>
@@ -127,27 +128,23 @@ export default async function VaultDetailPage({
           </article>
 
           <article className="card">
-            <h3>Execution flow</h3>
+            <h3>Execution readiness</h3>
             {isLive ? (
               <>
                 <p className="muted">
-                  This vault is live. Continue to tranche actions from here. Deposit and redeem are
-                  intentionally hidden from listing pages to keep the flow explicit.
+                  This vault is live. Execute directly on this page without opening nested routes.
                 </p>
                 <div className="card-actions">
-                  <Link className="button" href={`/vaults/${vault.vaultId}/deposit`}>
-                    Deposit
-                  </Link>
-                  <Link className="button button--ghost" href={`/vaults/${vault.vaultId}/redeem`}>
-                    Redeem
+                  <Link className="button" href="#execute">
+                    Go to execution
                   </Link>
                 </div>
               </>
             ) : (
               <>
                 <p className="muted">
-                  This vault is still in onboarding. You can review configuration and history, but
-                  transaction actions are not enabled yet.
+                  This vault is still onboarding. Review setup and activity now; execution becomes
+                  available once status moves to LIVE.
                 </p>
                 <div className="card-actions">
                   <Link className="button button--ghost" href="/discover">
@@ -160,7 +157,26 @@ export default async function VaultDetailPage({
         </div>
       </section>
 
-      <section className="section reveal delay-2">
+      {isLive ? (
+        <VaultExecutionPanel vault={vault} />
+      ) : (
+        <section className="section section--compact reveal delay-2" id="execute">
+          <article className="card card--spotlight">
+            <h3>Execution unavailable</h3>
+            <p className="muted">
+              {vault.name} is currently {vault.uiConfig.status}. Deposits and redeems are disabled
+              until this vault is activated.
+            </p>
+            <div className="card-actions">
+              <Link className="button button--ghost" href="/discover">
+                Browse live vaults
+              </Link>
+            </div>
+          </article>
+        </section>
+      )}
+
+      <section className="section section--compact reveal delay-2">
         <article className="card">
           <h3>Tranche allocation</h3>
           <p className="muted">
@@ -181,7 +197,7 @@ export default async function VaultDetailPage({
         </article>
       </section>
 
-      <section className="section reveal delay-3">
+      <section className="section section--compact reveal delay-3">
         <article className="card">
           <h3>Contract wiring</h3>
           <div className="list-rows">
@@ -207,31 +223,33 @@ export default async function VaultDetailPage({
         </article>
       </section>
 
-      <section className="section reveal delay-3">
+      <section className="section section--compact reveal delay-3">
         <article className="card">
           <h3>Activity feed</h3>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Tranche</th>
-                <th>Amount</th>
-                <th>Actor</th>
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activity.map((entry) => (
-                <tr key={entry.id}>
-                  <td>{entry.type}</td>
-                  <td>{entry.tranche}</td>
-                  <td>{entry.amount}</td>
-                  <td>{entry.actor}</td>
-                  <td>{entry.time}</td>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Tranche</th>
+                  <th>Amount</th>
+                  <th>Actor</th>
+                  <th>Time</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {activity.map((entry) => (
+                  <tr key={entry.id}>
+                    <td>{entry.type}</td>
+                    <td>{entry.tranche}</td>
+                    <td>{entry.amount}</td>
+                    <td>{entry.actor}</td>
+                    <td>{entry.time}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </article>
       </section>
     </main>
