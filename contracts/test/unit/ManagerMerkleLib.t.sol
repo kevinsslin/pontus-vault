@@ -4,6 +4,7 @@ pragma solidity ^0.8.33;
 import {MerkleProofLib} from "../../lib/boring-vault/lib/solmate/src/utils/MerkleProofLib.sol";
 
 import {ManagerMerkleLib} from "../../src/libraries/ManagerMerkleLib.sol";
+
 import {BaseTest} from "../BaseTest.sol";
 
 contract MerkleProofVerifierHarness {

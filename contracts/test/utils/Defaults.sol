@@ -22,6 +22,9 @@ library TestDefaults {
 
     string internal constant LOG_SKIP_FORK = "PHAROS_RPC_URL not set; skipping OpenFi fork test.";
     string internal constant LOG_SKIP_ASSETO_FORK = "PHAROS_RPC_URL not set; skipping Asseto fork test.";
+    string internal constant LOG_SKIP_MANAGER_FORK = "PHAROS_RPC_URL not set; skipping manager fork test.";
+    string internal constant LOG_SKIP_ASSETO_MANAGER_FORK =
+        "RUN_ASSETO_MANAGER_FORK not enabled; skipping Asseto manager write test.";
 
     bytes32 internal constant SAMPLE_PARAMS_HASH = keccak256("sample");
     bytes32 internal constant SAMPLE_PARAMS_HASH_2 = keccak256("sample-2");

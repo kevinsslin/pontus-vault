@@ -34,6 +34,8 @@ Keep this repo consistent and maintainable: clear structure, pinned tooling, and
 - One contract per file for production contracts; file name should match the main contract name.
 - Expose and maintain explicit interfaces for externally integrated contracts (`ITranche*`, etc.), and keep implementations aligned with interface signatures.
 - Group Solidity imports by dependency layer with blank lines: external framework/libs -> BoringVault/other third-party protocol deps -> in-house project imports.
+- In test files, keep imports layered and predictable:
+  external test/libs -> in-house `src/` contracts/libraries -> test-only modules (`mocks/`, `utils/`, fixtures) -> base template (`BaseTest` / `IntegrationTest`) last.
 - Keep function ordering consistent by visibility and role grouping:
   constructor/initializer -> external owner/admin functions -> external user functions -> public view -> internal/private helpers.
 - Use leading underscore for function parameters and local temporary args (for example `_params`, `_newRate`, `_assetsIn`) consistently across contracts.

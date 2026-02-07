@@ -6,6 +6,7 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {OpenFiRayRateAdapter} from "../../src/adapters/OpenFiRayRateAdapter.sol";
 import {IOpenFiRateSource} from "../../src/interfaces/openfi/IOpenFiRateSource.sol";
+
 import {BaseTest} from "../BaseTest.sol";
 
 contract MockOpenFiRateSource is IOpenFiRateSource {

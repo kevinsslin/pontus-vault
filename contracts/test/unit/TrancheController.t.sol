@@ -7,9 +7,11 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {ITrancheController} from "../../src/interfaces/tranche/ITrancheController.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
-import {BaseTest} from "../BaseTest.sol";
+
 import {MockTeller} from "../mocks/MockTeller.sol";
 import {TestConstants} from "../utils/Constants.sol";
+
+import {BaseTest} from "../BaseTest.sol";
 
 contract MockRateModel {
     uint256 internal _rate;

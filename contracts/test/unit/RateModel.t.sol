@@ -6,8 +6,10 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ICapSafetyRateModel} from "../../src/interfaces/rates/ICapSafetyRateModel.sol";
 import {CapSafetyRateModel} from "../../src/rate-models/CapSafetyRateModel.sol";
 import {FixedRateModel} from "../../src/rate-models/FixedRateModel.sol";
-import {BaseTest} from "../BaseTest.sol";
+
 import {TestConstants} from "../utils/Constants.sol";
+
+import {BaseTest} from "../BaseTest.sol";
 
 contract MockRefRateProvider {
     uint256 internal _rate;

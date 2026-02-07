@@ -3,8 +3,10 @@ pragma solidity ^0.8.33;
 
 import {IOpenFiPool} from "../../src/interfaces/openfi/IOpenFiPool.sol";
 import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
-import {BaseTest} from "../BaseTest.sol";
+
 import {TestConstants} from "../utils/Constants.sol";
+
+import {BaseTest} from "../BaseTest.sol";
 
 contract MockOpenFiPool is IOpenFiPool {
     address internal _supplyAsset;

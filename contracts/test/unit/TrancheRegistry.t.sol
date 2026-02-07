@@ -7,10 +7,12 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 
 import {ITrancheRegistry} from "../../src/interfaces/tranche/ITrancheRegistry.sol";
 import {TrancheRegistry} from "../../src/tranche/TrancheRegistry.sol";
-import {BaseTest} from "../BaseTest.sol";
+
 import {TrancheRegistryV2} from "../mocks/TrancheRegistryV2.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
+
+import {BaseTest} from "../BaseTest.sol";
 
 contract TrancheRegistryTest is BaseTest {
     TrancheRegistry internal registry;

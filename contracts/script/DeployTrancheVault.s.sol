@@ -12,7 +12,8 @@ import {RolesAuthority, Authority} from "../lib/boring-vault/lib/solmate/src/aut
 import {ERC20} from "../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
 import {WETH} from "../lib/boring-vault/lib/solmate/src/tokens/WETH.sol";
 
-import {OpenFiAssetoDecoderAndSanitizer} from "../src/decoders/OpenFiAssetoDecoderAndSanitizer.sol";
+import {AssetoDecoderAndSanitizer} from "../src/decoders/AssetoDecoderAndSanitizer.sol";
+import {OpenFiDecoderAndSanitizer} from "../src/decoders/OpenFiDecoderAndSanitizer.sol";
 import {ITrancheFactory} from "../src/interfaces/tranche/ITrancheFactory.sol";
 import {ITrancheRegistry} from "../src/interfaces/tranche/ITrancheRegistry.sol";
 import {BaseScript} from "./BaseScript.sol";
@@ -97,7 +98,8 @@ contract DeployTrancheVault is BaseScript {
 
         ManagerWithMerkleVerification manager =
             new ManagerWithMerkleVerification(cfg.owner, address(vault), cfg.balancerVault);
-        OpenFiAssetoDecoderAndSanitizer decoder = new OpenFiAssetoDecoderAndSanitizer(address(vault));
+        OpenFiDecoderAndSanitizer openFiDecoder = new OpenFiDecoderAndSanitizer(address(vault));
+        AssetoDecoderAndSanitizer assetoDecoder = new AssetoDecoderAndSanitizer(address(vault));
         manager.setAuthority(rolesAuthority);
 
         _wireTellerRoles(rolesAuthority, vault, teller);
@@ -136,7 +138,8 @@ contract DeployTrancheVault is BaseScript {
         console2.log("WETH", address(weth));
         console2.log("Teller", address(teller));
         console2.log("Manager", address(manager));
-        console2.log("DecoderAndSanitizer", address(decoder));
+        console2.log("OpenFiDecoderAndSanitizer", address(openFiDecoder));
+        console2.log("AssetoDecoderAndSanitizer", address(assetoDecoder));
         console2.log("TrancheFactory", cfg.factoryAddress);
         console2.log("TrancheRegistry", address(registry));
         console2.log("TrancheParamsHash");

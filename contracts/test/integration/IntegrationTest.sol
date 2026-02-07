@@ -8,9 +8,10 @@ import {RolesAuthority, Authority} from "../../lib/boring-vault/lib/solmate/src/
 import {ERC20} from "../../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
 import {WETH} from "../../lib/boring-vault/lib/solmate/src/tokens/WETH.sol";
 
-import {BaseTest} from "../BaseTest.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
+
+import {BaseTest} from "../BaseTest.sol";
 
 abstract contract IntegrationTest is BaseTest {
     BoringVault internal boringVault;

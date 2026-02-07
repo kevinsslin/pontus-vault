@@ -8,10 +8,12 @@ import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TrancheFactory} from "../../src/tranche/TrancheFactory.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
 import {ITrancheFactory} from "../../src/interfaces/tranche/ITrancheFactory.sol";
-import {BaseTest} from "../BaseTest.sol";
+
 import {TrancheFactoryV2} from "../mocks/TrancheFactoryV2.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
+
+import {BaseTest} from "../BaseTest.sol";
 
 contract TrancheFactoryTest is BaseTest {
     address internal owner;

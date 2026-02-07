@@ -5,14 +5,17 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {ManagerWithMerkleVerification} from "../../lib/boring-vault/src/base/Roles/ManagerWithMerkleVerification.sol";
 
-import {OpenFiAssetoDecoderAndSanitizer} from "../../src/decoders/OpenFiAssetoDecoderAndSanitizer.sol";
+import {AssetoDecoderAndSanitizer} from "../../src/decoders/AssetoDecoderAndSanitizer.sol";
+import {OpenFiDecoderAndSanitizer} from "../../src/decoders/OpenFiDecoderAndSanitizer.sol";
 import {AssetoCallBuilder} from "../../src/libraries/AssetoCallBuilder.sol";
 import {ManagerMerkleLib} from "../../src/libraries/ManagerMerkleLib.sol";
 import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
+
 import {MockAssetoProduct} from "../mocks/MockAssetoProduct.sol";
 import {MockManagedOpenFiPool} from "../mocks/MockManagedOpenFiPool.sol";
-import {IntegrationTest} from "./IntegrationTest.sol";
 import {TestConstants} from "../utils/Constants.sol";
+
+import {IntegrationTest} from "./IntegrationTest.sol";
 
 /// @title Manager Merkle Integration Test
 /// @author Kevin Lin (@kevinsslin)
@@ -26,7 +29,8 @@ contract ManagerMerkleIntegrationTest is IntegrationTest {
     address internal managerAdmin;
 
     ManagerWithMerkleVerification internal manager;
-    OpenFiAssetoDecoderAndSanitizer internal decoder;
+    OpenFiDecoderAndSanitizer internal openFiDecoder;
+    AssetoDecoderAndSanitizer internal assetoDecoder;
     MockManagedOpenFiPool internal openFiPool;
     MockAssetoProduct internal assetoProduct;
 
@@ -44,7 +48,8 @@ contract ManagerMerkleIntegrationTest is IntegrationTest {
         openFiPool = new MockManagedOpenFiPool(IERC20(address(asset)));
         assetoProduct = new MockAssetoProduct(IERC20(address(asset)));
         manager = new ManagerWithMerkleVerification(address(this), address(boringVault), TestConstants.ZERO_ADDRESS);
-        decoder = new OpenFiAssetoDecoderAndSanitizer(address(boringVault));
+        openFiDecoder = new OpenFiDecoderAndSanitizer(address(boringVault));
+        assetoDecoder = new AssetoDecoderAndSanitizer(address(boringVault));
         manager.setAuthority(rolesAuthority);
 
         _configureManagerRoles();
@@ -65,43 +70,45 @@ contract ManagerMerkleIntegrationTest is IntegrationTest {
         targets[0] = address(asset);
         targetData[0] = abi.encodeWithSelector(IERC20.approve.selector, address(openFiPool), openFiAmount);
         leafHashes[0] = ManagerMerkleLib.hashLeafFromCallData(
-            address(decoder), targets[0], 0, targetData[0], abi.encodePacked(address(openFiPool))
+            address(openFiDecoder), targets[0], 0, targetData[0], abi.encodePacked(address(openFiPool))
         );
 
         targets[1] = address(openFiPool);
         targetData[1] = OpenFiCallBuilder.supplyCalldata(address(asset), openFiAmount, address(boringVault));
         leafHashes[1] = ManagerMerkleLib.hashLeafFromCallData(
-            address(decoder), targets[1], 0, targetData[1], abi.encodePacked(address(asset), address(boringVault))
+            address(openFiDecoder), targets[1], 0, targetData[1], abi.encodePacked(address(asset), address(boringVault))
         );
 
         targets[2] = address(openFiPool);
         targetData[2] = OpenFiCallBuilder.withdrawCalldata(address(asset), openFiAmount, address(boringVault));
         leafHashes[2] = ManagerMerkleLib.hashLeafFromCallData(
-            address(decoder), targets[2], 0, targetData[2], abi.encodePacked(address(asset), address(boringVault))
+            address(openFiDecoder), targets[2], 0, targetData[2], abi.encodePacked(address(asset), address(boringVault))
         );
 
         targets[3] = address(asset);
         targetData[3] = abi.encodeWithSelector(IERC20.approve.selector, address(assetoProduct), assetoAmount);
         leafHashes[3] = ManagerMerkleLib.hashLeafFromCallData(
-            address(decoder), targets[3], 0, targetData[3], abi.encodePacked(address(assetoProduct))
+            address(assetoDecoder), targets[3], 0, targetData[3], abi.encodePacked(address(assetoProduct))
         );
 
         targets[4] = address(assetoProduct);
         targetData[4] = AssetoCallBuilder.subscribeCalldata(address(boringVault), assetoAmount);
         leafHashes[4] = ManagerMerkleLib.hashLeafFromCallData(
-            address(decoder), targets[4], 0, targetData[4], abi.encodePacked(address(boringVault))
+            address(assetoDecoder), targets[4], 0, targetData[4], abi.encodePacked(address(boringVault))
         );
 
         targets[5] = address(assetoProduct);
         targetData[5] = AssetoCallBuilder.redemptionCalldata(address(boringVault), assetoAmount);
         leafHashes[5] = ManagerMerkleLib.hashLeafFromCallData(
-            address(decoder), targets[5], 0, targetData[5], abi.encodePacked(address(boringVault))
+            address(assetoDecoder), targets[5], 0, targetData[5], abi.encodePacked(address(boringVault))
         );
 
-        for (uint256 i; i < callCount; ++i) {
-            decoders[i] = address(decoder);
-            values[i] = 0;
-        }
+        decoders[0] = address(openFiDecoder);
+        decoders[1] = address(openFiDecoder);
+        decoders[2] = address(openFiDecoder);
+        decoders[3] = address(assetoDecoder);
+        decoders[4] = address(assetoDecoder);
+        decoders[5] = address(assetoDecoder);
 
         bytes32[][] memory proofs = new bytes32[][](callCount);
         bytes32 rootHash = ManagerMerkleLib.root(leafHashes);

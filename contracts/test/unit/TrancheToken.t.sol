@@ -5,9 +5,11 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 
 import {ITrancheToken} from "../../src/interfaces/tranche/ITrancheToken.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
-import {BaseTest} from "../BaseTest.sol";
+
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
+
+import {BaseTest} from "../BaseTest.sol";
 
 contract TrancheTokenTest is BaseTest {
     TrancheToken internal token;

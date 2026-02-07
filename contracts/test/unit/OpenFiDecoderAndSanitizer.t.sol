@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import {OpenFiAssetoDecoderAndSanitizer} from "../../src/decoders/OpenFiAssetoDecoderAndSanitizer.sol";
+import {OpenFiDecoderAndSanitizer} from "../../src/decoders/OpenFiDecoderAndSanitizer.sol";
+
 import {BaseTest} from "../BaseTest.sol";
 
-contract OpenFiAssetoDecoderAndSanitizerTest is BaseTest {
-    OpenFiAssetoDecoderAndSanitizer internal decoder;
+contract OpenFiDecoderAndSanitizerTest is BaseTest {
+    OpenFiDecoderAndSanitizer internal decoder;
 
     function setUp() public override {
         BaseTest.setUp();
-        decoder = new OpenFiAssetoDecoderAndSanitizer(address(this));
+        decoder = new OpenFiDecoderAndSanitizer(address(this));
     }
 
     function test_supply_returnsPackedAssetAndOnBehalfOf() public {
@@ -24,18 +25,6 @@ contract OpenFiAssetoDecoderAndSanitizerTest is BaseTest {
         address recipient = makeAddr("recipient");
         bytes memory packed = decoder.withdraw(withdrawAsset, 321, recipient);
         assertEq(packed, abi.encodePacked(withdrawAsset, recipient));
-    }
-
-    function test_subscribe_returnsPackedBeneficiary() public {
-        address beneficiary = makeAddr("beneficiary");
-        bytes memory packed = decoder.subscribe(beneficiary, 777);
-        assertEq(packed, abi.encodePacked(beneficiary));
-    }
-
-    function test_redemption_returnsPackedBeneficiary() public {
-        address beneficiary = makeAddr("beneficiary");
-        bytes memory packed = decoder.redemption(beneficiary, 888);
-        assertEq(packed, abi.encodePacked(beneficiary));
     }
 
     function test_approve_fromBaseDecoder_returnsPackedSpender() public {

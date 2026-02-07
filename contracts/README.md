@@ -11,7 +11,7 @@ This workspace holds the BoringVault stack integration and tranche wrapper contr
 - `src/interfaces/rates/`: shared + model-specific rate interfaces
 - `src/interfaces/openfi/`: OpenFi-facing interfaces
 - `src/interfaces/asseto/`: Asseto-facing interfaces
-- `src/interfaces/manager/`: manager decoder format interfaces
+- `src/interfaces/decoders/`: decoder format interfaces
 - `script/DeployInfra.s.sol`: one-time infra deploy (UUPS `TrancheRegistry` + `TrancheFactory` proxies + implementations)
 - `script/DeployTrancheVault.s.sol`: per-vault deploy (BoringVault set + manager + decoder + tranche vault creation)
 - `script/Deploy.s.sol`: backward-compatible alias to `DeployInfra.s.sol`
@@ -41,8 +41,9 @@ No deploy scripts are run automatically from CI; use the scripts locally when yo
 
 **Manager/Merkle Flow**
 - Each tranche vault deployment now standardizes manager deployment (`ManagerWithMerkleVerification`) and authority wiring.
-- `DeployTrancheVault.s.sol` deploys an `OpenFiAssetoDecoderAndSanitizer` for that vault and grants strategist/admin capabilities.
+- `DeployTrancheVault.s.sol` deploys protocol-specific decoders (`OpenFiDecoderAndSanitizer` and `AssetoDecoderAndSanitizer`) for that vault and grants strategist/admin capabilities.
 - Root/proof generation remains an offchain concern; `src/libraries/ManagerMerkleLib.sol` mirrors the onchain leaf/hash format for deterministic backend generation.
+- Backend/operator should version each root and keep proof generation in lockstep with decoder packed-address formats.
 
 **Commands**
 ```bash
@@ -85,4 +86,5 @@ pnpm verify:contract
 - Integration tests deploy the full BoringVault dependency set (vault + teller + accountant + authority) and wire tranche contracts against that deployment.
 - Unit/invariant tests use local test doubles (`MockTeller`, `MockAccountant`) only for isolated controller math and invariant exploration.
 - Fork tests target Pharos Atlantic OpenFi `supply/withdraw` roundtrip via `OpenFiCallBuilder`.
+- Fork tests also include manager+merkle flow coverage for OpenFi, with optional Asseto manager write-path coverage behind env flags.
 - Set `PHAROS_RPC_URL` to execute live fork behavior; tests skip the fork path when unset.

@@ -10,9 +10,11 @@ import {TrancheRegistry} from "../../src/tranche/TrancheRegistry.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
 import {ITrancheFactory} from "../../src/interfaces/tranche/ITrancheFactory.sol";
 import {ITrancheRegistry} from "../../src/interfaces/tranche/ITrancheRegistry.sol";
-import {IntegrationTest} from "./IntegrationTest.sol";
+
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
+
+import {IntegrationTest} from "./IntegrationTest.sol";
 
 contract FactoryRegistryIntegrationTest is IntegrationTest {
     address internal owner;
