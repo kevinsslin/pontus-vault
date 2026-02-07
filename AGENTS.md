@@ -32,3 +32,5 @@ Keep this repo consistent and maintainable: clear structure, pinned tooling, and
 
 ## Workflow
 Follow `plan.md` for execution rules and checklist handling.
+- If you change anything in `supabase/migrations`, run `supabase db push` before marking work as complete.
+- Do not name migration files `*_init.sql` because Supabase CLI skips them.

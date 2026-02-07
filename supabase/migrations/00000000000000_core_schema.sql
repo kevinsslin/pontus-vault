@@ -1,3 +1,5 @@
+-- NOTE: Supabase CLI skips migration files named "*_init.sql".
+-- Keep this as a normal timestamped migration file so `supabase db push` applies it.
 create extension if not exists "pgcrypto";
 
 create table if not exists public.vault_registry (
