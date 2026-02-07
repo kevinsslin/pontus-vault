@@ -3,13 +3,17 @@
 This workspace holds the BoringVault stack integration and tranche wrapper contracts.
 
 **Structure**
-- `src/tranche/`: tranche controller/factory/registry/token/rate-model contracts
-- `src/libraries/`: constants + OpenFi calldata builder
+- `src/tranche/`: tranche controller/factory/registry/token contracts
+- `src/rate-models/`: tranche rate model implementations
+- `src/decoders/`: manager decoder/sanitizer implementations
+- `src/libraries/`: constants + external protocol calldata builders + merkle helper
 - `src/interfaces/tranche/`: tranche controller/factory/registry/token interfaces
 - `src/interfaces/rates/`: shared + model-specific rate interfaces
 - `src/interfaces/openfi/`: OpenFi-facing interfaces
+- `src/interfaces/asseto/`: Asseto-facing interfaces
+- `src/interfaces/manager/`: manager decoder format interfaces
 - `script/DeployInfra.s.sol`: one-time infra deploy (UUPS `TrancheRegistry` + `TrancheFactory` proxies + implementations)
-- `script/DeployTrancheVault.s.sol`: per-vault deploy (BoringVault set + tranche vault creation)
+- `script/DeployTrancheVault.s.sol`: per-vault deploy (BoringVault set + manager + decoder + tranche vault creation)
 - `script/Deploy.s.sol`: backward-compatible alias to `DeployInfra.s.sol`
 - `script/BaseScript.sol`: shared script env helpers
 - `test/unit`: isolated logic tests
@@ -34,6 +38,11 @@ This repo vendors the pinned commit in `contracts/lib/boring-vault`; keep it in 
 - `contracts/lib/boring-vault/script/DeployDecoderAndSanitizer.s.sol`: decoder/allowlist scaffolding (use for OpenFi selectors).
 
 No deploy scripts are run automatically from CI; use the scripts locally when you are ready to broadcast.
+
+**Manager/Merkle Flow**
+- Each tranche vault deployment now standardizes manager deployment (`ManagerWithMerkleVerification`) and authority wiring.
+- `DeployTrancheVault.s.sol` deploys an `OpenFiAssetoDecoderAndSanitizer` for that vault and grants strategist/admin capabilities.
+- Root/proof generation remains an offchain concern; `src/libraries/ManagerMerkleLib.sol` mirrors the onchain leaf/hash format for deterministic backend generation.
 
 **Commands**
 ```bash

@@ -26,9 +26,25 @@ if [[ -d "lib/boring-vault/src" ]]; then
     xargs -0 perl -pi -e 's/pragma solidity 0\.8\.21;/pragma solidity ^0.8.21;/g'
 fi
 
-# BoringVault's teller file imports "src/..." paths. Foundry cannot safely remap
-# the "src/" prefix in this workspace, so normalize to relative imports.
+# Normalize selected BoringVault "src/..." imports to relative imports so this
+# workspace can compile manager/decoder paths without global remap collisions.
 teller_file="lib/boring-vault/src/base/Roles/TellerWithMultiAssetSupport.sol"
+manager_file="lib/boring-vault/src/base/Roles/ManagerWithMerkleVerification.sol"
+base_decoder_file="lib/boring-vault/src/base/DecodersAndSanitizers/BaseDecoderAndSanitizer.sol"
+balancer_interface_file="lib/boring-vault/src/interfaces/BalancerVault.sol"
+
 if [[ -f "${teller_file}" ]]; then
   perl -0pi -e 's#from "src/base/BoringVault\.sol"#from "../BoringVault.sol"#g; s#from "src/base/Roles/AccountantWithRateProviders\.sol"#from "./AccountantWithRateProviders.sol"#g; s#from "src/interfaces/BeforeTransferHook\.sol"#from "../../interfaces/BeforeTransferHook.sol"#g; s#from "src/interfaces/IPausable\.sol"#from "../../interfaces/IPausable.sol"#g' "${teller_file}"
+fi
+
+if [[ -f "${manager_file}" ]]; then
+  perl -0pi -e 's#from "src/base/BoringVault\.sol"#from "../BoringVault.sol"#g; s#from "src/interfaces/BalancerVault\.sol"#from "../../interfaces/BalancerVault.sol"#g; s#from "src/interfaces/IPausable\.sol"#from "../../interfaces/IPausable.sol"#g; s#from "src/base/Drones/DroneLib\.sol"#from "../Drones/DroneLib.sol"#g' "${manager_file}"
+fi
+
+if [[ -f "${base_decoder_file}" ]]; then
+  perl -0pi -e 's#from "src/interfaces/DecoderCustomTypes\.sol"#from "../../interfaces/DecoderCustomTypes.sol"#g' "${base_decoder_file}"
+fi
+
+if [[ -f "${balancer_interface_file}" ]]; then
+  perl -0pi -e 's#from "src/interfaces/DecoderCustomTypes\.sol"#from "./DecoderCustomTypes.sol"#g' "${balancer_interface_file}"
 fi

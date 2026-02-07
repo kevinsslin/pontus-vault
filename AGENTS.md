@@ -46,6 +46,9 @@ Keep this repo consistent and maintainable: clear structure, pinned tooling, and
 - Unit tests under `contracts/test/unit` should inherit `BaseTest`; integration tests under `contracts/test/integration` should inherit `IntegrationTest`.
 - In test overrides, call the parent setup explicitly (`BaseTest.setUp()` / `IntegrationTest.setUp()`) before additional setup logic; avoid `super.setUp()` for readability.
 - Base test time should be pinned via a readable date constant (for example `TestConstants.JAN_1_2026`).
+- Per-vault deployment scripts must deploy and wire a real manager contract (not metadata-only manager addresses).
+- Manager integrations using `ManagerWithMerkleVerification` must keep leaf hashing/proof generation deterministic with explicit decoder/sanitizer contracts and documented packed-address formats.
+- When onboarding a new yield protocol for manager-controlled rebalance, add all three together: protocol interface + call builder + decoder/sanitizer implementation (and tests).
 
 ## Workflow
 Follow `plan.md` for execution rules and checklist handling.
