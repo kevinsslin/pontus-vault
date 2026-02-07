@@ -42,60 +42,62 @@ This repo vendors the pinned commit in `contracts/lib/boring-vault`; keep it in 
 **Contract Architecture**
 ```mermaid
 flowchart TB
-  user[User]
+  user["User"]
 
-  subgraph pontus[ Pontus Contracts ]
-    factory[TrancheFactory (UUPS proxy)]
-    registry[TrancheRegistry (UUPS proxy)]
-    controller[TrancheController]
-    senior[Senior TrancheToken]
-    junior[Junior TrancheToken]
-    rateModel[Rate Models<br/>FixedRateModel / CapSafetyRateModel]
+  subgraph pontus["Pontus Contracts"]
+    factory["TrancheFactory UUPS Proxy"]
+    registry["TrancheRegistry UUPS Proxy"]
+    controller["TrancheController"]
+    senior["Senior TrancheToken"]
+    junior["Junior TrancheToken"]
+    fixedRate["FixedRateModel"]
+    capRate["CapSafetyRateModel"]
   end
 
-  subgraph boring[BoringVault Stack]
-    roles[RolesAuthority]
-    vault[BoringVault]
-    teller[TellerWithMultiAssetSupport]
-    accountant[AccountantWithRateProviders]
-    manager[ManagerWithMerkleVerification]
+  subgraph boring["BoringVault Stack"]
+    roles["RolesAuthority"]
+    vault["BoringVault"]
+    teller["TellerWithMultiAssetSupport"]
+    accountant["AccountantWithRateProviders"]
+    manager["ManagerWithMerkleVerification"]
   end
 
-  subgraph adapters[Adapters + Decoders]
-    openFiRate[OpenFiRayRateAdapter]
-    openFiDecoder[OpenFiDecoderAndSanitizer]
-    assetoDecoder[AssetoDecoderAndSanitizer]
-    merkleLib[ManagerMerkleLib]
+  subgraph adapters["Adapters and Decoders"]
+    openFiRate["OpenFiRayRateAdapter"]
+    openFiDecoder["OpenFiDecoderAndSanitizer"]
+    assetoDecoder["AssetoDecoderAndSanitizer"]
+    merkleLib["ManagerMerkleLib"]
   end
 
-  subgraph external[External Protocols]
-    openFi[OpenFi]
-    asseto[Asseto]
+  subgraph external["External Protocols"]
+    openFi["OpenFi"]
+    asseto["Asseto"]
   end
 
-  user -->|deposit/redeem| controller
-  controller -->|mint/burn| senior
-  controller -->|mint/burn| junior
-  controller -->|deposit/withdraw| teller
-  teller -->|enter/exit| vault
+  user -->|deposit and redeem| controller
+  controller -->|mint and burn| senior
+  controller -->|mint and burn| junior
+  controller -->|deposit and withdraw| teller
+  teller -->|enter and exit| vault
 
-  factory -->|createTrancheVault| controller
-  factory -->|register| registry
+  factory -->|create tranche vault| controller
+  factory -->|register vault| registry
   registry -->|lookup by paramsHash| controller
 
-  rateModel -->|getRatePerSecondWad| controller
-  openFiRate -->|IRefRateProvider| rateModel
-  openFiRate -->|read rate| openFi
+  fixedRate -->|rate read| controller
+  capRate -->|rate read| controller
+  openFiRate -->|ref rate provider| capRate
+  openFiRate -->|read external rate| openFi
 
   roles -->|authorize| vault
   roles -->|authorize| teller
   roles -->|authorize| manager
-  manager -->|manage (Merkle proof)| vault
-  manager -.uses decoder.-> openFiDecoder
-  manager -.uses decoder.-> assetoDecoder
+  manager -->|manage with merkle proof| vault
+  manager -.-> openFiDecoder
+  manager -.-> assetoDecoder
   openFiDecoder --> openFi
   assetoDecoder --> asseto
-  merkleLib -.mirrors leaf hash format for backend root/proof generation.-> manager
+  merkleLib -.-> manager
 ```
 
 **BoringVault Deployment Helpers (Reference Only)**
@@ -111,11 +113,18 @@ No deploy scripts are run automatically from CI; use the scripts locally when yo
 - Root/proof generation remains an offchain concern; `src/libraries/ManagerMerkleLib.sol` mirrors the onchain leaf/hash format for deterministic backend generation.
 - Backend/operator should version each root and keep proof generation in lockstep with decoder packed-address formats.
 
+**Fork Reliability**
+- Error `block is not available` means the upstream RPC cannot serve one or more historical state queries for the forked block.
+- This is usually an RPC archival/sync limitation, not a contract bug.
+- Deterministic fork tests require pinning a stable block. Use `PHAROS_ATLANTIC_FORK_BLOCK_NUMBER`.
+- `script/run-fork-tests.sh` starts local `anvil` at the pinned block, then runs fork tests against that local snapshot.
+
 **Commands**
 ```bash
 ./script/install-deps.sh
 forge build
 forge test
+./script/run-fork-tests.sh
 forge coverage --report summary
 forge fmt
 ```
@@ -125,6 +134,7 @@ Use pnpm helpers from the repo root if preferred:
 pnpm --filter @pti/contracts deps
 pnpm --filter @pti/contracts build
 pnpm --filter @pti/contracts test
+pnpm --filter @pti/contracts test:fork
 pnpm --filter @pti/contracts deploy
 pnpm --filter @pti/contracts deploy:infra
 pnpm --filter @pti/contracts deploy:vault
@@ -133,6 +143,8 @@ pnpm --filter @pti/contracts deploy:vault
 **Environment**
 - Shared for all contract workflows:
   `PHAROS_ATLANTIC_RPC_URL`
+- Optional deterministic fork pin:
+  `PHAROS_ATLANTIC_FORK_BLOCK_NUMBER`
 - Script-specific (`DeployInfra.s.sol`):
   required `PRIVATE_KEY`, optional `OWNER`
 - Script-specific (`DeployTrancheVault.s.sol`):
@@ -166,9 +178,10 @@ pnpm deploy:vault
 - Fork tests target Pharos Atlantic OpenFi `supply/withdraw` roundtrip via `OpenFiCallBuilder`.
 - Fork tests also include manager+merkle flow coverage for OpenFi, with optional Asseto manager write-path coverage behind env flags.
 - Set `PHAROS_ATLANTIC_RPC_URL` to execute live fork behavior; tests skip the fork path when unset.
+- Set `PHAROS_ATLANTIC_FORK_BLOCK_NUMBER` to pin a deterministic fork block for direct Foundry forking.
+- Recommended stable flow: run `pnpm test:fork` to fork through local `anvil` snapshot.
 - Quick run:
 ```bash
 cd contracts
-source .env.example
-forge test --match-path test/fork/*.t.sol -vv
+pnpm test:fork
 ```

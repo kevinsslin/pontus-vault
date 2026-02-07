@@ -45,6 +45,7 @@ pnpm build
 pnpm test
 pnpm lint
 pnpm --filter @pti/contracts deps
+pnpm --filter @pti/contracts test:fork
 pnpm --filter @pti/contracts deploy:infra
 pnpm --filter @pti/contracts deploy:vault
 ```

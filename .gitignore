@@ -24,6 +24,7 @@ contracts/out/
 contracts/cache/
 contracts/broadcast/
 contracts/lib/
+contracts/.anvil-fork.log
 
 # Build
 dist/
