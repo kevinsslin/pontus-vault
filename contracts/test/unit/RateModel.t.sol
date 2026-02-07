@@ -4,8 +4,8 @@ pragma solidity ^0.8.33;
 import {Test} from "forge-std/Test.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import {CapSafetyRateModel} from "../../src/tranche/CapSafetyRateModel.sol";
-import {FixedRateModel} from "../../src/tranche/FixedRateModel.sol";
+import {CapSafetyRateModel} from "../../src/rate-models/CapSafetyRateModel.sol";
+import {FixedRateModel} from "../../src/rate-models/FixedRateModel.sol";
 import {TestConstants} from "../utils/Constants.sol";
 
 contract MockRefRateProvider {

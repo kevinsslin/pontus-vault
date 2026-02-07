@@ -2,9 +2,10 @@
 pragma solidity ^0.8.33;
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
 import {ITrancheController} from "../interfaces/ITrancheController.sol";
 import {ITrancheFactory} from "../interfaces/ITrancheFactory.sol";
 import {ITrancheRegistry} from "../interfaces/ITrancheRegistry.sol";
@@ -28,7 +29,7 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
     }
 
     /*//////////////////////////////////////////////////////////////
-                            INITIALIZER
+                              INITIALIZER
     //////////////////////////////////////////////////////////////*/
 
     function initialize(address _owner, address _controllerImpl, address _tokenImpl, address _registry)
@@ -47,7 +48,7 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
     }
 
     /*//////////////////////////////////////////////////////////////
-                           OWNER FUNCTIONS
+                            OWNER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function setControllerImpl(address _newControllerImpl) external override onlyOwner {
@@ -72,7 +73,7 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
     }
 
     /*//////////////////////////////////////////////////////////////
-                          DEPLOY FUNCTIONS
+                            DEPLOY FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function createTrancheVault(TrancheVaultConfig calldata _config)

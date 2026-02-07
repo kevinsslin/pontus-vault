@@ -4,7 +4,6 @@ pragma solidity ^0.8.33;
 import "forge-std/console2.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {BaseScript} from "./BaseScript.sol";
 import {BoringVault} from "../lib/boring-vault/src/base/BoringVault.sol";
 import {AccountantWithRateProviders} from "../lib/boring-vault/src/base/Roles/AccountantWithRateProviders.sol";
 import {TellerWithMultiAssetSupport} from "../lib/boring-vault/src/base/Roles/TellerWithMultiAssetSupport.sol";
@@ -12,6 +11,7 @@ import {RolesAuthority, Authority} from "../lib/boring-vault/lib/solmate/src/aut
 import {ERC20} from "../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
 import {WETH} from "../lib/boring-vault/lib/solmate/src/tokens/WETH.sol";
 
+import {BaseScript} from "./BaseScript.sol";
 import {ITrancheFactory} from "../src/interfaces/ITrancheFactory.sol";
 import {ITrancheRegistry} from "../src/interfaces/ITrancheRegistry.sol";
 

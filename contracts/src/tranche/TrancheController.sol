@@ -40,7 +40,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
     uint256 public oneShare;
 
     /*//////////////////////////////////////////////////////////////
-                            INITIALIZER
+                              INITIALIZER
     //////////////////////////////////////////////////////////////*/
 
     function initialize(InitParams calldata _params) external override initializer {
@@ -91,7 +91,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
     }
 
     /*//////////////////////////////////////////////////////////////
-                            USER FUNCTIONS
+                             USER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function depositSenior(uint256 _assetsIn, address _receiver)

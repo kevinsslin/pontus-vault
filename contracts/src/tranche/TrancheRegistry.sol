@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
 import {ITrancheRegistry} from "../interfaces/ITrancheRegistry.sol";
 
 contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable, UUPSUpgradeable {
@@ -11,7 +12,6 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
     struct TrancheRegistryStorage {
         address factory;
         mapping(bytes32 paramsHash => TrancheVaultInfo info) trancheVaultsByParamsHash;
-        mapping(bytes32 paramsHash => bool exists) trancheVaultExistsByParamsHash;
     }
 
     // keccak256(abi.encode(uint256(keccak256("pontus.storage.TrancheRegistry")) - 1)) & ~bytes32(uint256(0xff))
@@ -42,7 +42,7 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
     }
 
     /*//////////////////////////////////////////////////////////////
-                           OWNER FUNCTIONS
+                            OWNER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function setFactory(address _newFactory) external override onlyOwner {
@@ -53,7 +53,7 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
     }
 
     /*//////////////////////////////////////////////////////////////
-                          FACTORY FUNCTIONS
+                           FACTORY FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function registerTrancheVault(TrancheVaultInfo calldata _info)
@@ -65,10 +65,12 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
         _assertValidTrancheVaultInfo(_info);
         TrancheRegistryStorage storage $ = _getStorage();
         _paramsHash = _info.paramsHash;
-        if ($.trancheVaultExistsByParamsHash[_paramsHash]) revert TrancheVaultAlreadyRegistered(_paramsHash);
+        // `controller` is guaranteed non-zero for valid records and doubles as existence sentinel.
+        if ($.trancheVaultsByParamsHash[_paramsHash].controller != address(0)) {
+            revert TrancheVaultAlreadyRegistered(_paramsHash);
+        }
 
         $.trancheVaultsByParamsHash[_paramsHash] = _info;
-        $.trancheVaultExistsByParamsHash[_paramsHash] = true;
         emit TrancheVaultCreated(
             _paramsHash,
             _info.controller,
@@ -92,13 +94,12 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
         override
         returns (TrancheVaultInfo memory _info)
     {
-        TrancheRegistryStorage storage $ = _getStorage();
-        if (!$.trancheVaultExistsByParamsHash[_paramsHash]) revert TrancheVaultNotFound(_paramsHash);
-        return $.trancheVaultsByParamsHash[_paramsHash];
+        _info = _getStorage().trancheVaultsByParamsHash[_paramsHash];
+        if (_info.controller == address(0)) revert TrancheVaultNotFound(_paramsHash);
     }
 
     function trancheVaultExists(bytes32 _paramsHash) external view override returns (bool _exists) {
-        return _getStorage().trancheVaultExistsByParamsHash[_paramsHash];
+        return _getStorage().trancheVaultsByParamsHash[_paramsHash].controller != address(0);
     }
 
     function factory() public view override returns (address) {

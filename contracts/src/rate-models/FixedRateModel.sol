@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import {IRateModel} from "../interfaces/IRateModel.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+import {IRateModel} from "../interfaces/IRateModel.sol";
 
 contract FixedRateModel is IRateModel, Ownable {
     error ZeroRate();
@@ -16,7 +17,7 @@ contract FixedRateModel is IRateModel, Ownable {
     }
 
     /*//////////////////////////////////////////////////////////////
-                           OWNER FUNCTIONS
+                            OWNER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function setRatePerSecondWad(uint256 _newRate) external onlyOwner {

@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+
 import {IRateModel} from "../interfaces/IRateModel.sol";
 import {IRefRateProvider} from "../interfaces/IRefRateProvider.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract CapSafetyRateModel is IRateModel, Ownable {
     error InvalidSafetyFactor();
@@ -26,7 +27,7 @@ contract CapSafetyRateModel is IRateModel, Ownable {
     }
 
     /*//////////////////////////////////////////////////////////////
-                           OWNER FUNCTIONS
+                            OWNER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function setCapRatePerSecondWad(uint256 _newCap) external onlyOwner {

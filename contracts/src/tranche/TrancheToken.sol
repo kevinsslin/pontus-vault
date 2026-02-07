@@ -4,6 +4,7 @@ pragma solidity ^0.8.33;
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
 import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
 
 contract TrancheToken is Initializable, ERC20Upgradeable, ITrancheToken {
@@ -11,7 +12,7 @@ contract TrancheToken is Initializable, ERC20Upgradeable, ITrancheToken {
     uint8 private _tokenDecimals;
 
     /*//////////////////////////////////////////////////////////////
-                            INITIALIZER
+                              INITIALIZER
     //////////////////////////////////////////////////////////////*/
 
     function initialize(string calldata _name, string calldata _symbol, uint8 _decimals, address _controller)
@@ -26,7 +27,7 @@ contract TrancheToken is Initializable, ERC20Upgradeable, ITrancheToken {
     }
 
     /*//////////////////////////////////////////////////////////////
-                         CONTROLLER FUNCTIONS
+                          CONTROLLER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function mint(address _to, uint256 _amount) external override {
