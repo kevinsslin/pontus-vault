@@ -35,7 +35,7 @@ const WORKFLOW_STEPS = [
   {
     step: "04",
     title: "Portfolio Intelligence",
-    body: "Monitor NAV, APY spread, and allocation shifts in one view.",
+    body: "Monitor yield, APY spread, and allocation shifts in one view.",
   },
 ];
 
@@ -83,7 +83,7 @@ const STACK_LAYERS = [
     layer: "Layer 02",
     title: "Vault Orchestration Layer",
     body: "Aggregate routes, policy controls, and accounting into one coherent vault product surface.",
-    tags: ["Policy engine", "Unified NAV", "Execution controls"],
+    tags: ["Policy engine", "Unified yield", "Execution controls"],
   },
   {
     layer: "Layer 01",
@@ -184,7 +184,7 @@ export default async function HomePage() {
               <strong>{liveVaults.length}</strong>
             </div>
             <div className="mini">
-              <span>Senior NAV</span>
+              <span>Senior Yield</span>
               <strong>{avgSeniorLabel}</strong>
             </div>
             <div className="mini">

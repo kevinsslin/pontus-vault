@@ -91,21 +91,21 @@ export default function VaultPerformanceChart({ points }: VaultPerformanceChartP
       <div className="trend-card__header">
         <div>
           <p className="eyebrow">Performance trend</p>
-          <h3>NAV history and carry</h3>
+          <h3>Historical yield trend</h3>
         </div>
         <div className="trend-kpis">
           <div className="trend-kpi">
-            <span className="label">Senior NAV change</span>
+            <span className="label">Senior historical yield</span>
             <strong>{round(seniorChange)}%</strong>
           </div>
           <div className="trend-kpi">
-            <span className="label">Junior NAV change</span>
+            <span className="label">Junior historical yield</span>
             <strong>{round(juniorChange)}%</strong>
           </div>
         </div>
       </div>
 
-      <div className="trend-chart-wrap" role="img" aria-label="Senior and junior NAV trend line chart">
+      <div className="trend-chart-wrap" role="img" aria-label="Senior and junior yield trend line chart">
         <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="trend-chart">
           {yTicks.map((tick) => (
             <g key={tick.y}>
@@ -143,11 +143,11 @@ export default function VaultPerformanceChart({ points }: VaultPerformanceChartP
       <div className="trend-legend">
         <span className="trend-legend__item">
           <span className="trend-swatch trend-swatch--senior" />
-          Senior NAV avg APY {round(avgSeniorApy, 2)}%
+          Senior avg APY {round(avgSeniorApy, 2)}%
         </span>
         <span className="trend-legend__item">
           <span className="trend-swatch trend-swatch--junior" />
-          Junior NAV avg APY {round(avgJuniorApy, 2)}%
+          Junior avg APY {round(avgJuniorApy, 2)}%
         </span>
       </div>
     </article>

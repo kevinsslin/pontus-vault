@@ -121,12 +121,12 @@ export default async function VaultDetailPage({
             <p className="micro">Updated {updatedLabel}</p>
           </article>
           <article className="card">
-            <div className="stat-label">Senior NAV</div>
+            <div className="stat-label">Senior Yield</div>
             <div className="stat-value">{formatWad(vault.metrics.seniorPrice)}x</div>
             <p className="muted">Debt: {formatUsd(vault.metrics.seniorDebt)}</p>
           </article>
           <article className="card">
-            <div className="stat-label">Junior NAV</div>
+            <div className="stat-label">Junior Yield</div>
             <div className="stat-value">{formatWad(vault.metrics.juniorPrice)}x</div>
             <p className="muted">Supply: {formatUsd(vault.metrics.juniorSupply)}</p>
           </article>

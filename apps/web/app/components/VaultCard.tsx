@@ -69,11 +69,11 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
           <span className="stat-value">{formatUsd(vault.metrics.tvl)}</span>
         </div>
         <div className="stat">
-          <span className="stat-label">Senior NAV</span>
+          <span className="stat-label">Senior Yield</span>
           <span className="stat-value">{formatWad(vault.metrics.seniorPrice)}x</span>
         </div>
         <div className="stat">
-          <span className="stat-label">Junior NAV</span>
+          <span className="stat-label">Junior Yield</span>
           <span className="stat-value">{formatWad(vault.metrics.juniorPrice)}x</span>
         </div>
       </div>
