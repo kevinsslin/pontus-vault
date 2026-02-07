@@ -24,13 +24,7 @@ if [[ -z "${rpc_url}" ]]; then
   exit 1
 fi
 
-fork_block_number="${PHAROS_ATLANTIC_FORK_BLOCK_NUMBER:-}"
-if [[ -z "${fork_block_number}" ]]; then
-  fork_block_number="$(read_env_value "PHAROS_ATLANTIC_FORK_BLOCK_NUMBER" "${env_file}")"
-fi
-if [[ -z "${fork_block_number}" ]]; then
-  fork_block_number="12950000"
-fi
+fork_block_number="12950000"
 
 anvil_port="${PHAROS_ATLANTIC_FORK_ANVIL_PORT:-8547}"
 anvil_host="${PHAROS_ATLANTIC_FORK_ANVIL_HOST:-127.0.0.1}"
@@ -71,5 +65,4 @@ echo "Local RPC: ${local_fork_url}"
 
 cd "${contracts_dir}"
 PHAROS_ATLANTIC_RPC_URL="${local_fork_url}" \
-PHAROS_ATLANTIC_FORK_BLOCK_NUMBER="" \
 forge test --match-path "test/fork/*.t.sol" -vv "$@"

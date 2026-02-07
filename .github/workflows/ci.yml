@@ -53,5 +53,4 @@ jobs:
         if: ${{ secrets.PHAROS_ATLANTIC_RPC_URL != '' }}
         env:
           PHAROS_ATLANTIC_RPC_URL: ${{ secrets.PHAROS_ATLANTIC_RPC_URL }}
-          PHAROS_ATLANTIC_FORK_BLOCK_NUMBER: ${{ vars.PHAROS_ATLANTIC_FORK_BLOCK_NUMBER }}
         run: pnpm --filter @pti/contracts test:fork

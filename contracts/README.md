@@ -116,8 +116,8 @@ No deploy scripts are run automatically from CI; use the scripts locally when yo
 **Fork Reliability**
 - Error `block is not available` means the upstream RPC cannot serve one or more historical state queries for the forked block.
 - This is usually an RPC archival/sync limitation, not a contract bug.
-- Deterministic fork tests require pinning a stable block. Use `PHAROS_ATLANTIC_FORK_BLOCK_NUMBER`.
-- `script/run-fork-tests.sh` starts local `anvil` at the pinned block, then runs fork tests against that local snapshot.
+- Deterministic fork tests are pinned to block `12950000` in both `test/fork/BaseForkTest.sol` and `script/run-fork-tests.sh`.
+- `script/run-fork-tests.sh` starts local `anvil` at that pinned block, then runs fork tests against the local snapshot.
 
 **Commands**
 ```bash
@@ -143,8 +143,6 @@ pnpm --filter @pti/contracts deploy:vault
 **Environment**
 - Shared for all contract workflows:
   `PHAROS_ATLANTIC_RPC_URL`
-- Optional deterministic fork pin:
-  `PHAROS_ATLANTIC_FORK_BLOCK_NUMBER`
 - Script-specific (`DeployInfra.s.sol`):
   required `PRIVATE_KEY`, optional `OWNER`
 - Script-specific (`DeployTrancheVault.s.sol`):
@@ -178,7 +176,7 @@ pnpm deploy:vault
 - Fork tests target Pharos Atlantic OpenFi `supply/withdraw` roundtrip via `OpenFiCallBuilder`.
 - Fork tests also include manager+merkle flow coverage for OpenFi, with optional Asseto manager write-path coverage behind env flags.
 - Set `PHAROS_ATLANTIC_RPC_URL` to execute live fork behavior; tests skip the fork path when unset.
-- Set `PHAROS_ATLANTIC_FORK_BLOCK_NUMBER` to pin a deterministic fork block for direct Foundry forking.
+- Fork tests are pinned to block `12950000` for deterministic behavior.
 - Recommended stable flow: run `pnpm test:fork` to fork through local `anvil` snapshot.
 - Quick run:
 ```bash
