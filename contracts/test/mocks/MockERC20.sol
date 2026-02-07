@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 contract MockERC20 {
     string public name;
@@ -13,10 +13,10 @@ contract MockERC20 {
     event Transfer(address indexed from, address indexed to, uint256 amount);
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
-    constructor(string memory name_, string memory symbol_, uint8 decimals_) {
-        name = name_;
-        symbol = symbol_;
-        decimals = decimals_;
+    constructor(string memory _name, string memory _symbol, uint8 _decimals) {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
     }
 
     function mint(address to, uint256 amount) external {

@@ -53,6 +53,24 @@ export function formatWad(value: string | null, decimals = 18): string {
   }
 }
 
+export function formatSharePrice(
+  value: string | null,
+  decimals = 18,
+  fractionDigits = 4
+): string {
+  if (!value) return "—";
+  try {
+    const base = BigInt(10) ** BigInt(decimals);
+    const raw = BigInt(value);
+    const whole = raw / base;
+    const fraction = raw % base;
+    const numeric = Number(whole) + Number(fraction) / Number(base);
+    return `$${numeric.toFixed(fractionDigits)}`;
+  } catch {
+    return "—";
+  }
+}
+
 export function formatBps(value: string | null): string {
   if (!value) return "—";
   const bps = Number(value);

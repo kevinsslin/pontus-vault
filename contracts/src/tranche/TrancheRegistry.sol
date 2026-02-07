@@ -1,122 +1,127 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {ITrancheRegistry} from "../interfaces/ITrancheRegistry.sol";
 
-contract TrancheRegistry is Initializable, OwnableUpgradeable, UUPSUpgradeable {
-    error NotFactory();
-    error ZeroAddress();
-
-    struct TrancheVaultInfo {
-        address controller;
-        address seniorToken;
-        address juniorToken;
-        address vault;
-        address teller;
-        address accountant;
-        address manager;
-        address asset;
-        bytes32 paramsHash;
-    }
-
+contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable, UUPSUpgradeable {
     /// @custom:storage-location erc7201:pontus.storage.TrancheRegistry
     struct TrancheRegistryStorage {
         address factory;
-        TrancheVaultInfo[] trancheVaults;
+        mapping(bytes32 paramsHash => TrancheVaultInfo info) trancheVaultsByParamsHash;
+        mapping(bytes32 paramsHash => bool exists) trancheVaultExistsByParamsHash;
     }
 
     // keccak256(abi.encode(uint256(keccak256("pontus.storage.TrancheRegistry")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant TRANCHE_REGISTRY_STORAGE_LOCATION =
         0x8e5d8f9d12f75b408e3765ef5743b79724b9415f249c865effeedac3a7fbcc00;
 
-    event FactoryUpdated(address indexed oldFactory, address indexed newFactory);
-    event TrancheVaultCreated(
-        uint256 indexed vaultId,
-        address indexed controller,
-        address seniorToken,
-        address juniorToken,
-        address indexed vault,
-        address teller,
-        address accountant,
-        address manager,
-        address asset,
-        bytes32 paramsHash
-    );
-
     constructor() {
         _disableInitializers();
     }
 
-    function initialize(address owner_, address factory_) external initializer {
-        if (owner_ == address(0)) revert ZeroAddress();
-        __Ownable_init(owner_);
-        __UUPSUpgradeable_init();
-        _getStorage().factory = factory_;
-    }
+    /*//////////////////////////////////////////////////////////////
+                                MODIFIERS
+    //////////////////////////////////////////////////////////////*/
 
     modifier onlyFactory() {
         if (msg.sender != factory()) revert NotFactory();
         _;
     }
 
-    function factory() public view returns (address) {
-        return _getStorage().factory;
+    /*//////////////////////////////////////////////////////////////
+                            INITIALIZER
+    //////////////////////////////////////////////////////////////*/
+
+    function initialize(address _owner, address _factory) external override initializer {
+        if (_owner == address(0)) revert ZeroAddress();
+        __Ownable_init(_owner);
+        __UUPSUpgradeable_init();
+        _getStorage().factory = _factory;
     }
 
-    function setFactory(address newFactory) external onlyOwner {
-        if (newFactory == address(0)) revert ZeroAddress();
+    /*//////////////////////////////////////////////////////////////
+                           OWNER FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function setFactory(address _newFactory) external override onlyOwner {
+        if (_newFactory == address(0)) revert ZeroAddress();
         TrancheRegistryStorage storage $ = _getStorage();
-        emit FactoryUpdated($.factory, newFactory);
-        $.factory = newFactory;
+        emit FactoryUpdated($.factory, _newFactory);
+        $.factory = _newFactory;
     }
 
-    function registerTrancheVault(TrancheVaultInfo calldata info) external onlyFactory returns (uint256 vaultId) {
+    /*//////////////////////////////////////////////////////////////
+                          FACTORY FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function registerTrancheVault(TrancheVaultInfo calldata _info)
+        external
+        override
+        onlyFactory
+        returns (bytes32 _paramsHash)
+    {
+        _assertValidTrancheVaultInfo(_info);
         TrancheRegistryStorage storage $ = _getStorage();
-        vaultId = $.trancheVaults.length;
-        $.trancheVaults.push(info);
+        _paramsHash = _info.paramsHash;
+        if ($.trancheVaultExistsByParamsHash[_paramsHash]) revert TrancheVaultAlreadyRegistered(_paramsHash);
+
+        $.trancheVaultsByParamsHash[_paramsHash] = _info;
+        $.trancheVaultExistsByParamsHash[_paramsHash] = true;
         emit TrancheVaultCreated(
-            vaultId,
-            info.controller,
-            info.seniorToken,
-            info.juniorToken,
-            info.vault,
-            info.teller,
-            info.accountant,
-            info.manager,
-            info.asset,
-            info.paramsHash
+            _paramsHash,
+            _info.controller,
+            _info.seniorToken,
+            _info.juniorToken,
+            _info.vault,
+            _info.teller,
+            _info.accountant,
+            _info.manager,
+            _info.asset
         );
     }
 
-    function trancheVaultCount() external view returns (uint256) {
-        return _getStorage().trancheVaults.length;
-    }
+    /*//////////////////////////////////////////////////////////////
+                             VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
-    function trancheVaults(uint256 id) external view returns (TrancheVaultInfo memory) {
-        return _getStorage().trancheVaults[id];
-    }
-
-    function getTrancheVaults(uint256 offset, uint256 limit) external view returns (TrancheVaultInfo[] memory) {
+    function trancheVaultByParamsHash(bytes32 _paramsHash)
+        external
+        view
+        override
+        returns (TrancheVaultInfo memory _info)
+    {
         TrancheRegistryStorage storage $ = _getStorage();
-        uint256 total = $.trancheVaults.length;
-        if (offset >= total) {
-            return new TrancheVaultInfo[](0);
-        }
-        uint256 end = offset + limit;
-        if (end > total) {
-            end = total;
-        }
-        uint256 size = end - offset;
-        TrancheVaultInfo[] memory page = new TrancheVaultInfo[](size);
-        for (uint256 i = 0; i < size; i++) {
-            page[i] = $.trancheVaults[offset + i];
-        }
-        return page;
+        if (!$.trancheVaultExistsByParamsHash[_paramsHash]) revert TrancheVaultNotFound(_paramsHash);
+        return $.trancheVaultsByParamsHash[_paramsHash];
     }
+
+    function trancheVaultExists(bytes32 _paramsHash) external view override returns (bool _exists) {
+        return _getStorage().trancheVaultExistsByParamsHash[_paramsHash];
+    }
+
+    function factory() public view override returns (address) {
+        return _getStorage().factory;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                           INTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
+
+    function _assertValidTrancheVaultInfo(TrancheVaultInfo calldata _info) private pure {
+        if (_info.controller == address(0)) revert ZeroAddress();
+        if (_info.seniorToken == address(0)) revert ZeroAddress();
+        if (_info.juniorToken == address(0)) revert ZeroAddress();
+        if (_info.vault == address(0)) revert ZeroAddress();
+        if (_info.teller == address(0)) revert ZeroAddress();
+        if (_info.accountant == address(0)) revert ZeroAddress();
+        if (_info.manager == address(0)) revert ZeroAddress();
+        if (_info.asset == address(0)) revert ZeroAddress();
+    }
 
     function _getStorage() private pure returns (TrancheRegistryStorage storage $) {
         assembly {

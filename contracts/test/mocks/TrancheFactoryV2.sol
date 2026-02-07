@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {TrancheFactory} from "../../src/tranche/TrancheFactory.sol";
 

@@ -15,7 +15,7 @@ export function handleTrancheVaultCreated(event: TrancheVaultCreated): void {
     vault = new Vault(id);
   }
 
-  vault.vaultId = event.params.vaultId;
+  vault.vaultId = BigInt.fromUnsignedBytes(event.params.paramsHash);
   vault.controller = event.params.controller;
   vault.seniorToken = event.params.seniorToken;
   vault.juniorToken = event.params.juniorToken;

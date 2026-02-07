@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+import {ITrancheRegistry} from "../../src/interfaces/ITrancheRegistry.sol";
 import {TrancheRegistry} from "../../src/tranche/TrancheRegistry.sol";
 import {TrancheRegistryV2} from "../mocks/TrancheRegistryV2.sol";
 import {TestConstants} from "../utils/Constants.sol";
@@ -44,7 +45,7 @@ contract TrancheRegistryTest is Test {
 
     function test_setFactory_revertsOnZeroAddress() public {
         vm.prank(owner);
-        vm.expectRevert(TrancheRegistry.ZeroAddress.selector);
+        vm.expectRevert(ITrancheRegistry.ZeroAddress.selector);
         registry.setFactory(TestConstants.ZERO_ADDRESS);
     }
 
@@ -56,20 +57,20 @@ contract TrancheRegistryTest is Test {
     }
 
     function test_registerTrancheVault_revertsForNonFactory() public {
-        TrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
+        ITrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
         vm.prank(outsider);
-        vm.expectRevert(TrancheRegistry.NotFactory.selector);
+        vm.expectRevert(ITrancheRegistry.NotFactory.selector);
         registry.registerTrancheVault(info);
     }
 
     function test_registerTrancheVault_storesVaultForFactory() public {
-        TrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
+        ITrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
         vm.prank(factory);
-        uint256 vaultId = registry.registerTrancheVault(info);
-        assertEq(vaultId, 0);
-        assertEq(registry.trancheVaultCount(), 1);
+        bytes32 paramsHash = registry.registerTrancheVault(info);
+        assertEq(paramsHash, info.paramsHash);
+        assertTrue(registry.trancheVaultExists(paramsHash));
 
-        TrancheRegistry.TrancheVaultInfo memory stored = registry.trancheVaults(0);
+        ITrancheRegistry.TrancheVaultInfo memory stored = registry.trancheVaultByParamsHash(paramsHash);
         assertEq(stored.controller, info.controller);
         assertEq(stored.seniorToken, info.seniorToken);
         assertEq(stored.juniorToken, info.juniorToken);
@@ -81,23 +82,23 @@ contract TrancheRegistryTest is Test {
         assertEq(stored.paramsHash, info.paramsHash);
     }
 
-    function test_getTrancheVaults_paginates() public {
-        TrancheRegistry.TrancheVaultInfo memory info0 = _sampleTrancheVault();
-        TrancheRegistry.TrancheVaultInfo memory info1 = _sampleTrancheVault();
-        info1.controller = TestConstants.SAMPLE_CONTROLLER_ALT;
-        info1.paramsHash = TestDefaults.SAMPLE_PARAMS_HASH_2;
+    function test_registerTrancheVault_revertsWhenParamsHashAlreadyExists() public {
+        ITrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
 
         vm.startPrank(factory);
-        registry.registerTrancheVault(info0);
-        registry.registerTrancheVault(info1);
+        registry.registerTrancheVault(info);
+        vm.expectRevert(
+            abi.encodeWithSelector(ITrancheRegistry.TrancheVaultAlreadyRegistered.selector, info.paramsHash)
+        );
+        registry.registerTrancheVault(info);
         vm.stopPrank();
+    }
 
-        TrancheRegistry.TrancheVaultInfo[] memory page = registry.getTrancheVaults(1, 10);
-        assertEq(page.length, 1);
-        assertEq(page[0].controller, info1.controller);
-
-        TrancheRegistry.TrancheVaultInfo[] memory emptyPage = registry.getTrancheVaults(3, 10);
-        assertEq(emptyPage.length, 0);
+    function test_trancheVaultByParamsHash_revertsWhenUnknown() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(ITrancheRegistry.TrancheVaultNotFound.selector, TestDefaults.SAMPLE_PARAMS_HASH_2)
+        );
+        registry.trancheVaultByParamsHash(TestDefaults.SAMPLE_PARAMS_HASH_2);
     }
 
     function test_upgradeToAndCall_revertsForNonOwner() public {
@@ -109,7 +110,7 @@ contract TrancheRegistryTest is Test {
     }
 
     function test_upgradeToAndCall_preservesState() public {
-        TrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
+        ITrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
 
         vm.prank(factory);
         registry.registerTrancheVault(info);
@@ -119,12 +120,14 @@ contract TrancheRegistryTest is Test {
         registry.upgradeToAndCall(address(newImpl), "");
 
         assertEq(registry.factory(), factory);
-        assertEq(registry.trancheVaultCount(), 1);
+        assertTrue(registry.trancheVaultExists(info.paramsHash));
+        ITrancheRegistry.TrancheVaultInfo memory stored = registry.trancheVaultByParamsHash(info.paramsHash);
+        assertEq(stored.controller, info.controller);
         assertEq(TrancheRegistryV2(address(registry)).version(), 2);
     }
 
-    function _sampleTrancheVault() internal pure returns (TrancheRegistry.TrancheVaultInfo memory) {
-        return TrancheRegistry.TrancheVaultInfo({
+    function _sampleTrancheVault() internal pure returns (ITrancheRegistry.TrancheVaultInfo memory) {
+        return ITrancheRegistry.TrancheVaultInfo({
             controller: TestConstants.SAMPLE_CONTROLLER,
             seniorToken: TestConstants.SAMPLE_SENIOR_TOKEN,
             juniorToken: TestConstants.SAMPLE_JUNIOR_TOKEN,

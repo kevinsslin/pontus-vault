@@ -19,6 +19,13 @@ if [[ ! -d "lib/boring-vault" ]]; then
   forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 --no-git -j 8
 fi
 
+# BoringVault pins many files to "pragma solidity 0.8.21;". Relax those to
+# "^0.8.21" so this workspace can compile against newer compiler versions.
+if [[ -d "lib/boring-vault/src" ]]; then
+  find lib/boring-vault/src -type f -name '*.sol' -print0 | \
+    xargs -0 perl -pi -e 's/pragma solidity 0\.8\.21;/pragma solidity ^0.8.21;/g'
+fi
+
 # BoringVault's teller file imports "src/..." paths. Foundry cannot safely remap
 # the "src/" prefix in this workspace, so normalize to relative imports.
 teller_file="lib/boring-vault/src/base/Roles/TellerWithMultiAssetSupport.sol"

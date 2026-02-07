@@ -3,10 +3,12 @@ import type { VaultRecord } from "@pti/shared";
 import {
   formatBps,
   formatRelativeTimestamp,
+  formatSharePrice,
   formatUsd,
-  formatWad,
 } from "../../lib/format";
+import { buildAssetAllocation } from "../../lib/asset-allocation";
 import TokenBadge from "./TokenBadge";
+import VaultAllocationMiniChart from "./VaultAllocationMiniChart";
 
 function seniorRatioBps(vault: VaultRecord): bigint | null {
   if (!vault.metrics.tvl || !vault.metrics.seniorDebt) return null;
@@ -29,6 +31,7 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
   const ratioWidth = ratioPct === null ? 0 : Math.max(0, Math.min(ratioPct, 100));
   const juniorPct = ratioPct === null ? null : Math.max(0, 100 - ratioPct);
   const updatedLabel = formatRelativeTimestamp(vault.metrics.updatedAt);
+  const assetAllocation = buildAssetAllocation(vault.route, vault.metrics.tvl);
 
   return (
     <article className="card vault-card">
@@ -69,13 +72,18 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
           <span className="stat-value">{formatUsd(vault.metrics.tvl)}</span>
         </div>
         <div className="stat">
-          <span className="stat-label">Senior Yield</span>
-          <span className="stat-value">{formatWad(vault.metrics.seniorPrice)}x</span>
+          <span className="stat-label">Senior Share Price</span>
+          <span className="stat-value">{formatSharePrice(vault.metrics.seniorPrice)}</span>
         </div>
         <div className="stat">
-          <span className="stat-label">Junior Yield</span>
-          <span className="stat-value">{formatWad(vault.metrics.juniorPrice)}x</span>
+          <span className="stat-label">Junior Share Price</span>
+          <span className="stat-value">{formatSharePrice(vault.metrics.juniorPrice)}</span>
         </div>
+      </div>
+
+      <div className="vault-card__allocation">
+        <span className="stat-label">Asset allocation</span>
+        <VaultAllocationMiniChart slices={assetAllocation} />
       </div>
 
       <div className="risk-meter">

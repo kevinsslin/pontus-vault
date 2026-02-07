@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import VaultCard from "./components/VaultCard";
 import { getVaults } from "../lib/data/vaults";
-import { formatRelativeTimestamp, formatUsd, formatWad } from "../lib/format";
+import { formatRelativeTimestamp, formatSharePrice, formatUsd } from "../lib/format";
 
 const PARTNERS = [
   { name: "Pharos", logo: "/partners/pharos.png", href: "https://pharosnetwork.xyz", width: 190, height: 48 },
@@ -130,7 +130,7 @@ export default async function HomePage() {
   const liveVaults = vaults.filter((vault) => vault.uiConfig.status === "LIVE");
   const tvl = totalTvl(vaults);
   const avgSenior = averageSeniorPrice(liveVaults);
-  const avgSeniorLabel = avgSenior ? `${formatWad(avgSenior)}x` : "—";
+  const avgSeniorLabel = avgSenior ? formatSharePrice(avgSenior) : "—";
   const liveCountLabel = `${liveVaults.length} vault${liveVaults.length === 1 ? "" : "s"} live`;
   const updateLabel = latestUpdatedAt(liveVaults);
 
@@ -184,7 +184,7 @@ export default async function HomePage() {
               <strong>{liveVaults.length}</strong>
             </div>
             <div className="mini">
-              <span>Senior Yield</span>
+              <span>Senior Share Price</span>
               <strong>{avgSeniorLabel}</strong>
             </div>
             <div className="mini">

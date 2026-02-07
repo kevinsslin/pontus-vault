@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -21,9 +21,9 @@ contract MockTeller {
     event Transfer(address indexed from, address indexed to, uint256 amount);
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
-    constructor(IERC20 asset_, MockAccountant accountant_) {
-        asset = asset_;
-        accountant = accountant_;
+    constructor(IERC20 _asset, MockAccountant _accountant) {
+        asset = _asset;
+        accountant = _accountant;
         decimals = 18;
     }
 
@@ -50,7 +50,7 @@ contract MockTeller {
     }
 
     function deposit(IERC20 depositAsset, uint256 assets, uint256 minMint) external returns (uint256 shares) {
-        require(depositAsset == asset, "ASSET");
+        require(address(depositAsset) == address(asset), "ASSET");
         asset.safeTransferFrom(msg.sender, address(this), assets);
 
         uint256 rate = accountant.getRateInQuoteSafe(asset);
@@ -63,7 +63,7 @@ contract MockTeller {
         external
         returns (uint256 assetsOut)
     {
-        require(withdrawAsset == asset, "ASSET");
+        require(address(withdrawAsset) == address(asset), "ASSET");
         _burn(msg.sender, shareAmount);
 
         uint256 rate = accountant.getRateInQuoteSafe(asset);

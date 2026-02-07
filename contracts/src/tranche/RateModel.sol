@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {IRateModel} from "../interfaces/IRateModel.sol";
 import {IRefRateProvider} from "../interfaces/IRefRateProvider.sol";
@@ -13,14 +13,22 @@ contract FixedRateModel is IRateModel, Ownable {
 
     event RateUpdated(uint256 oldRate, uint256 newRate);
 
-    constructor(address owner_, uint256 ratePerSecondWad_) Ownable(owner_) {
-        ratePerSecondWad = ratePerSecondWad_;
+    constructor(address _owner, uint256 _ratePerSecondWad) Ownable(_owner) {
+        ratePerSecondWad = _ratePerSecondWad;
     }
 
-    function setRatePerSecondWad(uint256 newRate) external onlyOwner {
-        emit RateUpdated(ratePerSecondWad, newRate);
-        ratePerSecondWad = newRate;
+    /*//////////////////////////////////////////////////////////////
+                           OWNER FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function setRatePerSecondWad(uint256 _newRate) external onlyOwner {
+        emit RateUpdated(ratePerSecondWad, _newRate);
+        ratePerSecondWad = _newRate;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                             VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     function getRatePerSecondWad() external view returns (uint256) {
         return ratePerSecondWad;
@@ -38,25 +46,33 @@ contract CapSafetyRateModel is IRateModel, Ownable {
     event SafetyFactorUpdated(uint256 oldFactor, uint256 newFactor);
     event RefRateProviderUpdated(address indexed oldProvider, address indexed newProvider);
 
-    constructor(address owner_, address refRateProvider_, uint256 capRatePerSecondWad_, uint256 safetyFactorWad_)
-        Ownable(owner_)
+    constructor(address _owner, address _refRateProvider, uint256 _capRatePerSecondWad, uint256 _safetyFactorWad)
+        Ownable(_owner)
     {
-        _setRefRateProvider(refRateProvider_);
-        _setCapRate(capRatePerSecondWad_);
-        _setSafetyFactor(safetyFactorWad_);
+        _setRefRateProvider(_refRateProvider);
+        _setCapRate(_capRatePerSecondWad);
+        _setSafetyFactor(_safetyFactorWad);
     }
 
-    function setCapRatePerSecondWad(uint256 newCap) external onlyOwner {
-        _setCapRate(newCap);
+    /*//////////////////////////////////////////////////////////////
+                           OWNER FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function setCapRatePerSecondWad(uint256 _newCap) external onlyOwner {
+        _setCapRate(_newCap);
     }
 
-    function setSafetyFactorWad(uint256 newFactor) external onlyOwner {
-        _setSafetyFactor(newFactor);
+    function setSafetyFactorWad(uint256 _newFactor) external onlyOwner {
+        _setSafetyFactor(_newFactor);
     }
 
-    function setRefRateProvider(address newProvider) external onlyOwner {
-        _setRefRateProvider(newProvider);
+    function setRefRateProvider(address _newProvider) external onlyOwner {
+        _setRefRateProvider(_newProvider);
     }
+
+    /*//////////////////////////////////////////////////////////////
+                             VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     function getRatePerSecondWad() external view returns (uint256) {
         if (refRateProvider == address(0)) {
@@ -67,19 +83,23 @@ contract CapSafetyRateModel is IRateModel, Ownable {
         return adjusted < capRatePerSecondWad ? adjusted : capRatePerSecondWad;
     }
 
-    function _setCapRate(uint256 newCap) internal {
-        emit CapRateUpdated(capRatePerSecondWad, newCap);
-        capRatePerSecondWad = newCap;
+    /*//////////////////////////////////////////////////////////////
+                           INTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function _setCapRate(uint256 _newCap) internal {
+        emit CapRateUpdated(capRatePerSecondWad, _newCap);
+        capRatePerSecondWad = _newCap;
     }
 
-    function _setSafetyFactor(uint256 newFactor) internal {
-        if (newFactor > 1e18) revert InvalidSafetyFactor();
-        emit SafetyFactorUpdated(safetyFactorWad, newFactor);
-        safetyFactorWad = newFactor;
+    function _setSafetyFactor(uint256 _newFactor) internal {
+        if (_newFactor > 1e18) revert InvalidSafetyFactor();
+        emit SafetyFactorUpdated(safetyFactorWad, _newFactor);
+        safetyFactorWad = _newFactor;
     }
 
-    function _setRefRateProvider(address newProvider) internal {
-        emit RefRateProviderUpdated(refRateProvider, newProvider);
-        refRateProvider = newProvider;
+    function _setRefRateProvider(address _newProvider) internal {
+        emit RefRateProviderUpdated(refRateProvider, _newProvider);
+        refRateProvider = _newProvider;
     }
 }

@@ -2,7 +2,7 @@
   {
     "anonymous": false,
     "inputs": [
-      {"indexed": true, "name": "vaultId", "type": "uint256"},
+      {"indexed": true, "name": "paramsHash", "type": "bytes32"},
       {"indexed": true, "name": "controller", "type": "address"},
       {"indexed": false, "name": "seniorToken", "type": "address"},
       {"indexed": false, "name": "juniorToken", "type": "address"},
@@ -10,8 +10,7 @@
       {"indexed": false, "name": "teller", "type": "address"},
       {"indexed": false, "name": "accountant", "type": "address"},
       {"indexed": false, "name": "manager", "type": "address"},
-      {"indexed": false, "name": "asset", "type": "address"},
-      {"indexed": false, "name": "paramsHash", "type": "bytes32"}
+      {"indexed": false, "name": "asset", "type": "address"}
     ],
     "name": "TrancheVaultCreated",
     "type": "event"

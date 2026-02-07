@@ -20,7 +20,7 @@ dataSources:
         - name: TrancheRegistry
           file: ./abis/TrancheRegistry.json
       eventHandlers:
-        - event: TrancheVaultCreated(indexed uint256,indexed address,address,address,indexed address,address,address,address,address,bytes32)
+        - event: TrancheVaultCreated(indexed bytes32,indexed address,address,address,indexed address,address,address,address,address)
           handler: handleTrancheVaultCreated
       file: ./src/registry.ts
 

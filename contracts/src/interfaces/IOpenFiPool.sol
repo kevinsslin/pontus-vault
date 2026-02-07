@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 interface IOpenFiPool {
-    function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external;
-    function withdraw(address asset, uint256 amount, address to) external returns (uint256);
+    function supply(address _asset, uint256 _amount, address _onBehalfOf, uint16 _referralCode) external;
+    function withdraw(address _asset, uint256 _amount, address _to) external returns (uint256);
 }

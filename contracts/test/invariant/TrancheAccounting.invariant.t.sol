@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {Test} from "forge-std/Test.sol";
@@ -23,21 +23,21 @@ contract TrancheHandler is Test {
     address internal immutable bob;
 
     constructor(
-        MockERC20 asset_,
-        MockAccountant accountant_,
-        TrancheController controller_,
-        TrancheToken seniorToken_,
-        TrancheToken juniorToken_,
-        address alice_,
-        address bob_
+        MockERC20 _asset,
+        MockAccountant _accountant,
+        TrancheController _controller,
+        TrancheToken _seniorToken,
+        TrancheToken _juniorToken,
+        address _alice,
+        address _bob
     ) {
-        asset = asset_;
-        accountant = accountant_;
-        controller = controller_;
-        seniorToken = seniorToken_;
-        juniorToken = juniorToken_;
-        alice = alice_;
-        bob = bob_;
+        asset = _asset;
+        accountant = _accountant;
+        controller = _controller;
+        seniorToken = _seniorToken;
+        juniorToken = _juniorToken;
+        alice = _alice;
+        bob = _bob;
     }
 
     function depositSeniorAsAlice(uint256 amountSeed) external {

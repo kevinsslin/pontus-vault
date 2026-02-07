@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
@@ -259,6 +259,7 @@ contract TrancheControllerTest is BaseTest {
         uint256 remaining = TestConstants.DEFAULT_INITIAL_BALANCE - seniorAssets;
         if (remaining == 0) return;
         uint256 limit = maxAdditional < remaining ? maxAdditional : remaining;
+        if (limit < TestConstants.ONE_UNIT) return;
         uint256 additional = bound(uint256(additionalSeed), TestConstants.ONE_UNIT, limit);
 
         uint256 priceBefore = (d0 * TestConstants.ONE_WAD) / s0;

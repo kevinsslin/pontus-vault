@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import {TrancheController} from "./TrancheController.sol";
-import {TrancheRegistry} from "./TrancheRegistry.sol";
-import {TrancheToken} from "./TrancheToken.sol";
+import {ITrancheController} from "../interfaces/ITrancheController.sol";
+import {ITrancheFactory} from "../interfaces/ITrancheFactory.sol";
+import {ITrancheRegistry} from "../interfaces/ITrancheRegistry.sol";
+import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
 
-contract TrancheFactory is Initializable, OwnableUpgradeable, UUPSUpgradeable {
-    error ZeroAddress();
-
+contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, UUPSUpgradeable {
     /// @custom:storage-location erc7201:pontus.storage.TrancheFactory
     struct TrancheFactoryStorage {
         address controllerImpl;
@@ -23,81 +22,64 @@ contract TrancheFactory is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     bytes32 private constant TRANCHE_FACTORY_STORAGE_LOCATION =
         0xb676ae5ac50bbb0e60b485f4f5242e5fd2a6ea6a85b2d6e7832f66c42d872b00;
 
-    event ControllerImplementationUpdated(address indexed oldImplementation, address indexed newImplementation);
-    event TokenImplementationUpdated(address indexed oldImplementation, address indexed newImplementation);
-    event RegistryUpdated(address indexed oldRegistry, address indexed newRegistry);
-
-    struct TrancheVaultConfig {
-        bytes32 paramsHash;
-        address asset;
-        address vault;
-        address teller;
-        address accountant;
-        address manager;
-        address operator;
-        address guardian;
-        uint8 tokenDecimals;
-        uint256 seniorRatePerSecondWad;
-        address rateModel;
-        uint256 maxSeniorRatioBps;
-        string seniorName;
-        string seniorSymbol;
-        string juniorName;
-        string juniorSymbol;
-    }
-
     constructor() {
         _disableInitializers();
     }
 
-    function initialize(address owner_, address controllerImpl_, address tokenImpl_, address registry_)
+    /*//////////////////////////////////////////////////////////////
+                            INITIALIZER
+    //////////////////////////////////////////////////////////////*/
+
+    function initialize(address _owner, address _controllerImpl, address _tokenImpl, address _registry)
         external
+        override
         initializer
     {
-        if (owner_ == address(0)) revert ZeroAddress();
-        if (controllerImpl_ == address(0) || tokenImpl_ == address(0)) revert ZeroAddress();
-        __Ownable_init(owner_);
+        if (_owner == address(0)) revert ZeroAddress();
+        if (_controllerImpl == address(0) || _tokenImpl == address(0)) revert ZeroAddress();
+        __Ownable_init(_owner);
         __UUPSUpgradeable_init();
         TrancheFactoryStorage storage $ = _getStorage();
-        $.controllerImpl = controllerImpl_;
-        $.tokenImpl = tokenImpl_;
-        $.registry = registry_;
+        $.controllerImpl = _controllerImpl;
+        $.tokenImpl = _tokenImpl;
+        $.registry = _registry;
     }
 
-    function controllerImpl() public view returns (address) {
-        return _getStorage().controllerImpl;
-    }
+    /*//////////////////////////////////////////////////////////////
+                           OWNER FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
-    function tokenImpl() public view returns (address) {
-        return _getStorage().tokenImpl;
-    }
-
-    function registry() public view returns (address) {
-        return _getStorage().registry;
-    }
-
-    function setControllerImpl(address newControllerImpl) external onlyOwner {
-        if (newControllerImpl == address(0)) revert ZeroAddress();
+    function setControllerImpl(address _newControllerImpl) external override onlyOwner {
+        if (_newControllerImpl == address(0)) revert ZeroAddress();
         TrancheFactoryStorage storage $ = _getStorage();
-        emit ControllerImplementationUpdated($.controllerImpl, newControllerImpl);
-        $.controllerImpl = newControllerImpl;
+        emit ControllerImplementationUpdated($.controllerImpl, _newControllerImpl);
+        $.controllerImpl = _newControllerImpl;
     }
 
-    function setTokenImpl(address newTokenImpl) external onlyOwner {
-        if (newTokenImpl == address(0)) revert ZeroAddress();
+    function setTokenImpl(address _newTokenImpl) external override onlyOwner {
+        if (_newTokenImpl == address(0)) revert ZeroAddress();
         TrancheFactoryStorage storage $ = _getStorage();
-        emit TokenImplementationUpdated($.tokenImpl, newTokenImpl);
-        $.tokenImpl = newTokenImpl;
+        emit TokenImplementationUpdated($.tokenImpl, _newTokenImpl);
+        $.tokenImpl = _newTokenImpl;
     }
 
-    function setRegistry(address newRegistry) external onlyOwner {
-        if (newRegistry == address(0)) revert ZeroAddress();
+    function setRegistry(address _newRegistry) external override onlyOwner {
+        if (_newRegistry == address(0)) revert ZeroAddress();
         TrancheFactoryStorage storage $ = _getStorage();
-        emit RegistryUpdated($.registry, newRegistry);
-        $.registry = newRegistry;
+        emit RegistryUpdated($.registry, _newRegistry);
+        $.registry = _newRegistry;
     }
 
-    function createTrancheVault(TrancheVaultConfig calldata config) external onlyOwner returns (uint256 vaultId) {
+    /*//////////////////////////////////////////////////////////////
+                          DEPLOY FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function createTrancheVault(TrancheVaultConfig calldata _config)
+        external
+        override
+        onlyOwner
+        returns (bytes32 _paramsHash)
+    {
         TrancheFactoryStorage storage $ = _getStorage();
         if ($.registry == address(0)) revert ZeroAddress();
 
@@ -105,41 +87,63 @@ contract TrancheFactory is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         address seniorToken = Clones.clone($.tokenImpl);
         address juniorToken = Clones.clone($.tokenImpl);
 
-        TrancheToken(seniorToken).initialize(config.seniorName, config.seniorSymbol, config.tokenDecimals, controller);
-        TrancheToken(juniorToken).initialize(config.juniorName, config.juniorSymbol, config.tokenDecimals, controller);
+        ITrancheToken(seniorToken)
+            .initialize(_config.seniorName, _config.seniorSymbol, _config.tokenDecimals, controller);
+        ITrancheToken(juniorToken)
+            .initialize(_config.juniorName, _config.juniorSymbol, _config.tokenDecimals, controller);
 
-        TrancheController(controller)
+        ITrancheController(controller)
             .initialize(
-                TrancheController.InitParams({
-                    asset: config.asset,
-                    vault: config.vault,
-                    teller: config.teller,
-                    accountant: config.accountant,
-                    operator: config.operator,
-                    guardian: config.guardian,
+                ITrancheController.InitParams({
+                    asset: _config.asset,
+                    vault: _config.vault,
+                    teller: _config.teller,
+                    accountant: _config.accountant,
+                    operator: _config.operator,
+                    guardian: _config.guardian,
                     seniorToken: seniorToken,
                     juniorToken: juniorToken,
-                    seniorRatePerSecondWad: config.seniorRatePerSecondWad,
-                    rateModel: config.rateModel,
-                    maxSeniorRatioBps: config.maxSeniorRatioBps
+                    seniorRatePerSecondWad: _config.seniorRatePerSecondWad,
+                    rateModel: _config.rateModel,
+                    maxSeniorRatioBps: _config.maxSeniorRatioBps
                 })
             );
 
-        vaultId = TrancheRegistry($.registry)
+        _paramsHash = ITrancheRegistry($.registry)
             .registerTrancheVault(
-                TrancheRegistry.TrancheVaultInfo({
+                ITrancheRegistry.TrancheVaultInfo({
                     controller: controller,
                     seniorToken: seniorToken,
                     juniorToken: juniorToken,
-                    vault: config.vault,
-                    teller: config.teller,
-                    accountant: config.accountant,
-                    manager: config.manager,
-                    asset: config.asset,
-                    paramsHash: config.paramsHash
+                    vault: _config.vault,
+                    teller: _config.teller,
+                    accountant: _config.accountant,
+                    manager: _config.manager,
+                    asset: _config.asset,
+                    paramsHash: _config.paramsHash
                 })
             );
     }
+
+    /*//////////////////////////////////////////////////////////////
+                             VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function controllerImpl() public view override returns (address) {
+        return _getStorage().controllerImpl;
+    }
+
+    function tokenImpl() public view override returns (address) {
+        return _getStorage().tokenImpl;
+    }
+
+    function registry() public view override returns (address) {
+        return _getStorage().registry;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                           INTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 

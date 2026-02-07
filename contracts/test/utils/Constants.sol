@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 library TestConstants {
     uint8 internal constant MINTER_ROLE = 7;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
@@ -7,6 +7,8 @@ import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TrancheFactory} from "../../src/tranche/TrancheFactory.sol";
 import {TrancheRegistry} from "../../src/tranche/TrancheRegistry.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
+import {ITrancheFactory} from "../../src/interfaces/ITrancheFactory.sol";
+import {ITrancheRegistry} from "../../src/interfaces/ITrancheRegistry.sol";
 import {IntegrationTest} from "./IntegrationTest.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
@@ -59,14 +61,14 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
     }
 
     function test_ownerCanCreateVaultAndRegistryStoresWiring() public {
-        TrancheFactory.TrancheVaultConfig memory config = _defaultConfig(TestDefaults.DEFAULT_PARAMS_HASH);
+        ITrancheFactory.TrancheVaultConfig memory config = _defaultConfig(TestDefaults.DEFAULT_PARAMS_HASH);
 
         vm.prank(owner);
-        uint256 vaultId = factory.createTrancheVault(config);
-        assertEq(vaultId, 0);
-        assertEq(registry.trancheVaultCount(), 1);
+        bytes32 paramsHash = factory.createTrancheVault(config);
+        assertEq(paramsHash, config.paramsHash);
+        assertTrue(registry.trancheVaultExists(paramsHash));
 
-        TrancheRegistry.TrancheVaultInfo memory info = registry.trancheVaults(vaultId);
+        ITrancheRegistry.TrancheVaultInfo memory info = registry.trancheVaultByParamsHash(paramsHash);
         assertEq(info.asset, address(asset));
         assertEq(info.vault, address(boringVault));
         assertEq(info.teller, address(boringVaultTeller));
@@ -86,16 +88,16 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
     }
 
     function test_createTrancheVault_revertsForNonOwner() public {
-        TrancheFactory.TrancheVaultConfig memory config = _defaultConfig(bytes32(0));
+        ITrancheFactory.TrancheVaultConfig memory config = _defaultConfig(bytes32(0));
 
         vm.prank(outsider);
         vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, outsider));
         factory.createTrancheVault(config);
     }
 
-    function _defaultConfig(bytes32 paramsHash) internal view returns (TrancheFactory.TrancheVaultConfig memory) {
-        return TrancheFactory.TrancheVaultConfig({
-            paramsHash: paramsHash,
+    function _defaultConfig(bytes32 _paramsHash) internal view returns (ITrancheFactory.TrancheVaultConfig memory) {
+        return ITrancheFactory.TrancheVaultConfig({
+            paramsHash: _paramsHash,
             asset: address(asset),
             vault: address(boringVault),
             teller: address(boringVaultTeller),

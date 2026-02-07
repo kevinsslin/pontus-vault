@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getActivityForVault, getVaultById } from "../../../lib/data/vaults";
-import { formatBps, formatRelativeTimestamp, formatUsd, formatWad } from "../../../lib/format";
+import { buildAssetAllocation } from "../../../lib/asset-allocation";
+import { formatBps, formatRelativeTimestamp, formatSharePrice, formatUsd } from "../../../lib/format";
 import TokenBadge from "../../components/TokenBadge";
+import VaultAssetAllocationChart from "../../components/VaultAssetAllocationChart";
 import VaultPerformanceChart from "../../components/VaultPerformanceChart";
 import VaultExecutionPanel from "../../components/VaultExecutionPanel";
 
@@ -25,35 +27,21 @@ function parseWad(value: string | null): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function parseBps(value: string | null): number | null {
-  if (!value) return null;
-  const parsed = Number(value) / 100;
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 function buildTrendSeries(
   seniorNav: string | null,
   juniorNav: string | null,
-  seniorApyBps: string | null,
-  juniorApyBps: string | null
 ) {
   const seniorBase = parseWad(seniorNav) ?? 1.0;
   const juniorBase = parseWad(juniorNav) ?? 1.0;
-  const seniorApyBase = parseBps(seniorApyBps) ?? 8;
-  const juniorApyBase = parseBps(juniorApyBps) ?? 14;
 
   const labels = ["W-12", "W-10", "W-8", "W-6", "W-4", "W-2", "Now"];
-  const seniorFactors = [0.992, 0.995, 0.997, 1.0, 1.002, 1.004, 1.006];
-  const juniorFactors = [0.93, 0.95, 0.98, 1.0, 1.03, 1.06, 1.09];
-  const apySeniorFactors = [0.98, 1.0, 1.03, 1.0, 0.97, 1.02, 1.01];
-  const apyJuniorFactors = [0.9, 0.95, 1.05, 1.0, 1.08, 1.12, 1.04];
+  const seniorFactors = [0.994, 0.996, 0.998, 0.999, 1.001, 1.003, 1.0];
+  const juniorFactors = [0.91, 0.94, 0.97, 0.99, 1.03, 1.07, 1.0];
 
   return labels.map((label, index) => ({
     label,
-    seniorNav: seniorBase * seniorFactors[index],
-    juniorNav: juniorBase * juniorFactors[index],
-    seniorApy: seniorApyBase * apySeniorFactors[index],
-    juniorApy: juniorApyBase * apyJuniorFactors[index],
+    seniorSharePrice: seniorBase * seniorFactors[index],
+    juniorSharePrice: juniorBase * juniorFactors[index],
   }));
 }
 
@@ -77,9 +65,8 @@ export default async function VaultDetailPage({
   const trendSeries = buildTrendSeries(
     vault.metrics.seniorPrice,
     vault.metrics.juniorPrice,
-    vault.metrics.seniorApyBps ?? null,
-    vault.metrics.juniorApyBps ?? null
   );
+  const assetAllocation = buildAssetAllocation(vault.route, vault.metrics.tvl);
 
   return (
     <main className="page">
@@ -121,13 +108,13 @@ export default async function VaultDetailPage({
             <p className="micro">Updated {updatedLabel}</p>
           </article>
           <article className="card">
-            <div className="stat-label">Senior Yield</div>
-            <div className="stat-value">{formatWad(vault.metrics.seniorPrice)}x</div>
+            <div className="stat-label">Senior Share Price</div>
+            <div className="stat-value">{formatSharePrice(vault.metrics.seniorPrice)}</div>
             <p className="muted">Debt: {formatUsd(vault.metrics.seniorDebt)}</p>
           </article>
           <article className="card">
-            <div className="stat-label">Junior Yield</div>
-            <div className="stat-value">{formatWad(vault.metrics.juniorPrice)}x</div>
+            <div className="stat-label">Junior Share Price</div>
+            <div className="stat-value">{formatSharePrice(vault.metrics.juniorPrice)}</div>
             <p className="muted">Supply: {formatUsd(vault.metrics.juniorSupply)}</p>
           </article>
         </div>
@@ -135,6 +122,10 @@ export default async function VaultDetailPage({
 
       <section className="section section--tight reveal delay-1">
         <VaultPerformanceChart points={trendSeries} />
+      </section>
+
+      <section className="section section--compact reveal delay-2">
+        <VaultAssetAllocationChart slices={assetAllocation} />
       </section>
 
       <section className="section section--compact reveal delay-2">

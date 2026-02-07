@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
-interface ITrancheToken {
-    function totalSupply() external view returns (uint256);
-    function mint(address to, uint256 amount) external;
-    function burnFrom(address from, uint256 amount) external;
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
+interface ITrancheToken is IERC20Metadata {
+    function controller() external view returns (address);
+    function initialize(string calldata _name, string calldata _symbol, uint8 _decimals, address _controller) external;
+    function mint(address _to, uint256 _amount) external;
+    function burnFrom(address _from, uint256 _amount) external;
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getDataSource } from "../../lib/data/vaults";
+import SiteHeaderAction from "./SiteHeaderAction";
 
 export default function SiteHeader() {
   const dataSource = getDataSource();
@@ -32,7 +33,7 @@ export default function SiteHeader() {
         </nav>
 
         <div className="site-header__actions">
-          <span className="pill">{dataSource === "live" ? "Live data" : "Demo data"}</span>
+          <SiteHeaderAction dataSource={dataSource} />
         </div>
       </div>
     </header>

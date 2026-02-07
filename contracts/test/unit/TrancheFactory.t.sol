@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
@@ -8,6 +8,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TrancheFactory} from "../../src/tranche/TrancheFactory.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
+import {ITrancheFactory} from "../../src/interfaces/ITrancheFactory.sol";
 import {TrancheFactoryV2} from "../mocks/TrancheFactoryV2.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
@@ -43,7 +44,7 @@ contract TrancheFactoryTest is Test {
 
     function test_initialize_revertsWhenControllerImplIsZero() public {
         TrancheFactory factoryImpl = new TrancheFactory();
-        vm.expectRevert(TrancheFactory.ZeroAddress.selector);
+        vm.expectRevert(ITrancheFactory.ZeroAddress.selector);
         new ERC1967Proxy(
             address(factoryImpl),
             abi.encodeCall(TrancheFactory.initialize, (owner, TestConstants.ZERO_ADDRESS, address(tokenImpl), registry))
@@ -52,7 +53,7 @@ contract TrancheFactoryTest is Test {
 
     function test_initialize_revertsWhenTokenImplIsZero() public {
         TrancheFactory factoryImpl = new TrancheFactory();
-        vm.expectRevert(TrancheFactory.ZeroAddress.selector);
+        vm.expectRevert(ITrancheFactory.ZeroAddress.selector);
         new ERC1967Proxy(
             address(factoryImpl),
             abi.encodeCall(
@@ -69,7 +70,7 @@ contract TrancheFactoryTest is Test {
 
     function test_setRegistry_revertsOnZeroAddress() public {
         vm.prank(owner);
-        vm.expectRevert(TrancheFactory.ZeroAddress.selector);
+        vm.expectRevert(ITrancheFactory.ZeroAddress.selector);
         factory.setRegistry(TestConstants.ZERO_ADDRESS);
     }
 
@@ -87,10 +88,10 @@ contract TrancheFactoryTest is Test {
             )
         );
 
-        TrancheFactory.TrancheVaultConfig memory config = _defaultConfig();
+        ITrancheFactory.TrancheVaultConfig memory config = _defaultConfig();
 
         vm.prank(owner);
-        vm.expectRevert(TrancheFactory.ZeroAddress.selector);
+        vm.expectRevert(ITrancheFactory.ZeroAddress.selector);
         localFactory.createTrancheVault(config);
     }
 
@@ -132,8 +133,8 @@ contract TrancheFactoryTest is Test {
         assertEq(TrancheFactoryV2(address(factory)).version(), 2);
     }
 
-    function _defaultConfig() internal pure returns (TrancheFactory.TrancheVaultConfig memory) {
-        return TrancheFactory.TrancheVaultConfig({
+    function _defaultConfig() internal pure returns (ITrancheFactory.TrancheVaultConfig memory) {
+        return ITrancheFactory.TrancheVaultConfig({
             paramsHash: bytes32(0),
             asset: TestConstants.CONFIG_ASSET,
             vault: TestConstants.CONFIG_VAULT,
