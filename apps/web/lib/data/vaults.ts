@@ -45,9 +45,7 @@ function getLiveConfig(): LiveConfig {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
     "";
   const indexerUrl =
-    process.env.GOLDSKY_SUBGRAPH_URL ??
     process.env.INDEXER_URL ??
-    process.env.NEXT_PUBLIC_INDEXER_URL ??
     "";
 
   if (!supabaseUrl || !supabaseKey) {

@@ -60,6 +60,7 @@ forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 -
 **Notes**
 - `docs/PRD.md` and `plan.md` are intentionally gitignored per request.
 - Frontend data source is switchable via `DATA_SOURCE` / `NEXT_PUBLIC_DATA_SOURCE` using `demo` or `live`.
+- Live data mode expects server envs: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `INDEXER_URL`.
 - Wallet connect uses Dynamic; set `NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID` to enable the connect widget.
 - Operator flow uses `Next.js API + wallet-signed step runner`:
   - `POST/GET /api/operator/operations`
