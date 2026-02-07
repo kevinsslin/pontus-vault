@@ -61,11 +61,12 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
     }
 
     function test_ownerCanCreateVaultAndRegistryStoresWiring() public {
-        ITrancheFactory.TrancheVaultConfig memory config = _defaultConfig(TestDefaults.DEFAULT_PARAMS_HASH);
+        ITrancheFactory.TrancheVaultConfig memory config = _defaultConfig();
+        bytes32 expectedParamsHash = factory.computeParamsHash(config);
 
         vm.prank(owner);
         bytes32 paramsHash = factory.createTrancheVault(config);
-        assertEq(paramsHash, config.paramsHash);
+        assertEq(paramsHash, expectedParamsHash);
         assertTrue(registry.trancheVaultExists(paramsHash));
 
         ITrancheRegistry.TrancheVaultInfo memory info = registry.trancheVaultByParamsHash(paramsHash);
@@ -74,7 +75,7 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
         assertEq(info.teller, address(boringVaultTeller));
         assertEq(info.accountant, address(boringVaultAccountant));
         assertEq(info.manager, manager);
-        assertEq(info.paramsHash, config.paramsHash);
+        assertEq(info.paramsHash, expectedParamsHash);
         assertTrue(info.controller != address(0));
         assertTrue(info.seniorToken != address(0));
         assertTrue(info.juniorToken != address(0));
@@ -88,16 +89,15 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
     }
 
     function test_createTrancheVault_revertsForNonOwner() public {
-        ITrancheFactory.TrancheVaultConfig memory config = _defaultConfig(bytes32(0));
+        ITrancheFactory.TrancheVaultConfig memory config = _defaultConfig();
 
         vm.prank(outsider);
         vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, outsider));
         factory.createTrancheVault(config);
     }
 
-    function _defaultConfig(bytes32 _paramsHash) internal view returns (ITrancheFactory.TrancheVaultConfig memory) {
+    function _defaultConfig() internal view returns (ITrancheFactory.TrancheVaultConfig memory) {
         return ITrancheFactory.TrancheVaultConfig({
-            paramsHash: _paramsHash,
             asset: address(asset),
             vault: address(boringVault),
             teller: address(boringVaultTeller),

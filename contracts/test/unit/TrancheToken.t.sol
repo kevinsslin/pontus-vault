@@ -4,6 +4,7 @@ pragma solidity ^0.8.33;
 import {Test} from "forge-std/Test.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+import {ITrancheToken} from "../../src/interfaces/ITrancheToken.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
@@ -28,7 +29,7 @@ contract TrancheTokenTest is Test {
 
     function test_initialize_revertsWhenControllerIsZero() public {
         TrancheToken another = new TrancheToken();
-        vm.expectRevert(TrancheToken.ZeroAddress.selector);
+        vm.expectRevert(ITrancheToken.ZeroAddress.selector);
         another.initialize(
             TestDefaults.SENIOR_TOKEN_NAME,
             TestDefaults.SENIOR_TOKEN_SYMBOL,
@@ -46,7 +47,7 @@ contract TrancheTokenTest is Test {
 
     function test_mint_revertsForNonController() public {
         vm.prank(alice);
-        vm.expectRevert(TrancheToken.NotController.selector);
+        vm.expectRevert(ITrancheToken.NotController.selector);
         token.mint(alice, TestConstants.ONE_UNIT);
     }
 
@@ -76,7 +77,7 @@ contract TrancheTokenTest is Test {
         token.mint(alice, TestConstants.TOKEN_MINT_AMOUNT);
 
         vm.prank(controller);
-        vm.expectRevert(TrancheToken.InsufficientAllowance.selector);
+        vm.expectRevert(ITrancheToken.InsufficientAllowance.selector);
         token.burnFrom(alice, TestConstants.ONE_UNIT);
     }
 
@@ -88,7 +89,7 @@ contract TrancheTokenTest is Test {
         token.approve(bob, TestConstants.TOKEN_MINT_AMOUNT);
 
         vm.prank(bob);
-        vm.expectRevert(TrancheToken.NotController.selector);
+        vm.expectRevert(ITrancheToken.NotController.selector);
         token.burnFrom(alice, TestConstants.ONE_UNIT);
     }
 

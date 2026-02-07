@@ -6,6 +6,7 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {BaseTest} from "../BaseTest.sol";
+import {ITrancheController} from "../../src/interfaces/ITrancheController.sol";
 import {MockTeller} from "../mocks/MockTeller.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TestConstants} from "../utils/Constants.sol";
@@ -83,7 +84,7 @@ contract TrancheControllerTest is BaseTest {
 
         vm.startPrank(bob);
         asset.approve(address(controller), TestConstants.ONE_UNIT);
-        vm.expectRevert(TrancheController.MaxSeniorRatioExceeded.selector);
+        vm.expectRevert(ITrancheController.MaxSeniorRatioExceeded.selector);
         controller.depositSenior(TestConstants.ONE_UNIT, bob);
         vm.stopPrank();
     }
@@ -94,7 +95,7 @@ contract TrancheControllerTest is BaseTest {
 
         vm.startPrank(bob);
         asset.approve(address(controller), TestConstants.SMALL_DEPOSIT);
-        vm.expectRevert(TrancheController.UnderwaterJunior.selector);
+        vm.expectRevert(ITrancheController.UnderwaterJunior.selector);
         controller.depositJunior(TestConstants.SMALL_DEPOSIT, bob);
         vm.stopPrank();
     }
@@ -102,21 +103,21 @@ contract TrancheControllerTest is BaseTest {
     function test_zeroAmount_revertsAcrossMutatingActions() public {
         vm.startPrank(alice);
         asset.approve(address(controller), TestConstants.ONE_UNIT);
-        vm.expectRevert(TrancheController.ZeroAmount.selector);
+        vm.expectRevert(ITrancheController.ZeroAmount.selector);
         controller.depositSenior(0, alice);
-        vm.expectRevert(TrancheController.ZeroAmount.selector);
+        vm.expectRevert(ITrancheController.ZeroAmount.selector);
         controller.depositJunior(0, alice);
         vm.stopPrank();
 
         vm.startPrank(alice);
         seniorToken.approve(address(controller), TestConstants.ONE_UNIT);
-        vm.expectRevert(TrancheController.ZeroAmount.selector);
+        vm.expectRevert(ITrancheController.ZeroAmount.selector);
         controller.redeemSenior(0, alice);
         vm.stopPrank();
 
         vm.startPrank(alice);
         juniorToken.approve(address(controller), TestConstants.ONE_UNIT);
-        vm.expectRevert(TrancheController.ZeroAmount.selector);
+        vm.expectRevert(ITrancheController.ZeroAmount.selector);
         controller.redeemJunior(0, alice);
         vm.stopPrank();
     }
@@ -173,11 +174,11 @@ contract TrancheControllerTest is BaseTest {
         assertEq(controller.maxSeniorRatioBps(), TestConstants.UPDATED_MAX_SENIOR_RATIO_BPS);
 
         vm.prank(operator);
-        vm.expectRevert(TrancheController.InvalidBps.selector);
+        vm.expectRevert(ITrancheController.InvalidBps.selector);
         controller.setMaxSeniorRatioBps(TestConstants.INVALID_BPS);
 
         vm.prank(operator);
-        vm.expectRevert(TrancheController.ZeroAddress.selector);
+        vm.expectRevert(ITrancheController.ZeroAddress.selector);
         controller.setTeller(TestConstants.ZERO_ADDRESS);
 
         vm.prank(operator);

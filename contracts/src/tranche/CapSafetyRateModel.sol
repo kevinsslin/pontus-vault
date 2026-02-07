@@ -6,35 +6,6 @@ import {IRefRateProvider} from "../interfaces/IRefRateProvider.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract FixedRateModel is IRateModel, Ownable {
-    error ZeroRate();
-
-    uint256 public ratePerSecondWad;
-
-    event RateUpdated(uint256 oldRate, uint256 newRate);
-
-    constructor(address _owner, uint256 _ratePerSecondWad) Ownable(_owner) {
-        ratePerSecondWad = _ratePerSecondWad;
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                           OWNER FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-
-    function setRatePerSecondWad(uint256 _newRate) external onlyOwner {
-        emit RateUpdated(ratePerSecondWad, _newRate);
-        ratePerSecondWad = _newRate;
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                             VIEW FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-
-    function getRatePerSecondWad() external view returns (uint256) {
-        return ratePerSecondWad;
-    }
-}
-
 contract CapSafetyRateModel is IRateModel, Ownable {
     error InvalidSafetyFactor();
 
@@ -78,6 +49,7 @@ contract CapSafetyRateModel is IRateModel, Ownable {
         if (refRateProvider == address(0)) {
             return 0;
         }
+
         uint256 refRate = IRefRateProvider(refRateProvider).getRatePerSecondWad();
         uint256 adjusted = Math.mulDiv(refRate, safetyFactorWad, 1e18);
         return adjusted < capRatePerSecondWad ? adjusted : capRatePerSecondWad;

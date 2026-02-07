@@ -27,7 +27,6 @@ contract DeployTrancheVault is BaseScript {
         address manager;
         address asset;
         address factoryAddress;
-        bytes32 paramsHash;
         uint256 seniorRatePerSecondWad;
         uint256 maxSeniorRatioBps;
         string seniorName;
@@ -90,7 +89,6 @@ contract DeployTrancheVault is BaseScript {
         uint8 tokenDecimals = IERC20Metadata(cfg.asset).decimals();
         bytes32 paramsHash = factory.createTrancheVault(
             ITrancheFactory.TrancheVaultConfig({
-                paramsHash: cfg.paramsHash,
                 asset: cfg.asset,
                 vault: address(vault),
                 teller: address(teller),
@@ -139,7 +137,6 @@ contract DeployTrancheVault is BaseScript {
         _requireAddress(cfg.asset, "ASSET");
         _requireAddress(cfg.factoryAddress, "TRANCHE_FACTORY");
 
-        cfg.paramsHash = _envBytes32("PARAMS_HASH", bytes32(0));
         cfg.seniorRatePerSecondWad = _envUint("SENIOR_RATE_PER_SECOND_WAD", 0);
         cfg.maxSeniorRatioBps = _envUint("MAX_SENIOR_RATIO_BPS", 8_000);
         cfg.seniorName = _envString("SENIOR_TOKEN_NAME", "Pontus Vault Senior");

@@ -22,7 +22,6 @@ library TestDefaults {
 
     string internal constant LOG_SKIP_FORK = "PHAROS_RPC_URL not set; skipping OpenFi fork test.";
 
-    bytes32 internal constant DEFAULT_PARAMS_HASH = keccak256("usdc-lending-s1");
     bytes32 internal constant SAMPLE_PARAMS_HASH = keccak256("sample");
     bytes32 internal constant SAMPLE_PARAMS_HASH_2 = keccak256("sample-2");
 }

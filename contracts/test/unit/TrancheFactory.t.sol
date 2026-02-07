@@ -135,7 +135,6 @@ contract TrancheFactoryTest is Test {
 
     function _defaultConfig() internal pure returns (ITrancheFactory.TrancheVaultConfig memory) {
         return ITrancheFactory.TrancheVaultConfig({
-            paramsHash: bytes32(0),
             asset: TestConstants.CONFIG_ASSET,
             vault: TestConstants.CONFIG_VAULT,
             teller: TestConstants.CONFIG_TELLER,

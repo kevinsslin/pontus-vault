@@ -9,7 +9,6 @@ interface ITrancheFactory {
     event RegistryUpdated(address indexed oldRegistry, address indexed newRegistry);
 
     struct TrancheVaultConfig {
-        bytes32 paramsHash;
         address asset;
         address vault;
         address teller;
@@ -40,6 +39,8 @@ interface ITrancheFactory {
     function setTokenImpl(address _newTokenImpl) external;
 
     function setRegistry(address _newRegistry) external;
+
+    function computeParamsHash(TrancheVaultConfig calldata _config) external view returns (bytes32 _paramsHash);
 
     function createTrancheVault(TrancheVaultConfig calldata _config) external returns (bytes32 _paramsHash);
 }

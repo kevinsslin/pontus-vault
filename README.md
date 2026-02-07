@@ -69,5 +69,6 @@ forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 -
 - Operator persistence tables are `operator_operations` and `operator_operation_steps` in Supabase.
 - `NEXT_PUBLIC_OPERATOR_TX_MODE=send_transaction` enables direct wallet tx broadcast on onchain steps; default behavior is `sign_only`.
 - Contracts test layers include unit, integration (self-deployed BoringVault stack), fork (OpenFi on Atlantic), and invariant suites.
+- `CapSafetyRateModel` consumes `IRefRateProvider` only. To use a real external protocol rate, deploy an adapter that implements `IRefRateProvider` and normalizes output to `per-second WAD`.
 - If you add a new workspace, update `pnpm-workspace.yaml` and root scripts.
 - Dependencies are pinned to exact versions; update intentionally when needed.

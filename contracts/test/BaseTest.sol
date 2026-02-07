@@ -6,6 +6,7 @@ import "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 import {MockAccountant} from "./mocks/MockAccountant.sol";
+import {ITrancheController} from "../src/interfaces/ITrancheController.sol";
 import {TrancheController} from "../src/tranche/TrancheController.sol";
 import {TrancheToken} from "../src/tranche/TrancheToken.sol";
 import {TestConstants} from "./utils/Constants.sol";
@@ -76,7 +77,7 @@ abstract contract BaseTest is Test {
 
     function _initController(address vault, address teller, address rateModel, address accountantAddress) internal {
         controller.initialize(
-            TrancheController.InitParams({
+            ITrancheController.InitParams({
                 asset: address(asset),
                 vault: vault,
                 teller: teller,

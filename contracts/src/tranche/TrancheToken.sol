@@ -7,10 +7,6 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
 
 contract TrancheToken is Initializable, ERC20Upgradeable, ITrancheToken {
-    error NotController();
-    error ZeroAddress();
-    error InsufficientAllowance();
-
     address public controller;
     uint8 private _tokenDecimals;
 

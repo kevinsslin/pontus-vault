@@ -16,34 +16,14 @@ import {TellerWithMultiAssetSupport} from "../../lib/boring-vault/src/base/Roles
 
 import {Constants} from "../libraries/Constants.sol";
 import {IRateModel} from "../interfaces/IRateModel.sol";
+import {ITrancheController} from "../interfaces/ITrancheController.sol";
 import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
 
-contract TrancheController is AccessControl, Initializable, Pausable, ReentrancyGuard {
+contract TrancheController is ITrancheController, AccessControl, Initializable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    error ZeroAddress();
-    error ZeroAmount();
-    error ZeroValue();
-    error UnderwaterJunior();
-    error InvalidBps();
-    error MaxSeniorRatioExceeded();
-
-    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
-    bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
-
-    struct InitParams {
-        address asset;
-        address vault;
-        address teller;
-        address accountant;
-        address operator;
-        address guardian;
-        address seniorToken;
-        address juniorToken;
-        uint256 seniorRatePerSecondWad;
-        address rateModel;
-        uint256 maxSeniorRatioBps;
-    }
+    bytes32 public constant override OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+    bytes32 public constant override GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
 
     IERC20 public asset;
     AccountantWithRateProviders public accountant;
@@ -59,22 +39,11 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
     address public vault;
     uint256 public oneShare;
 
-    event Accrued(uint256 newSeniorDebt, uint256 dt);
-    event SeniorRateUpdated(uint256 oldRate, uint256 newRate);
-    event RateModelUpdated(address indexed oldModel, address indexed newModel);
-    event TellerUpdated(address indexed oldTeller, address indexed newTeller);
-    event MaxSeniorRatioUpdated(uint256 oldRatioBps, uint256 newRatioBps);
-
-    event SeniorDeposited(address indexed caller, address indexed receiver, uint256 assets, uint256 shares);
-    event JuniorDeposited(address indexed caller, address indexed receiver, uint256 assets, uint256 shares);
-    event SeniorRedeemed(address indexed caller, address indexed receiver, uint256 shares, uint256 assets);
-    event JuniorRedeemed(address indexed caller, address indexed receiver, uint256 shares, uint256 assets);
-
     /*//////////////////////////////////////////////////////////////
                             INITIALIZER
     //////////////////////////////////////////////////////////////*/
 
-    function initialize(InitParams calldata _params) external initializer {
+    function initialize(InitParams calldata _params) external override initializer {
         _validateInit(_params);
         _setCore(_params);
         _setRates(_params);
@@ -85,11 +54,11 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
                            GUARDIAN FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function pause() external onlyRole(GUARDIAN_ROLE) {
+    function pause() external override onlyRole(GUARDIAN_ROLE) {
         _pause();
     }
 
-    function unpause() external onlyRole(GUARDIAN_ROLE) {
+    function unpause() external override onlyRole(GUARDIAN_ROLE) {
         _unpause();
     }
 
@@ -97,25 +66,25 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
                            OPERATOR FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function setSeniorRatePerSecondWad(uint256 _newRate) external onlyRole(OPERATOR_ROLE) {
+    function setSeniorRatePerSecondWad(uint256 _newRate) external override onlyRole(OPERATOR_ROLE) {
         accrue();
         emit SeniorRateUpdated(seniorRatePerSecondWad, _newRate);
         seniorRatePerSecondWad = _newRate;
     }
 
-    function setRateModel(address _newRateModel) external onlyRole(OPERATOR_ROLE) {
+    function setRateModel(address _newRateModel) external override onlyRole(OPERATOR_ROLE) {
         accrue();
         emit RateModelUpdated(rateModel, _newRateModel);
         rateModel = _newRateModel;
     }
 
-    function setTeller(address _newTeller) external onlyRole(OPERATOR_ROLE) {
+    function setTeller(address _newTeller) external override onlyRole(OPERATOR_ROLE) {
         if (_newTeller == address(0)) revert ZeroAddress();
         emit TellerUpdated(address(teller), _newTeller);
         teller = TellerWithMultiAssetSupport(payable(_newTeller));
     }
 
-    function setMaxSeniorRatioBps(uint256 _newRatioBps) external onlyRole(OPERATOR_ROLE) {
+    function setMaxSeniorRatioBps(uint256 _newRatioBps) external override onlyRole(OPERATOR_ROLE) {
         if (_newRatioBps > Constants.BPS) revert InvalidBps();
         emit MaxSeniorRatioUpdated(maxSeniorRatioBps, _newRatioBps);
         maxSeniorRatioBps = _newRatioBps;
@@ -127,6 +96,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
     function depositSenior(uint256 _assetsIn, address _receiver)
         external
+        override
         nonReentrant
         whenNotPaused
         returns (uint256 _sharesOut)
@@ -160,6 +130,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
     function depositJunior(uint256 _assetsIn, address _receiver)
         external
+        override
         nonReentrant
         whenNotPaused
         returns (uint256 _sharesOut)
@@ -191,6 +162,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
     function redeemSenior(uint256 _sharesIn, address _receiver)
         external
+        override
         nonReentrant
         whenNotPaused
         returns (uint256 _assetsOut)
@@ -219,6 +191,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
 
     function redeemJunior(uint256 _sharesIn, address _receiver)
         external
+        override
         nonReentrant
         whenNotPaused
         returns (uint256 _assetsOut)
@@ -248,7 +221,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
                              VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function previewDepositSenior(uint256 _assetsIn) external view returns (uint256 _sharesOut) {
+    function previewDepositSenior(uint256 _assetsIn) external view override returns (uint256 _sharesOut) {
         if (_assetsIn == 0) return 0;
         uint256 V0 = previewV();
         uint256 D0 = _previewDebt();
@@ -260,7 +233,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         return Math.mulDiv(_assetsIn, S0, seniorValue0);
     }
 
-    function previewDepositJunior(uint256 _assetsIn) external view returns (uint256 _sharesOut) {
+    function previewDepositJunior(uint256 _assetsIn) external view override returns (uint256 _sharesOut) {
         if (_assetsIn == 0) return 0;
         uint256 V0 = previewV();
         uint256 D0 = _previewDebt();
@@ -273,7 +246,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         return Math.mulDiv(_assetsIn, J0, juniorValue0);
     }
 
-    function previewRedeemSenior(uint256 _sharesIn) external view returns (uint256 _assetsOut) {
+    function previewRedeemSenior(uint256 _sharesIn) external view override returns (uint256 _assetsOut) {
         if (_sharesIn == 0) return 0;
         uint256 V0 = previewV();
         uint256 D0 = _previewDebt();
@@ -283,7 +256,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         return Math.mulDiv(_sharesIn, seniorValue0, S0);
     }
 
-    function previewRedeemJunior(uint256 _sharesIn) external view returns (uint256 _assetsOut) {
+    function previewRedeemJunior(uint256 _sharesIn) external view override returns (uint256 _assetsOut) {
         if (_sharesIn == 0) return 0;
         uint256 V0 = previewV();
         uint256 D0 = _previewDebt();
@@ -297,7 +270,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
                           ACCOUNTING FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function accrue() public {
+    function accrue() public override {
         uint256 ts = block.timestamp;
         uint256 dt = ts - lastAccrualTs;
         if (dt == 0) return;
@@ -316,7 +289,7 @@ contract TrancheController is AccessControl, Initializable, Pausable, Reentrancy
         emit Accrued(seniorDebt, dt);
     }
 
-    function previewV() public view returns (uint256) {
+    function previewV() public view override returns (uint256) {
         uint256 shares = IERC20(vault).balanceOf(address(this));
         if (shares == 0) return 0;
         uint256 rate = accountant.getRateInQuoteSafe(ERC20(address(asset)));

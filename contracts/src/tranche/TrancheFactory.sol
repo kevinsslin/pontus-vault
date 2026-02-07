@@ -21,6 +21,7 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
     // keccak256(abi.encode(uint256(keccak256("pontus.storage.TrancheFactory")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant TRANCHE_FACTORY_STORAGE_LOCATION =
         0xb676ae5ac50bbb0e60b485f4f5242e5fd2a6ea6a85b2d6e7832f66c42d872b00;
+    bytes32 private constant TRANCHE_VAULT_PARAMS_HASH_PREFIX = keccak256("pontus.tranche.vault.params.v1");
 
     constructor() {
         _disableInitializers();
@@ -82,6 +83,7 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
     {
         TrancheFactoryStorage storage $ = _getStorage();
         if ($.registry == address(0)) revert ZeroAddress();
+        _paramsHash = _computeParamsHash(_config);
 
         address controller = Clones.clone($.controllerImpl);
         address seniorToken = Clones.clone($.tokenImpl);
@@ -109,7 +111,7 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
                 })
             );
 
-        _paramsHash = ITrancheRegistry($.registry)
+        ITrancheRegistry($.registry)
             .registerTrancheVault(
                 ITrancheRegistry.TrancheVaultInfo({
                     controller: controller,
@@ -120,7 +122,7 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
                     accountant: _config.accountant,
                     manager: _config.manager,
                     asset: _config.asset,
-                    paramsHash: _config.paramsHash
+                    paramsHash: _paramsHash
                 })
             );
     }
@@ -128,6 +130,15 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
     /*//////////////////////////////////////////////////////////////
                              VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+
+    function computeParamsHash(TrancheVaultConfig calldata _config)
+        external
+        view
+        override
+        returns (bytes32 _paramsHash)
+    {
+        return _computeParamsHash(_config);
+    }
 
     function controllerImpl() public view override returns (address) {
         return _getStorage().controllerImpl;
@@ -146,6 +157,10 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
     //////////////////////////////////////////////////////////////*/
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
+
+    function _computeParamsHash(TrancheVaultConfig calldata _config) internal view returns (bytes32 _paramsHash) {
+        return keccak256(abi.encode(TRANCHE_VAULT_PARAMS_HASH_PREFIX, block.chainid, _config));
+    }
 
     function _getStorage() private pure returns (TrancheFactoryStorage storage $) {
         assembly {
