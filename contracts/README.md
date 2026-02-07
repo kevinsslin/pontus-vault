@@ -138,8 +138,6 @@ pnpm --filter @pti/contracts deploy:vault
 - Script-specific (`DeployTrancheVault.s.sol`):
   required `PRIVATE_KEY`, `TRANCHE_FACTORY`, `ASSET`, `STRATEGIST`, `MANAGER_ADMIN`
   optional `OWNER`, `OPERATOR`, `GUARDIAN`, `BALANCER_VAULT`, token/accountant params
-- Deploy verification (applies to `deploy`, `deploy:infra`, `deploy:vault`):
-  optional `BLOCKSCAN_API_KEY` (falls back to `na` if omitted)
 - Fork manager test optional overrides:
   `OPENFI_MANAGER_POOL`, `OPENFI_MANAGER_FORK_AMOUNT`, `RUN_ASSETO_MANAGER_FORK`,
   `ASSETO_MANAGER_PRODUCT`, `ASSETO_MANAGER_ASSET`, `ASSETO_MANAGER_FORK_AMOUNT`
@@ -150,7 +148,6 @@ pnpm --filter @pti/contracts deploy:vault
   - `--chain-id 688688`
   - `--verifier blockscout`
   - `--verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract`
-- `BLOCKSCAN_API_KEY` is optional; scripts pass `na` when unset.
 - Example:
 ```bash
 cd contracts

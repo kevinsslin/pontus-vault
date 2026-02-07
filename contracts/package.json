@@ -8,8 +8,8 @@
     "test": "forge test",
     "lint": "forge fmt --check",
     "fmt": "forge fmt",
-    "deploy": "forge script script/DeployInfra.s.sol --broadcast --verify --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688 --verifier blockscout --verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract --etherscan-api-key \"${BLOCKSCAN_API_KEY:-na}\"",
-    "deploy:infra": "forge script script/DeployInfra.s.sol --broadcast --verify --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688 --verifier blockscout --verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract --etherscan-api-key \"${BLOCKSCAN_API_KEY:-na}\"",
-    "deploy:vault": "forge script script/DeployTrancheVault.s.sol --broadcast --verify --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688 --verifier blockscout --verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract --etherscan-api-key \"${BLOCKSCAN_API_KEY:-na}\""
+    "deploy": "forge script script/DeployInfra.s.sol --broadcast --verify --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688 --verifier blockscout --verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract",
+    "deploy:infra": "forge script script/DeployInfra.s.sol --broadcast --verify --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688 --verifier blockscout --verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract",
+    "deploy:vault": "forge script script/DeployTrancheVault.s.sol --broadcast --verify --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688 --verifier blockscout --verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract"
   }
 }
