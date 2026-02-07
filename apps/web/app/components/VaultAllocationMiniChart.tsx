@@ -20,7 +20,8 @@ function donutBackground(slices: AssetAllocationSlice[]): string {
 export default function VaultAllocationMiniChart({ slices }: VaultAllocationMiniChartProps) {
   if (slices.length === 0) return null;
 
-  const topSlices = slices.slice(0, 3);
+  const topSlices = slices.slice(0, 2);
+  const othersBps = slices.slice(2).reduce((sum, slice) => sum + slice.bps, 0);
   const style = { background: donutBackground(slices) } as CSSProperties;
 
   return (
@@ -37,6 +38,13 @@ export default function VaultAllocationMiniChart({ slices }: VaultAllocationMini
             <span className="allocation-mini__value">{(slice.bps / 100).toFixed(1)}%</span>
           </div>
         ))}
+        {othersBps > 0 ? (
+          <div className="allocation-mini__item">
+            <span className="allocation-mini__dot allocation-mini__dot--other" />
+            <span className="allocation-mini__label">Other routes</span>
+            <span className="allocation-mini__value">{(othersBps / 100).toFixed(1)}%</span>
+          </div>
+        ) : null}
       </div>
     </div>
   );

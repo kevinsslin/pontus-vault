@@ -920,7 +920,7 @@ p {
 
 .vault-card {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .vault-card__top {
@@ -928,6 +928,37 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.vault-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vault-card__overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.vault-card__overview .stat {
+  border: 1px solid var(--pv-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 10px 11px;
+}
+
+.vault-card__overview .stat-value {
+  margin-top: 3px;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.vault-card__overview .stat:last-child .stat-value {
+  font-size: 14px;
+  font-weight: 640;
+  color: var(--pv-ink-500);
 }
 
 .badge {
@@ -1059,6 +1090,10 @@ p {
   border-radius: 999px;
 }
 
+.allocation-mini__dot--other {
+  background: #adc3dc;
+}
+
 .allocation-mini__label {
   font-size: 12px;
   color: var(--pv-ink-700);
@@ -1071,6 +1106,12 @@ p {
   font-size: 12px;
   font-weight: 650;
   color: var(--pv-ink-500);
+}
+
+.vault-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .risk-meter {
@@ -2132,6 +2173,14 @@ a:focus-visible {
   .allocation-mini__hole {
     width: 42px;
     height: 42px;
+  }
+
+  .vault-card__overview {
+    grid-template-columns: 1fr;
+  }
+
+  .vault-card__overview .stat-value {
+    font-size: 16px;
   }
 
   .execution-notes__grid {

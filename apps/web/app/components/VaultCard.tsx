@@ -3,35 +3,27 @@ import type { VaultRecord } from "@pti/shared";
 import {
   formatBps,
   formatRelativeTimestamp,
-  formatSharePrice,
   formatUsd,
 } from "../../lib/format";
 import { buildAssetAllocation } from "../../lib/asset-allocation";
 import TokenBadge from "./TokenBadge";
 import VaultAllocationMiniChart from "./VaultAllocationMiniChart";
 
-function seniorRatioBps(vault: VaultRecord): bigint | null {
-  if (!vault.metrics.tvl || !vault.metrics.seniorDebt) return null;
-  try {
-    const tvl = BigInt(vault.metrics.tvl);
-    const seniorDebt = BigInt(vault.metrics.seniorDebt);
-    if (tvl === 0n) return null;
-    return (seniorDebt * 10_000n) / tvl;
-  } catch {
-    return null;
-  }
+function getApyBand(vault: VaultRecord): string {
+  const seniorApy = formatBps(vault.metrics.seniorApyBps ?? null);
+  const juniorApy = formatBps(vault.metrics.juniorApyBps ?? null);
+  if (seniorApy === "—" && juniorApy === "—") return "—";
+  if (seniorApy === "—") return juniorApy;
+  if (juniorApy === "—") return seniorApy;
+  return `${seniorApy} - ${juniorApy}`;
 }
 
 export default function VaultCard({ vault }: { vault: VaultRecord }) {
   const status = vault.uiConfig.status;
   const isLive = status === "LIVE";
-  const tags = vault.uiConfig.tags?.slice(0, 1) ?? [];
-  const ratioBps = seniorRatioBps(vault);
-  const ratioPct = ratioBps === null ? null : Number(ratioBps) / 100;
-  const ratioWidth = ratioPct === null ? 0 : Math.max(0, Math.min(ratioPct, 100));
-  const juniorPct = ratioPct === null ? null : Math.max(0, 100 - ratioPct);
   const updatedLabel = formatRelativeTimestamp(vault.metrics.updatedAt);
   const assetAllocation = buildAssetAllocation(vault.route, vault.metrics.tvl);
+  const apyBand = getApyBand(vault);
 
   return (
     <article className="card vault-card">
@@ -45,39 +37,24 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
         <p className="muted">{vault.uiConfig.summary ?? "Structured yield vault."}</p>
       </div>
 
-      <div className="card-actions">
+      <div className="vault-card__chips">
         <span className="chip chip--soft">{vault.uiConfig.routeLabel ?? vault.route}</span>
         <span className="chip chip--soft">Risk: {vault.uiConfig.risk ?? "N/A"}</span>
-        {tags.map((tag) => (
-          <span key={tag} className="chip chip--soft">
-            {tag}
-          </span>
-        ))}
+        <span className="chip chip--soft">{vault.assetSymbol}</span>
       </div>
 
-      <div className="yield-grid">
-        <div className="yield-item yield-item--senior">
-          <span className="stat-label">Senior APY</span>
-          <span className="yield-value">{formatBps(vault.metrics.seniorApyBps ?? null)}</span>
+      <div className="vault-card__overview">
+        <div className="stat">
+          <span className="stat-label">APY band</span>
+          <span className="stat-value">{apyBand}</span>
         </div>
-        <div className="yield-item yield-item--junior">
-          <span className="stat-label">Junior APY</span>
-          <span className="yield-value">{formatBps(vault.metrics.juniorApyBps ?? null)}</span>
-        </div>
-      </div>
-
-      <div className="stat-grid">
         <div className="stat">
           <span className="stat-label">TVL</span>
           <span className="stat-value">{formatUsd(vault.metrics.tvl)}</span>
         </div>
         <div className="stat">
-          <span className="stat-label">Senior Share Price</span>
-          <span className="stat-value">{formatSharePrice(vault.metrics.seniorPrice)}</span>
-        </div>
-        <div className="stat">
-          <span className="stat-label">Junior Share Price</span>
-          <span className="stat-value">{formatSharePrice(vault.metrics.juniorPrice)}</span>
+          <span className="stat-label">Last update</span>
+          <span className="stat-value">{updatedLabel}</span>
         </div>
       </div>
 
@@ -86,28 +63,10 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
         <VaultAllocationMiniChart slices={assetAllocation} />
       </div>
 
-      <div className="risk-meter">
-        <div className="risk-meter__labels">
-          <span className="stat-label">Tranche Mix</span>
-          <span className="stat-value">{ratioPct === null ? "—" : `${ratioPct.toFixed(2)}%`}</span>
-        </div>
-        <div className="risk-meter__track" aria-hidden="true">
-          <span className="risk-meter__fill" style={{ width: `${ratioWidth}%` }} />
-        </div>
-        <div className="risk-meter__split">
-          <span>Senior {ratioPct === null ? "—" : `${ratioPct.toFixed(2)}%`}</span>
-          <span>Junior {juniorPct === null ? "—" : `${juniorPct.toFixed(2)}%`}</span>
-        </div>
-        <p className="micro">Updated {updatedLabel}</p>
-      </div>
-
-      <div className="card-actions">
+      <div className="vault-card__actions">
         <Link className="button" href={`/vaults/${vault.vaultId}`}>
           {isLive ? "Enter vault" : "View preview"}
         </Link>
-        <p className="flow-note">
-          Deposit and redeem actions are available inside the vault detail page.
-        </p>
       </div>
     </article>
   );
