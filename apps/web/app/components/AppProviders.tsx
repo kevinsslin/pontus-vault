@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import { PHAROS_ATLANTIC } from "@pti/shared";
-import { DynamicContextProvider, useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import {
+  DynamicContextProvider,
+  mergeNetworks,
+  useDynamicContext,
+  useSwitchNetwork,
+} from "@dynamic-labs/sdk-react-core";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 
 type AppProvidersProps = {
@@ -12,6 +17,26 @@ type AppProvidersProps = {
 const DYNAMIC_ENVIRONMENT_ID = process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID ?? "";
 const PHAROS_CHAIN_ID = PHAROS_ATLANTIC.chainId;
 const PHAROS_CHAIN_ID_HEX = `0x${PHAROS_CHAIN_ID.toString(16)}`;
+const PHAROS_EVM_NETWORK = {
+  blockExplorerUrls: [PHAROS_ATLANTIC.explorerUrl],
+  chainId: PHAROS_CHAIN_ID,
+  chainName: "Pharos Atlantic Testnet",
+  iconUrls: ["/partners/pharos.png"],
+  isTestnet: true,
+  name: "Pharos Atlantic",
+  nativeCurrency: {
+    decimals: 18,
+    name: "Pharos",
+    symbol: "PHRS",
+  },
+  networkId: PHAROS_CHAIN_ID,
+  rpcUrls: [PHAROS_ATLANTIC.rpcUrl],
+  vanityName: "Pharos Atlantic",
+};
+
+function mergePharosEvmNetwork(dashboardNetworks: Parameters<typeof mergeNetworks>[1]) {
+  return mergeNetworks([PHAROS_EVM_NETWORK], dashboardNetworks);
+}
 
 function parseNetworkChainId(network: number | string | undefined): number | null {
   if (typeof network === "number" && Number.isFinite(network)) {
@@ -70,6 +95,7 @@ async function addPharosNetworkToInjectedWallet(): Promise<boolean> {
 
 function DynamicAutoNetworkSwitch() {
   const { primaryWallet } = useDynamicContext();
+  const switchNetwork = useSwitchNetwork();
   const attemptedWalletRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -97,7 +123,10 @@ function DynamicAutoNetworkSwitch() {
       attemptedWalletRef.current = walletKey;
 
       try {
-        await primaryWallet.switchNetwork(PHAROS_CHAIN_ID);
+        await switchNetwork({
+          wallet: primaryWallet,
+          network: PHAROS_CHAIN_ID,
+        });
         return;
       } catch (error) {
         const code =
@@ -114,7 +143,10 @@ function DynamicAutoNetworkSwitch() {
       if (!added || cancelled) return;
 
       try {
-        await primaryWallet.switchNetwork(PHAROS_CHAIN_ID);
+        await switchNetwork({
+          wallet: primaryWallet,
+          network: PHAROS_CHAIN_ID,
+        });
       } catch {
         // Ignore; user might reject network switch in wallet UI.
       }
@@ -125,7 +157,7 @@ function DynamicAutoNetworkSwitch() {
     return () => {
       cancelled = true;
     };
-  }, [primaryWallet]);
+  }, [primaryWallet, switchNetwork]);
 
   return null;
 }
@@ -139,6 +171,11 @@ export default function AppProviders({ children }: AppProvidersProps) {
     <DynamicContextProvider
       settings={{
         environmentId: DYNAMIC_ENVIRONMENT_ID,
+        networkValidationMode: "always",
+        overrides: {
+          evmNetworks: mergePharosEvmNetwork,
+        },
+        walletConnectPreferredChains: [`eip155:${PHAROS_CHAIN_ID}`],
         walletConnectors: [EthereumWalletConnectors],
       }}
     >

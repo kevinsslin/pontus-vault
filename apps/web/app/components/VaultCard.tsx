@@ -2,28 +2,36 @@ import Link from "next/link";
 import type { VaultRecord } from "@pti/shared";
 import {
   formatBps,
-  formatRelativeTimestamp,
   formatUsd,
 } from "../../lib/format";
-import { buildAssetAllocation } from "../../lib/asset-allocation";
 import TokenBadge from "./TokenBadge";
-import VaultAllocationMiniChart from "./VaultAllocationMiniChart";
 
-function getApyBand(vault: VaultRecord): string {
-  const seniorApy = formatBps(vault.metrics.seniorApyBps ?? null);
-  const juniorApy = formatBps(vault.metrics.juniorApyBps ?? null);
-  if (seniorApy === "—" && juniorApy === "—") return "—";
-  if (seniorApy === "—") return juniorApy;
-  if (juniorApy === "—") return seniorApy;
-  return `${seniorApy} - ${juniorApy}`;
+function getRateProfile(vault: VaultRecord, tranche: "senior" | "junior"): "Fixed" | "Variable" {
+  const tags = (vault.uiConfig.tags ?? []).map((value) => value.toLowerCase());
+  const banner = (vault.uiConfig.banner ?? "").toLowerCase();
+  const fixedTags = [`${tranche}-fixed`, `${tranche}_fixed`, `${tranche} fixed`];
+  const variableTags = [`${tranche}-variable`, `${tranche}_variable`, `${tranche} variable`];
+
+  if (fixedTags.some((tag) => tags.includes(tag))) return "Fixed";
+  if (variableTags.some((tag) => tags.includes(tag))) return "Variable";
+
+  if (tranche === "senior" && (banner.includes("cap") || banner.includes("fixed"))) {
+    return "Fixed";
+  }
+  if (tranche === "junior" && (banner.includes("floating") || banner.includes("variable"))) {
+    return "Variable";
+  }
+
+  return tranche === "senior" ? "Fixed" : "Variable";
 }
 
 export default function VaultCard({ vault }: { vault: VaultRecord }) {
   const status = vault.uiConfig.status;
   const isLive = status === "LIVE";
-  const updatedLabel = formatRelativeTimestamp(vault.metrics.updatedAt);
-  const assetAllocation = buildAssetAllocation(vault.route, vault.metrics.tvl);
-  const apyBand = getApyBand(vault);
+  const seniorRate = formatBps(vault.metrics.seniorApyBps ?? null);
+  const juniorRate = formatBps(vault.metrics.juniorApyBps ?? null);
+  const seniorProfile = getRateProfile(vault, "senior");
+  const juniorProfile = getRateProfile(vault, "junior");
 
   return (
     <article className="card vault-card">
@@ -43,24 +51,21 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
         <span className="chip chip--soft">{vault.assetSymbol}</span>
       </div>
 
-      <div className="vault-card__overview">
-        <div className="stat">
-          <span className="stat-label">APY band</span>
-          <span className="stat-value">{apyBand}</span>
+      <div className="vault-card__focus-grid">
+        <div className="vault-card__focus-item">
+          <span className="stat-label">Junior rate</span>
+          <span className="vault-card__focus-value">{juniorRate}</span>
+          <span className="vault-card__focus-tag">{juniorProfile}</span>
         </div>
-        <div className="stat">
+        <div className="vault-card__focus-item">
+          <span className="stat-label">Senior rate</span>
+          <span className="vault-card__focus-value">{seniorRate}</span>
+          <span className="vault-card__focus-tag">{seniorProfile}</span>
+        </div>
+        <div className="vault-card__focus-item">
           <span className="stat-label">TVL</span>
-          <span className="stat-value">{formatUsd(vault.metrics.tvl)}</span>
+          <span className="vault-card__focus-value">{formatUsd(vault.metrics.tvl)}</span>
         </div>
-        <div className="stat">
-          <span className="stat-label">Last update</span>
-          <span className="stat-value">{updatedLabel}</span>
-        </div>
-      </div>
-
-      <div className="vault-card__allocation">
-        <span className="stat-label">Asset allocation</span>
-        <VaultAllocationMiniChart slices={assetAllocation} />
       </div>
 
       <div className="vault-card__actions">
