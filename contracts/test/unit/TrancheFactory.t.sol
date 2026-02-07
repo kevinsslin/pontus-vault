@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import {Test} from "forge-std/Test.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
@@ -9,11 +8,12 @@ import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TrancheFactory} from "../../src/tranche/TrancheFactory.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
 import {ITrancheFactory} from "../../src/interfaces/ITrancheFactory.sol";
+import {BaseTest} from "../BaseTest.sol";
 import {TrancheFactoryV2} from "../mocks/TrancheFactoryV2.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
 
-contract TrancheFactoryTest is Test {
+contract TrancheFactoryTest is BaseTest {
     address internal owner;
     address internal outsider;
     address internal registry;
@@ -22,7 +22,8 @@ contract TrancheFactoryTest is Test {
     TrancheController internal controllerImpl;
     TrancheToken internal tokenImpl;
 
-    function setUp() public {
+    function setUp() public override {
+        BaseTest.setUp();
         owner = makeAddr("owner");
         outsider = makeAddr("outsider");
         registry = makeAddr("registry");

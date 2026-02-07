@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import {Test} from "forge-std/Test.sol";
-
 import {IOpenFiPool} from "../../src/interfaces/IOpenFiPool.sol";
 import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
+import {BaseTest} from "../BaseTest.sol";
 import {TestConstants} from "../utils/Constants.sol";
 
 contract MockOpenFiPool is IOpenFiPool {
@@ -60,10 +59,11 @@ contract MockOpenFiPool is IOpenFiPool {
     }
 }
 
-contract OpenFiCallBuilderTest is Test {
+contract OpenFiCallBuilderTest is BaseTest {
     MockOpenFiPool internal pool;
 
-    function setUp() public {
+    function setUp() public override {
+        BaseTest.setUp();
         pool = new MockOpenFiPool();
     }
 

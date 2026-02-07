@@ -34,6 +34,7 @@ abstract contract BaseTest is Test {
     TrancheToken internal juniorToken;
 
     function setUp() public virtual {
+        vm.warp(TestConstants.JAN_1_2026);
         _initActors();
         _initRules();
         _deployCore();

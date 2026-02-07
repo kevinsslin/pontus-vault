@@ -43,6 +43,9 @@ Keep this repo consistent and maintainable: clear structure, pinned tooling, and
 - External protocol rate integrations must go through an adapter that implements `IRefRateProvider` and returns normalized `per-second WAD` rates; do not wire protocol-native rate APIs directly into core controllers/models.
 - Emit stable key fields in events (for example `paramsHash`) so indexer/offchain systems can remain deterministic.
 - Any contract API or storage-shape change must include corresponding updates to interfaces, tests, scripts, and indexer ABI/event handlers in the same change set.
+- Unit tests under `contracts/test/unit` should inherit `BaseTest`; integration tests under `contracts/test/integration` should inherit `IntegrationTest`.
+- In test overrides, call the parent setup explicitly (`BaseTest.setUp()` / `IntegrationTest.setUp()`) before additional setup logic; avoid `super.setUp()` for readability.
+- Base test time should be pinned via a readable date constant (for example `TestConstants.JAN_1_2026`).
 
 ## Workflow
 Follow `plan.md` for execution rules and checklist handling.

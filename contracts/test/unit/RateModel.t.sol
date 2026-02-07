@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import {Test} from "forge-std/Test.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {CapSafetyRateModel} from "../../src/rate-models/CapSafetyRateModel.sol";
 import {FixedRateModel} from "../../src/rate-models/FixedRateModel.sol";
+import {BaseTest} from "../BaseTest.sol";
 import {TestConstants} from "../utils/Constants.sol";
 
 contract MockRefRateProvider {
@@ -20,15 +20,16 @@ contract MockRefRateProvider {
     }
 }
 
-contract RateModelTest is Test {
+contract RateModelTest is BaseTest {
     address internal owner;
-    address internal alice;
+    address internal outsider;
 
     MockRefRateProvider internal refProvider;
 
-    function setUp() public {
+    function setUp() public override {
+        BaseTest.setUp();
         owner = makeAddr("owner");
-        alice = makeAddr("alice");
+        outsider = makeAddr("outsider");
         refProvider = new MockRefRateProvider();
     }
 
@@ -43,8 +44,8 @@ contract RateModelTest is Test {
 
     function test_fixedRateModel_revertsForNonOwner() public {
         FixedRateModel model = new FixedRateModel(owner, TestConstants.FIXED_RATE_INITIAL);
-        vm.prank(alice);
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, alice));
+        vm.prank(outsider);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, outsider));
         model.setRatePerSecondWad(TestConstants.FIXED_RATE_UPDATED);
     }
 

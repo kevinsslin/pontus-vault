@@ -90,7 +90,7 @@ contract TrancheAccountingInvariantTest is StdInvariant, BaseTest {
     TrancheHandler internal handler;
 
     function setUp() public override {
-        super.setUp();
+        BaseTest.setUp();
 
         MockTeller teller = new MockTeller(IERC20(address(asset)), mockAccountant);
         _initController(address(teller), address(teller), TestConstants.ZERO_ADDRESS, address(mockAccountant));

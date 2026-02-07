@@ -28,7 +28,7 @@ contract TrancheControllerTest is BaseTest {
     MockRateModel internal rateModel;
 
     function setUp() public override {
-        super.setUp();
+        BaseTest.setUp();
         teller = new MockTeller(IERC20(address(asset)), mockAccountant);
         rateModel = new MockRateModel();
         _initController(address(teller), address(teller), TestConstants.ZERO_ADDRESS, address(mockAccountant));

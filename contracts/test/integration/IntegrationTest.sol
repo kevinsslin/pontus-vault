@@ -20,7 +20,7 @@ abstract contract IntegrationTest is BaseTest {
     WETH internal weth;
 
     function setUp() public virtual override {
-        super.setUp();
+        BaseTest.setUp();
         _deployBoringVaultStack();
     }
 

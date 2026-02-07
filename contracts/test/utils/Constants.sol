@@ -2,6 +2,8 @@
 pragma solidity ^0.8.33;
 
 library TestConstants {
+    uint256 internal constant JAN_1_2026 = 1_767_225_600; // 2026-01-01 00:00:00 UTC
+
     uint8 internal constant MINTER_ROLE = 7;
     uint8 internal constant BURNER_ROLE = 8;
     uint8 internal constant TELLER_CALLER_ROLE = 9;

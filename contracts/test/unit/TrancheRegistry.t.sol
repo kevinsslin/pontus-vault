@@ -1,25 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import {Test} from "forge-std/Test.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {ITrancheRegistry} from "../../src/interfaces/ITrancheRegistry.sol";
 import {TrancheRegistry} from "../../src/tranche/TrancheRegistry.sol";
+import {BaseTest} from "../BaseTest.sol";
 import {TrancheRegistryV2} from "../mocks/TrancheRegistryV2.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
 
-contract TrancheRegistryTest is Test {
+contract TrancheRegistryTest is BaseTest {
     TrancheRegistry internal registry;
 
     address internal owner;
     address internal factory;
     address internal outsider;
 
-    function setUp() public {
+    function setUp() public override {
+        BaseTest.setUp();
         owner = makeAddr("owner");
         factory = makeAddr("factory");
         outsider = makeAddr("outsider");
