@@ -49,7 +49,7 @@ jobs:
       - name: Test (contracts)
         run: pnpm --filter @pti/contracts test
 
-      - name: Test Fork (contracts via local anvil snapshot)
+      - name: Test Fork (contracts, direct RPC pinned block)
         if: ${{ secrets.PHAROS_ATLANTIC_RPC_URL != '' }}
         env:
           PHAROS_ATLANTIC_RPC_URL: ${{ secrets.PHAROS_ATLANTIC_RPC_URL }}

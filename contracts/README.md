@@ -116,15 +116,14 @@ No deploy scripts are run automatically from CI; use the scripts locally when yo
 **Fork Reliability**
 - Error `block is not available` means the upstream RPC cannot serve one or more historical state queries for the forked block.
 - This is usually an RPC archival/sync limitation, not a contract bug.
-- Deterministic fork tests are pinned to block `12950000` in both `test/fork/BaseForkTest.sol` and `script/run-fork-tests.sh`.
-- `script/run-fork-tests.sh` starts local `anvil` at that pinned block, then runs fork tests against the local snapshot.
+- Deterministic fork tests are pinned to block `12950000` in `test/fork/BaseForkTest.sol`.
+- Fork tests create RPC forks directly from `PHAROS_ATLANTIC_RPC_URL` with that fixed block.
 
 **Commands**
 ```bash
 ./script/install-deps.sh
 forge build
 forge test
-./script/run-fork-tests.sh
 forge coverage --report summary
 forge fmt
 ```
@@ -177,7 +176,7 @@ pnpm deploy:vault
 - Fork tests also include manager+merkle flow coverage for OpenFi, with optional Asseto manager write-path coverage behind env flags.
 - Set `PHAROS_ATLANTIC_RPC_URL` to execute live fork behavior; tests skip the fork path when unset.
 - Fork tests are pinned to block `12950000` for deterministic behavior.
-- Recommended stable flow: run `pnpm test:fork` to fork through local `anvil` snapshot.
+- Recommended stable flow: run `pnpm test:fork` to fork directly from RPC at the pinned block.
 - Quick run:
 ```bash
 cd contracts
