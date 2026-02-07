@@ -23,16 +23,15 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
     }
 
     /*//////////////////////////////////////////////////////////////
-                                MODIFIERS
+                               MODIFIERS
     //////////////////////////////////////////////////////////////*/
 
     modifier onlyFactory() {
         if (msg.sender != factory()) revert NotFactory();
         _;
     }
-
     /*//////////////////////////////////////////////////////////////
-                            INITIALIZER
+                              INITIALIZER
     //////////////////////////////////////////////////////////////*/
 
     function initialize(address _owner, address _factory) external override initializer {
