@@ -36,7 +36,7 @@ contract RateModelTest is BaseTest {
         refProvider = new MockRefRateProvider();
     }
 
-    function test_fixedRateModel_ownerCanUpdateRate() public {
+    function test_fixed_rate_model_owner_can_update_rate() public {
         FixedRateModel model = new FixedRateModel(owner, TestConstants.FIXED_RATE_INITIAL);
         assertEq(model.getRatePerSecondWad(), TestConstants.FIXED_RATE_INITIAL);
 
@@ -45,14 +45,14 @@ contract RateModelTest is BaseTest {
         assertEq(model.getRatePerSecondWad(), TestConstants.FIXED_RATE_UPDATED);
     }
 
-    function test_fixedRateModel_revertsForNonOwner() public {
+    function test_fixed_rate_model_reverts_for_non_owner() public {
         FixedRateModel model = new FixedRateModel(owner, TestConstants.FIXED_RATE_INITIAL);
         vm.prank(outsider);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, outsider));
         model.setRatePerSecondWad(TestConstants.FIXED_RATE_UPDATED);
     }
 
-    function test_capSafetyRateModel_appliesSafetyFactorAndCap() public {
+    function test_cap_safety_rate_model_applies_safety_factor_and_cap() public {
         CapSafetyRateModel model = new CapSafetyRateModel(
             owner, address(refProvider), TestConstants.CAP_MODEL_CAP, TestConstants.CAP_MODEL_SAFETY_DEFAULT
         );
@@ -64,7 +64,7 @@ contract RateModelTest is BaseTest {
         assertEq(model.getRatePerSecondWad(), TestConstants.CAP_MODEL_CAP);
     }
 
-    function test_capSafetyRateModel_ownerCanUpdateParams() public {
+    function test_cap_safety_rate_model_owner_can_update_params() public {
         CapSafetyRateModel model = new CapSafetyRateModel(
             owner, address(refProvider), TestConstants.CAP_MODEL_CAP, TestConstants.CAP_MODEL_SAFETY_DEFAULT
         );
@@ -81,7 +81,7 @@ contract RateModelTest is BaseTest {
         assertEq(model.getRatePerSecondWad(), 0);
     }
 
-    function test_capSafetyRateModel_revertsForInvalidSafetyFactor() public {
+    function test_cap_safety_rate_model_reverts_for_invalid_safety_factor() public {
         vm.expectRevert(ICapSafetyRateModel.InvalidSafetyFactor.selector);
         new CapSafetyRateModel(owner, address(refProvider), TestConstants.CAP_MODEL_CAP, TestConstants.ONE_WAD + 1);
     }

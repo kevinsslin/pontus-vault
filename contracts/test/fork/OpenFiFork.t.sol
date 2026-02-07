@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import "forge-std/Test.sol";
-
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IOpenFiPool} from "../../src/interfaces/openfi/IOpenFiPool.sol";
@@ -11,34 +9,32 @@ import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
 
-contract OpenFiForkTest is Test {
-    function _runRoundtrip(address asset, uint256 amount) internal {
-        deal(asset, address(this), amount);
-        IERC20(asset).approve(TestConstants.OPENFI_POOL, amount);
+import {BaseForkTest} from "./BaseForkTest.sol";
 
-        (bool ok,) = TestConstants.OPENFI_POOL.call(OpenFiCallBuilder.supplyCalldata(asset, amount, address(this)));
+contract OpenFiForkTest is BaseForkTest {
+    function _runRoundtrip(address _asset, uint256 _amount) internal {
+        deal(_asset, address(this), _amount);
+        IERC20(_asset).approve(TestConstants.PHAROS_ATLANTIC_OPENFI_POOL, _amount);
+
+        (bool ok,) = TestConstants.PHAROS_ATLANTIC_OPENFI_POOL
+            .call(OpenFiCallBuilder.supplyCalldata(_asset, _amount, address(this)));
         assertTrue(ok, "supply failed");
 
-        (ok,) = TestConstants.OPENFI_POOL.call(OpenFiCallBuilder.withdrawCalldata(asset, amount, address(this)));
+        (ok,) = TestConstants.PHAROS_ATLANTIC_OPENFI_POOL
+            .call(OpenFiCallBuilder.withdrawCalldata(_asset, _amount, address(this)));
         assertTrue(ok, "withdraw failed");
 
-        uint256 balanceAfter = IERC20(asset).balanceOf(address(this));
-        assertGe(balanceAfter, amount - TestConstants.FORK_BALANCE_DUST_TOLERANCE);
+        uint256 balanceAfter = IERC20(_asset).balanceOf(address(this));
+        assertGe(balanceAfter, _amount - TestConstants.FORK_BALANCE_DUST_TOLERANCE);
     }
 
-    function testOpenFiSupplyWithdrawRoundtrip() external {
-        string memory rpc = vm.envOr("PHAROS_RPC_URL", string(""));
-        if (bytes(rpc).length == 0) {
-            emit log(TestDefaults.LOG_SKIP_FORK);
-            return;
-        }
-
-        vm.selectFork(vm.createFork(rpc));
+    function test_open_fi_supply_withdraw_roundtrip() external {
+        if (!_createForkOrSkip(TestDefaults.LOG_SKIP_FORK)) return;
 
         assertEq(OpenFiCallBuilder.supplySelector(), IOpenFiPool.supply.selector);
         assertEq(OpenFiCallBuilder.withdrawSelector(), IOpenFiPool.withdraw.selector);
 
-        _runRoundtrip(TestConstants.PHAROS_USDC, TestConstants.OPENFI_FORK_ROUNDTRIP);
-        _runRoundtrip(TestConstants.PHAROS_USDT, TestConstants.OPENFI_FORK_ROUNDTRIP);
+        _runRoundtrip(TestConstants.PHAROS_ATLANTIC_USDC, TestConstants.OPENFI_FORK_ROUNDTRIP);
+        _runRoundtrip(TestConstants.PHAROS_ATLANTIC_USDT, TestConstants.OPENFI_FORK_ROUNDTRIP);
     }
 }

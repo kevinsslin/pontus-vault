@@ -62,10 +62,10 @@ library TestConstants {
     uint256 internal constant MANAGER_TEST_OPENFI_AMOUNT = 300 * ONE_USDC;
     uint256 internal constant MANAGER_TEST_ASSETO_AMOUNT = 200 * ONE_USDC;
     uint16 internal constant OPENFI_REFERRAL_CODE = 0;
-    address internal constant OPENFI_POOL = 0xEC86f142E7334d99EEEF2c43298413299D919B30;
-    address internal constant ASSETO_CASH_PLUS = 0x56f4add11d723412D27A9e9433315401B351d6E3;
-    address internal constant PHAROS_USDC = 0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8;
-    address internal constant PHAROS_USDT = 0xE7E84B8B4f39C507499c40B4ac199B050e2882d5;
+    address internal constant PHAROS_ATLANTIC_OPENFI_POOL = 0xEC86f142E7334d99EEEF2c43298413299D919B30;
+    address internal constant PHAROS_ATLANTIC_ASSETO_CASH_PLUS = 0x56f4add11d723412D27A9e9433315401B351d6E3;
+    address internal constant PHAROS_ATLANTIC_USDC = 0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8;
+    address internal constant PHAROS_ATLANTIC_USDT = 0xE7E84B8B4f39C507499c40B4ac199B050e2882d5;
     uint256 internal constant FORK_BALANCE_DUST_TOLERANCE = 1;
 
     uint256 internal constant ACCRUAL_TEST_RATE = 1e14;

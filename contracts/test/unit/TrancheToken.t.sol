@@ -33,7 +33,7 @@ contract TrancheTokenTest is BaseTest {
         );
     }
 
-    function test_initialize_revertsWhenControllerIsZero() public {
+    function test_initialize_reverts_when_controller_is_zero() public {
         TrancheToken another = new TrancheToken();
         vm.expectRevert(ITrancheToken.ZeroAddress.selector);
         another.initialize(
@@ -44,7 +44,7 @@ contract TrancheTokenTest is BaseTest {
         );
     }
 
-    function test_initialize_revertsOnSecondCall() public {
+    function test_initialize_reverts_on_second_call() public {
         vm.expectRevert(Initializable.InvalidInitialization.selector);
         token.initialize(
             TestDefaults.TOKEN_REINIT_NAME,
@@ -54,13 +54,13 @@ contract TrancheTokenTest is BaseTest {
         );
     }
 
-    function test_mint_revertsForNonController() public {
+    function test_mint_reverts_for_non_controller() public {
         vm.prank(holder);
         vm.expectRevert(ITrancheToken.NotController.selector);
         token.mint(holder, TestConstants.ONE_UNIT);
     }
 
-    function test_mintTransferAndTransferFrom() public {
+    function test_mint_transfer_and_transfer_from() public {
         vm.prank(controllerAddr);
         token.mint(holder, TestConstants.TOKEN_MINT_AMOUNT);
 
@@ -81,7 +81,7 @@ contract TrancheTokenTest is BaseTest {
         assertEq(token.balanceOf(spender), TestConstants.TOKEN_TRANSFER_AMOUNT + TestConstants.TOKEN_APPROVE_AMOUNT);
     }
 
-    function test_burnFrom_revertsWithoutControllerAllowance() public {
+    function test_burn_from_reverts_without_controller_allowance() public {
         vm.prank(controllerAddr);
         token.mint(holder, TestConstants.TOKEN_MINT_AMOUNT);
 
@@ -90,7 +90,7 @@ contract TrancheTokenTest is BaseTest {
         token.burnFrom(holder, TestConstants.ONE_UNIT);
     }
 
-    function test_burnFrom_revertsForNonController() public {
+    function test_burn_from_reverts_for_non_controller() public {
         vm.prank(controllerAddr);
         token.mint(holder, TestConstants.TOKEN_MINT_AMOUNT);
 
@@ -102,7 +102,7 @@ contract TrancheTokenTest is BaseTest {
         token.burnFrom(holder, TestConstants.ONE_UNIT);
     }
 
-    function test_burnFrom_success() public {
+    function test_burn_from_success() public {
         vm.prank(controllerAddr);
         token.mint(holder, TestConstants.TOKEN_MINT_AMOUNT);
 

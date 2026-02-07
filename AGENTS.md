@@ -48,6 +48,9 @@ Keep this repo consistent and maintainable: clear structure, pinned tooling, and
 - Unit tests under `contracts/test/unit` should inherit `BaseTest`; integration tests under `contracts/test/integration` should inherit `IntegrationTest`.
 - In test overrides, call the parent setup explicitly (`BaseTest.setUp()` / `IntegrationTest.setUp()`) before additional setup logic; avoid `super.setUp()` for readability.
 - Base test time should be pinned via a readable date constant (for example `TestConstants.JAN_1_2026`).
+- Test function names should use snake_case: `test_<behavior>` and `test_fuzz_<property>` for fuzz tests.
+- Internal/private helper function names should use Solidity style `_camelCase` (single leading underscore + camelCase body), not full snake_case.
+- Fork tests should share common RPC/fork wiring through `contracts/test/fork/BaseForkTest.sol`.
 - Per-vault deployment scripts must deploy and wire a real manager contract (not metadata-only manager addresses).
 - Manager integrations using `ManagerWithMerkleVerification` must keep leaf hashing/proof generation deterministic with explicit decoder/sanitizer contracts and documented packed-address formats.
 - When onboarding a new yield protocol for manager-controlled rebalance, add all three together: protocol interface + call builder + decoder/sanitizer implementation (and tests).

@@ -57,12 +57,12 @@ contract AssetoCallBuilderTest is BaseTest {
         product = new MockAssetoProductCallTarget();
     }
 
-    function test_selectors_matchAssetoInterface() public pure {
+    function test_selectors_match_asseto_interface() public pure {
         assertEq(AssetoCallBuilder.subscribeSelector(), IAssetoProduct.subscribe.selector);
         assertEq(AssetoCallBuilder.redemptionSelector(), IAssetoProduct.redemption.selector);
     }
 
-    function test_subscribeCalldata_executesWithExpectedArguments() public {
+    function test_subscribe_calldata_executes_with_expected_arguments() public {
         address account = makeAddr("assetoAccount");
         uint256 amount = TestConstants.OPENFI_SUPPLY_AMOUNT;
 
@@ -72,7 +72,7 @@ contract AssetoCallBuilderTest is BaseTest {
         assertEq(product.subscribeAmount(), amount);
     }
 
-    function test_redemptionCalldata_executesWithExpectedArguments() public {
+    function test_redemption_calldata_executes_with_expected_arguments() public {
         address account = makeAddr("assetoAccount");
         uint256 amount = TestConstants.OPENFI_WITHDRAW_AMOUNT;
 

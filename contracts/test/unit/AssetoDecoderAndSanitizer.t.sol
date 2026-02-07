@@ -13,19 +13,19 @@ contract AssetoDecoderAndSanitizerTest is BaseTest {
         decoder = new AssetoDecoderAndSanitizer(address(this));
     }
 
-    function test_subscribe_returnsPackedBeneficiary() public {
+    function test_subscribe_returns_packed_beneficiary() public {
         address beneficiary = makeAddr("beneficiary");
         bytes memory packed = decoder.subscribe(beneficiary, 777);
         assertEq(packed, abi.encodePacked(beneficiary));
     }
 
-    function test_redemption_returnsPackedBeneficiary() public {
+    function test_redemption_returns_packed_beneficiary() public {
         address beneficiary = makeAddr("beneficiary");
         bytes memory packed = decoder.redemption(beneficiary, 888);
         assertEq(packed, abi.encodePacked(beneficiary));
     }
 
-    function test_approve_fromBaseDecoder_returnsPackedSpender() public {
+    function test_approve_from_base_decoder_returns_packed_spender() public {
         address spender = makeAddr("spender");
         bytes memory packed = decoder.approve(spender, 100);
         assertEq(packed, abi.encodePacked(spender));

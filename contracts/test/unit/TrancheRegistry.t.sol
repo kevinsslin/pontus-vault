@@ -35,38 +35,38 @@ contract TrancheRegistryTest is BaseTest {
         );
     }
 
-    function test_initialize_revertsWhenCalledTwice() public {
+    function test_initialize_reverts_when_called_twice() public {
         vm.expectRevert(Initializable.InvalidInitialization.selector);
         registry.initialize(owner, factory);
     }
 
-    function test_setFactory_revertsForNonOwner() public {
+    function test_set_factory_reverts_for_non_owner() public {
         vm.prank(outsider);
         vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, outsider));
         registry.setFactory(makeAddr("newFactory"));
     }
 
-    function test_setFactory_revertsOnZeroAddress() public {
+    function test_set_factory_reverts_on_zero_address() public {
         vm.prank(owner);
         vm.expectRevert(ITrancheRegistry.ZeroAddress.selector);
         registry.setFactory(TestConstants.ZERO_ADDRESS);
     }
 
-    function test_setFactory_updatesFactory() public {
+    function test_set_factory_updates_factory() public {
         address newFactory = makeAddr("newFactory");
         vm.prank(owner);
         registry.setFactory(newFactory);
         assertEq(registry.factory(), newFactory);
     }
 
-    function test_registerTrancheVault_revertsForNonFactory() public {
+    function test_register_tranche_vault_reverts_for_non_factory() public {
         ITrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
         vm.prank(outsider);
         vm.expectRevert(ITrancheRegistry.NotFactory.selector);
         registry.registerTrancheVault(info);
     }
 
-    function test_registerTrancheVault_storesVaultForFactory() public {
+    function test_register_tranche_vault_stores_vault_for_factory() public {
         ITrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
         vm.prank(factory);
         bytes32 paramsHash = registry.registerTrancheVault(info);
@@ -85,7 +85,7 @@ contract TrancheRegistryTest is BaseTest {
         assertEq(stored.paramsHash, info.paramsHash);
     }
 
-    function test_registerTrancheVault_revertsWhenParamsHashAlreadyExists() public {
+    function test_register_tranche_vault_reverts_when_params_hash_already_exists() public {
         ITrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
 
         vm.startPrank(factory);
@@ -97,14 +97,14 @@ contract TrancheRegistryTest is BaseTest {
         vm.stopPrank();
     }
 
-    function test_trancheVaultByParamsHash_revertsWhenUnknown() public {
+    function test_tranche_vault_by_params_hash_reverts_when_unknown() public {
         vm.expectRevert(
             abi.encodeWithSelector(ITrancheRegistry.TrancheVaultNotFound.selector, TestDefaults.SAMPLE_PARAMS_HASH_2)
         );
         registry.trancheVaultByParamsHash(TestDefaults.SAMPLE_PARAMS_HASH_2);
     }
 
-    function test_upgradeToAndCall_revertsForNonOwner() public {
+    function test_upgrade_to_and_call_reverts_for_non_owner() public {
         TrancheRegistryV2 newImpl = new TrancheRegistryV2();
 
         vm.prank(outsider);
@@ -112,7 +112,7 @@ contract TrancheRegistryTest is BaseTest {
         registry.upgradeToAndCall(address(newImpl), "");
     }
 
-    function test_upgradeToAndCall_preservesState() public {
+    function test_upgrade_to_and_call_preserves_state() public {
         ITrancheRegistry.TrancheVaultInfo memory info = _sampleTrancheVault();
 
         vm.prank(factory);

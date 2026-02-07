@@ -63,7 +63,7 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
         registry.setFactory(address(factory));
     }
 
-    function test_ownerCanCreateVaultAndRegistryStoresWiring() public {
+    function test_owner_can_create_vault_and_registry_stores_wiring() public {
         ITrancheFactory.TrancheVaultConfig memory config = _defaultConfig();
         bytes32 expectedParamsHash = factory.computeParamsHash(config);
 
@@ -91,7 +91,7 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
         assertEq(controller.maxSeniorRatioBps(), TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS);
     }
 
-    function test_createTrancheVault_revertsForNonOwner() public {
+    function test_create_tranche_vault_reverts_for_non_owner() public {
         ITrancheFactory.TrancheVaultConfig memory config = _defaultConfig();
 
         vm.prank(outsider);

@@ -69,12 +69,12 @@ contract OpenFiCallBuilderTest is BaseTest {
         pool = new MockOpenFiPool();
     }
 
-    function test_selectors_matchOpenFiInterface() public pure {
+    function test_selectors_match_open_fi_interface() public pure {
         assertEq(OpenFiCallBuilder.supplySelector(), IOpenFiPool.supply.selector);
         assertEq(OpenFiCallBuilder.withdrawSelector(), IOpenFiPool.withdraw.selector);
     }
 
-    function test_supplyCalldata_executesWithExpectedArguments() public {
+    function test_supply_calldata_executes_with_expected_arguments() public {
         address asset = makeAddr("asset");
         address onBehalfOf = makeAddr("onBehalfOf");
         uint256 amount = TestConstants.OPENFI_SUPPLY_AMOUNT;
@@ -87,7 +87,7 @@ contract OpenFiCallBuilderTest is BaseTest {
         assertEq(pool.supplyReferralCode(), TestConstants.OPENFI_REFERRAL_CODE);
     }
 
-    function test_withdrawCalldata_executesWithExpectedArguments() public {
+    function test_withdraw_calldata_executes_with_expected_arguments() public {
         address asset = makeAddr("asset");
         address to = makeAddr("to");
         uint256 amount = TestConstants.OPENFI_WITHDRAW_AMOUNT;

@@ -45,7 +45,7 @@ contract TrancheFactoryTest is BaseTest {
         );
     }
 
-    function test_initialize_revertsWhenControllerImplIsZero() public {
+    function test_initialize_reverts_when_controller_impl_is_zero() public {
         TrancheFactory factoryImpl = new TrancheFactory();
         vm.expectRevert(ITrancheFactory.ZeroAddress.selector);
         new ERC1967Proxy(
@@ -54,7 +54,7 @@ contract TrancheFactoryTest is BaseTest {
         );
     }
 
-    function test_initialize_revertsWhenTokenImplIsZero() public {
+    function test_initialize_reverts_when_token_impl_is_zero() public {
         TrancheFactory factoryImpl = new TrancheFactory();
         vm.expectRevert(ITrancheFactory.ZeroAddress.selector);
         new ERC1967Proxy(
@@ -65,19 +65,19 @@ contract TrancheFactoryTest is BaseTest {
         );
     }
 
-    function test_setRegistry_revertsForNonOwner() public {
+    function test_set_registry_reverts_for_non_owner() public {
         vm.prank(outsider);
         vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, outsider));
         factory.setRegistry(TestConstants.CONFIG_VAULT);
     }
 
-    function test_setRegistry_revertsOnZeroAddress() public {
+    function test_set_registry_reverts_on_zero_address() public {
         vm.prank(owner);
         vm.expectRevert(ITrancheFactory.ZeroAddress.selector);
         factory.setRegistry(TestConstants.ZERO_ADDRESS);
     }
 
-    function test_createTrancheVault_revertsWhenRegistryIsUnset() public {
+    function test_create_tranche_vault_reverts_when_registry_is_unset() public {
         TrancheFactory factoryImpl = new TrancheFactory();
         TrancheFactory localFactory = TrancheFactory(
             address(
@@ -98,7 +98,7 @@ contract TrancheFactoryTest is BaseTest {
         localFactory.createTrancheVault(config);
     }
 
-    function test_setControllerImpl_updatesImplementation() public {
+    function test_set_controller_impl_updates_implementation() public {
         TrancheController nextImpl = new TrancheController();
 
         vm.prank(owner);
@@ -107,7 +107,7 @@ contract TrancheFactoryTest is BaseTest {
         assertEq(factory.controllerImpl(), address(nextImpl));
     }
 
-    function test_setTokenImpl_updatesImplementation() public {
+    function test_set_token_impl_updates_implementation() public {
         TrancheToken nextImpl = new TrancheToken();
 
         vm.prank(owner);
@@ -116,7 +116,7 @@ contract TrancheFactoryTest is BaseTest {
         assertEq(factory.tokenImpl(), address(nextImpl));
     }
 
-    function test_upgradeToAndCall_revertsForNonOwner() public {
+    function test_upgrade_to_and_call_reverts_for_non_owner() public {
         TrancheFactoryV2 newImpl = new TrancheFactoryV2();
 
         vm.prank(outsider);
@@ -124,7 +124,7 @@ contract TrancheFactoryTest is BaseTest {
         factory.upgradeToAndCall(address(newImpl), "");
     }
 
-    function test_upgradeToAndCall_preservesWiring() public {
+    function test_upgrade_to_and_call_preserves_wiring() public {
         TrancheFactoryV2 newImpl = new TrancheFactoryV2();
 
         vm.prank(owner);

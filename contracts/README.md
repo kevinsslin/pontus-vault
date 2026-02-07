@@ -62,21 +62,36 @@ pnpm --filter @pti/contracts test
 pnpm --filter @pti/contracts deploy
 pnpm --filter @pti/contracts deploy:infra
 pnpm --filter @pti/contracts deploy:vault
-pnpm --filter @pti/contracts verify:contract
 ```
 
-**Verification (Blockscan API)**
-- Source `.env` from `script/.env.example`.
-- Set `BLOCKSCAN_API_KEY`, `CHAIN_ID`, and `VERIFY_VERIFIER_URL`.
-- Verify a contract:
+**Environment**
+- Shared for all contract workflows:
+  `PHAROS_ATLANTIC_RPC_URL`
+- Script-specific (`DeployInfra.s.sol`):
+  required `PRIVATE_KEY`, optional `OWNER`
+- Script-specific (`DeployTrancheVault.s.sol`):
+  required `PRIVATE_KEY`, `TRANCHE_FACTORY`, `ASSET`, `STRATEGIST`, `MANAGER_ADMIN`
+  optional `OWNER`, `OPERATOR`, `GUARDIAN`, `BALANCER_VAULT`, token/accountant params
+- Deploy verification (applies to `deploy`, `deploy:infra`, `deploy:vault`):
+  optional `BLOCKSCAN_API_KEY` (falls back to `na` if omitted)
+- Fork manager test optional overrides:
+  `OPENFI_MANAGER_POOL`, `OPENFI_MANAGER_FORK_AMOUNT`, `RUN_ASSETO_MANAGER_FORK`,
+  `ASSETO_MANAGER_PRODUCT`, `ASSETO_MANAGER_ASSET`, `ASSETO_MANAGER_FORK_AMOUNT`
+
+**Deploy + Verify (Blockscout)**
+- `deploy` / `deploy:infra` / `deploy:vault` all run `forge script ... --broadcast --verify` by default.
+- Chain ID and verifier endpoint are pinned in `contracts/package.json`:
+  - `--chain-id 688688`
+  - `--verifier blockscout`
+  - `--verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract`
+- `BLOCKSCAN_API_KEY` is optional; scripts pass `na` when unset.
+- Example:
 ```bash
 cd contracts
-source script/.env.example
-CONTRACT_ADDRESS=0xYourContract \
-CONTRACT_ID=src/tranche/TrancheRegistry.sol:TrancheRegistry \
-pnpm verify:contract
+source .env.example
+pnpm deploy:infra
+pnpm deploy:vault
 ```
-- For constructor contracts, set `CONSTRUCTOR_ARGS` with ABI-encoded hex.
 
 **Test Notes**
 - `test/utils/Constants.sol`: shared numeric values for test amounts/rates/bounds.
@@ -87,4 +102,10 @@ pnpm verify:contract
 - Unit/invariant tests use local test doubles (`MockTeller`, `MockAccountant`) only for isolated controller math and invariant exploration.
 - Fork tests target Pharos Atlantic OpenFi `supply/withdraw` roundtrip via `OpenFiCallBuilder`.
 - Fork tests also include manager+merkle flow coverage for OpenFi, with optional Asseto manager write-path coverage behind env flags.
-- Set `PHAROS_RPC_URL` to execute live fork behavior; tests skip the fork path when unset.
+- Set `PHAROS_ATLANTIC_RPC_URL` to execute live fork behavior; tests skip the fork path when unset.
+- Quick run:
+```bash
+cd contracts
+source .env.example
+forge test --match-path test/fork/*.t.sol -vv
+```

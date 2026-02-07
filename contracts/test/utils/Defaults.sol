@@ -20,9 +20,9 @@ library TestDefaults {
     string internal constant TOKEN_REINIT_NAME = "Again";
     string internal constant TOKEN_REINIT_SYMBOL = "AGAIN";
 
-    string internal constant LOG_SKIP_FORK = "PHAROS_RPC_URL not set; skipping OpenFi fork test.";
-    string internal constant LOG_SKIP_ASSETO_FORK = "PHAROS_RPC_URL not set; skipping Asseto fork test.";
-    string internal constant LOG_SKIP_MANAGER_FORK = "PHAROS_RPC_URL not set; skipping manager fork test.";
+    string internal constant LOG_SKIP_FORK = "PHAROS_ATLANTIC_RPC_URL not set; skipping OpenFi fork test.";
+    string internal constant LOG_SKIP_ASSETO_FORK = "PHAROS_ATLANTIC_RPC_URL not set; skipping Asseto fork test.";
+    string internal constant LOG_SKIP_MANAGER_FORK = "PHAROS_ATLANTIC_RPC_URL not set; skipping manager fork test.";
     string internal constant LOG_SKIP_ASSETO_MANAGER_FORK =
         "RUN_ASSETO_MANAGER_FORK not enabled; skipping Asseto manager write test.";
 

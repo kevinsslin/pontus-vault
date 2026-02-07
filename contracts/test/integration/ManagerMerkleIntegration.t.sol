@@ -55,7 +55,7 @@ contract ManagerMerkleIntegrationTest is IntegrationTest {
         _configureManagerRoles();
     }
 
-    function test_manageVaultWithMerkleVerification_runsOpenFiAndAssetoFlows() public {
+    function test_manage_vault_with_merkle_verification_runs_open_fi_and_asseto_flows() public {
         uint256 openFiAmount = TestConstants.MANAGER_TEST_OPENFI_AMOUNT;
         uint256 assetoAmount = TestConstants.MANAGER_TEST_ASSETO_AMOUNT;
         uint256 vaultAssetsBefore = IERC20(address(asset)).balanceOf(address(boringVault));

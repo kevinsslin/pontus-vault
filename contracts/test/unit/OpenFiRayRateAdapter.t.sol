@@ -42,7 +42,7 @@ contract OpenFiRayRateAdapterTest is BaseTest {
         adapter = new OpenFiRayRateAdapter(owner, address(source), rateAsset);
     }
 
-    function test_getRatePerSecondWad_convertsRayPerYear() public {
+    function test_get_rate_per_second_wad_converts_ray_per_year() public {
         uint256 rateRayPerYear = 5e25; // 5% in RAY.
         source.setSupplyRateRayPerYear(rateAsset, rateRayPerYear);
 
@@ -50,7 +50,7 @@ contract OpenFiRayRateAdapterTest is BaseTest {
         assertEq(adapter.getRatePerSecondWad(), expected);
     }
 
-    function test_setSource_onlyOwner() public {
+    function test_set_source_only_owner() public {
         MockOpenFiRateSource newSource = new MockOpenFiRateSource();
 
         vm.prank(outsider);
@@ -62,7 +62,7 @@ contract OpenFiRayRateAdapterTest is BaseTest {
         assertEq(adapter.source(), address(newSource));
     }
 
-    function test_setAsset_onlyOwner() public {
+    function test_set_asset_only_owner() public {
         address newAsset = makeAddr("newAsset");
 
         vm.prank(outsider);
@@ -74,12 +74,12 @@ contract OpenFiRayRateAdapterTest is BaseTest {
         assertEq(adapter.asset(), newAsset);
     }
 
-    function test_constructor_revertsOnZeroSource() public {
+    function test_constructor_reverts_on_zero_source() public {
         vm.expectRevert(OpenFiRayRateAdapter.ZeroAddress.selector);
         new OpenFiRayRateAdapter(owner, address(0), rateAsset);
     }
 
-    function test_constructor_revertsOnZeroAsset() public {
+    function test_constructor_reverts_on_zero_asset() public {
         vm.expectRevert(OpenFiRayRateAdapter.ZeroAddress.selector);
         new OpenFiRayRateAdapter(owner, address(source), address(0));
     }

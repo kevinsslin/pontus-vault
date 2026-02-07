@@ -29,7 +29,7 @@ contract ManagerMerkleLibTest is BaseTest {
         managerMerkleHarness = new ManagerMerkleHarness();
     }
 
-    function test_hashLeafFromCallData_matchesCanonicalEncoding() public pure {
+    function test_hash_leaf_from_call_data_matches_canonical_encoding() public pure {
         address decoder = address(0xD1);
         address target = address(0xA1);
         uint256 value = 0;
@@ -43,7 +43,7 @@ contract ManagerMerkleLibTest is BaseTest {
         assertEq(actual, expected);
     }
 
-    function test_rootAndProof_verifyForEveryLeaf_evenAndOddTrees() public {
+    function test_root_and_proof_verify_for_every_leaf_even_and_odd_trees() public {
         bytes32[] memory leaves = new bytes32[](5);
         leaves[0] = keccak256("leaf-0");
         leaves[1] = keccak256("leaf-1");
@@ -60,7 +60,7 @@ contract ManagerMerkleLibTest is BaseTest {
         }
     }
 
-    function test_proof_revertsForOutOfBoundsLeafIndex() public {
+    function test_proof_reverts_for_out_of_bounds_leaf_index() public {
         bytes32[] memory leaves = new bytes32[](1);
         leaves[0] = keccak256("leaf");
         vm.expectRevert(ManagerMerkleLib.LeafIndexOutOfBounds.selector);

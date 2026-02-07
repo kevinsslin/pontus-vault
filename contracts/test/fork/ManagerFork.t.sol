@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import "forge-std/Test.sol";
-
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {BoringVault} from "../../lib/boring-vault/src/base/BoringVault.sol";
@@ -19,7 +17,9 @@ import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";
 
-contract ManagerForkTest is Test {
+import {BaseForkTest} from "./BaseForkTest.sol";
+
+contract ManagerForkTest is BaseForkTest {
     bytes4 internal constant BORING_VAULT_MANAGE_SINGLE_SELECTOR = bytes4(keccak256("manage(address,bytes,uint256)"));
     bytes4 internal constant BORING_VAULT_MANAGE_BATCH_SELECTOR =
         bytes4(keccak256("manage(address[],bytes[],uint256[])"));
@@ -40,38 +40,25 @@ contract ManagerForkTest is Test {
         bytes32[] leafHashes;
     }
 
-    function test_openFiManagedRoundtrip_onPharosFork() external {
-        string memory rpc = vm.envOr("PHAROS_RPC_URL", string(""));
-        if (bytes(rpc).length == 0) {
-            emit log(TestDefaults.LOG_SKIP_MANAGER_FORK);
-            return;
-        }
-
-        vm.selectFork(vm.createFork(rpc));
+    function test_open_fi_managed_roundtrip_on_pharos_fork() external {
+        if (!_createForkOrSkip(TestDefaults.LOG_SKIP_MANAGER_FORK)) return;
 
         uint256 amount = vm.envOr("OPENFI_MANAGER_FORK_AMOUNT", TestConstants.OPENFI_FORK_ROUNDTRIP);
-        address openFiPool = vm.envOr("OPENFI_MANAGER_POOL", TestConstants.OPENFI_POOL);
-        _runOpenFiManagedRoundtrip(openFiPool, TestConstants.PHAROS_USDC, amount);
-        _runOpenFiManagedRoundtrip(openFiPool, TestConstants.PHAROS_USDT, amount);
+        address openFiPool = vm.envOr("OPENFI_MANAGER_POOL", TestConstants.PHAROS_ATLANTIC_OPENFI_POOL);
+        _runOpenFiManagedRoundtrip(openFiPool, TestConstants.PHAROS_ATLANTIC_USDC, amount);
+        _runOpenFiManagedRoundtrip(openFiPool, TestConstants.PHAROS_ATLANTIC_USDT, amount);
     }
 
-    function test_assetoManagedSubscribeRedemption_onPharosFork() external {
-        string memory rpc = vm.envOr("PHAROS_RPC_URL", string(""));
-        if (bytes(rpc).length == 0) {
-            emit log(TestDefaults.LOG_SKIP_MANAGER_FORK);
-            return;
-        }
-
-        bool runAssetoManagerFork = vm.envOr("RUN_ASSETO_MANAGER_FORK", false);
-        if (!runAssetoManagerFork) {
+    function test_asseto_managed_subscribe_redemption_on_pharos_fork() external {
+        if (!vm.envOr("RUN_ASSETO_MANAGER_FORK", false)) {
             emit log(TestDefaults.LOG_SKIP_ASSETO_MANAGER_FORK);
             return;
         }
 
-        vm.selectFork(vm.createFork(rpc));
+        if (!_createForkOrSkip(TestDefaults.LOG_SKIP_MANAGER_FORK)) return;
 
-        address assetoProduct = vm.envOr("ASSETO_MANAGER_PRODUCT", TestConstants.ASSETO_CASH_PLUS);
-        address asset = vm.envOr("ASSETO_MANAGER_ASSET", TestConstants.PHAROS_USDT);
+        address assetoProduct = vm.envOr("ASSETO_MANAGER_PRODUCT", TestConstants.PHAROS_ATLANTIC_ASSETO_CASH_PLUS);
+        address asset = vm.envOr("ASSETO_MANAGER_ASSET", TestConstants.PHAROS_ATLANTIC_USDT);
         uint256 amount = vm.envOr("ASSETO_MANAGER_FORK_AMOUNT", TestConstants.OPENFI_FORK_ROUNDTRIP);
         _runAssetoManagedRoundtrip(assetoProduct, asset, amount);
     }

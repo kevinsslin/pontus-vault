@@ -12,7 +12,7 @@ contract TrancheIntegrationTest is IntegrationTest {
         _seedBalances(TestConstants.DEFAULT_INITIAL_BALANCE);
     }
 
-    function test_depositRedeem_roundtripViaBoringVaultStack() public {
+    function test_deposit_redeem_roundtrip_via_boring_vault_stack() public {
         _depositJunior(alice, TestConstants.DEFAULT_JUNIOR_DEPOSIT);
         _depositSenior(bob, TestConstants.DEFAULT_SENIOR_DEPOSIT);
 
