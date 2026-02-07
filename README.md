@@ -47,7 +47,6 @@ pnpm lint
 pnpm --filter @pti/contracts deps
 pnpm --filter @pti/contracts deploy:infra
 pnpm --filter @pti/contracts deploy:vault
-pnpm --filter @pti/contracts verify:contract
 ```
 
 **BoringVault Dependency**

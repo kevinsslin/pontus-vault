@@ -32,6 +32,72 @@ forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 -
 This repo vendors the pinned commit in `contracts/lib/boring-vault`; keep it in place for local builds.
 `script/install-deps.sh` applies a minimal, deterministic teller import patch because Foundry cannot safely remap BoringVault's `src/...` imports in this workspace.
 
+**Upstream Baseline**
+- Upstream repository: `https://github.com/Se7en-Seas/boring-vault`
+- Pontus contract stack is built on top of commit:
+  `0e23e7fd3a9a7735bd3fea61dd33c1700e75c528`
+- Local vendored path:
+  `contracts/lib/boring-vault`
+
+**Contract Architecture**
+```mermaid
+flowchart TB
+  user[User]
+
+  subgraph pontus[ Pontus Contracts ]
+    factory[TrancheFactory (UUPS proxy)]
+    registry[TrancheRegistry (UUPS proxy)]
+    controller[TrancheController]
+    senior[Senior TrancheToken]
+    junior[Junior TrancheToken]
+    rateModel[Rate Models<br/>FixedRateModel / CapSafetyRateModel]
+  end
+
+  subgraph boring[BoringVault Stack]
+    roles[RolesAuthority]
+    vault[BoringVault]
+    teller[TellerWithMultiAssetSupport]
+    accountant[AccountantWithRateProviders]
+    manager[ManagerWithMerkleVerification]
+  end
+
+  subgraph adapters[Adapters + Decoders]
+    openFiRate[OpenFiRayRateAdapter]
+    openFiDecoder[OpenFiDecoderAndSanitizer]
+    assetoDecoder[AssetoDecoderAndSanitizer]
+    merkleLib[ManagerMerkleLib]
+  end
+
+  subgraph external[External Protocols]
+    openFi[OpenFi]
+    asseto[Asseto]
+  end
+
+  user -->|deposit/redeem| controller
+  controller -->|mint/burn| senior
+  controller -->|mint/burn| junior
+  controller -->|deposit/withdraw| teller
+  teller -->|enter/exit| vault
+
+  factory -->|createTrancheVault| controller
+  factory -->|register| registry
+  registry -->|lookup by paramsHash| controller
+
+  rateModel -->|getRatePerSecondWad| controller
+  openFiRate -->|IRefRateProvider| rateModel
+  openFiRate -->|read rate| openFi
+
+  roles -->|authorize| vault
+  roles -->|authorize| teller
+  roles -->|authorize| manager
+  manager -->|manage (Merkle proof)| vault
+  manager -.uses decoder.-> openFiDecoder
+  manager -.uses decoder.-> assetoDecoder
+  openFiDecoder --> openFi
+  assetoDecoder --> asseto
+  merkleLib -.mirrors leaf hash format for backend root/proof generation.-> manager
+```
+
 **BoringVault Deployment Helpers (Reference Only)**
 - `contracts/lib/boring-vault/script/ArchitectureDeployments/DeployArcticArchitecture.sol`: baseline wiring for BoringVault + accountant + manager/roles.
 - `contracts/lib/boring-vault/script/DeployTeller.s.sol`: teller deployment flow to adapt for Pharos/Atlantic assets.
