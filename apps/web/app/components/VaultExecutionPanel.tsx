@@ -31,104 +31,96 @@ export default function VaultExecutionPanel({
   );
 
   return (
-    <section className="section section--compact reveal delay-2" id="execute">
-      <div className="execution-toolbar">
-        <div className="execution-toolbar__copy">
-          <p className="eyebrow">Execution</p>
-          <h3>{isDeposit ? "Execute deposit" : "Execute redeem"}</h3>
-        </div>
-        <div className="execution-segment" role="tablist" aria-label="Execution mode">
-          <button
-            className={`segment-button ${isDeposit ? "segment-button--active" : ""}`}
-            onClick={() => setMode("deposit")}
-            role="tab"
-            aria-selected={isDeposit}
-            type="button"
-          >
-            Deposit
-          </button>
-          <button
-            className={`segment-button ${!isDeposit ? "segment-button--active" : ""}`}
-            onClick={() => setMode("redeem")}
-            role="tab"
-            aria-selected={!isDeposit}
-            type="button"
-          >
-            Redeem
-          </button>
-        </div>
+    <article className="card execution-panel" id="execute">
+      <div className="execution-panel__header">
+        <p className="eyebrow">Trade ticket</p>
+        <h3>{isDeposit ? "Deposit into vault" : "Redeem from vault"}</h3>
       </div>
 
-      <div className="form-layout">
-        <form className="card execution-form" aria-label={`${actionLabel} form`}>
-          <h3>Order ticket</h3>
-
-          <label className="field-label" htmlFor={amountId}>
-            {inputLabel}
-          </label>
-          <input
-            id={amountId}
-            name="amount"
-            type="number"
-            placeholder="0.00"
-            className="input"
-            inputMode="decimal"
-          />
-
-          <div>
-            <p className="field-label">Tranche</p>
-            <div className="radio-group">
-              <label className="radio-chip">
-                <input
-                  type="radio"
-                  name="tranche"
-                  checked={tranche === "senior"}
-                  onChange={() => setTranche("senior")}
-                />
-                Senior
-              </label>
-              <label className="radio-chip">
-                <input
-                  type="radio"
-                  name="tranche"
-                  checked={tranche === "junior"}
-                  onChange={() => setTranche("junior")}
-                />
-                Junior
-              </label>
-            </div>
-          </div>
-
-          <div className="card-actions">
-            <button className="button" type="button">
-              {submitLabel}
-            </button>
-            <WalletConnectButton />
-          </div>
-        </form>
-
-        <aside className="card card--spotlight execution-notes">
-          <h3>Ticket summary</h3>
-          <div className="execution-notes__grid">
-            <div className="execution-note">
-              <span className="label">Action</span>
-              <span className="value">{actionLabel}</span>
-            </div>
-            <div className="execution-note">
-              <span className="label">Selected tranche</span>
-              <span className="value">{tranche === "senior" ? "Senior" : "Junior"}</span>
-            </div>
-            <div className="execution-note">
-              <span className="label">Selected APY</span>
-              <span className="value">{selectedApy}</span>
-            </div>
-            <div className="execution-note">
-              <span className="label">Route</span>
-              <span className="value">{routeLabel}</span>
-            </div>
-          </div>
-        </aside>
+      <div className="execution-segment" role="tablist" aria-label="Execution mode">
+        <button
+          className={`segment-button ${isDeposit ? "segment-button--active" : ""}`}
+          onClick={() => setMode("deposit")}
+          role="tab"
+          aria-selected={isDeposit}
+          type="button"
+        >
+          Deposit
+        </button>
+        <button
+          className={`segment-button ${!isDeposit ? "segment-button--active" : ""}`}
+          onClick={() => setMode("redeem")}
+          role="tab"
+          aria-selected={!isDeposit}
+          type="button"
+        >
+          Redeem
+        </button>
       </div>
-    </section>
+
+      <form className="execution-form" aria-label={`${actionLabel} form`}>
+        <label className="field-label" htmlFor={amountId}>
+          {inputLabel}
+        </label>
+        <input
+          id={amountId}
+          name="amount"
+          type="number"
+          placeholder="0.00"
+          className="input"
+          inputMode="decimal"
+        />
+
+        <div>
+          <p className="field-label">Tranche</p>
+          <div className="radio-group">
+            <label className="radio-chip">
+              <input
+                type="radio"
+                name="tranche"
+                checked={tranche === "senior"}
+                onChange={() => setTranche("senior")}
+              />
+              Senior
+            </label>
+            <label className="radio-chip">
+              <input
+                type="radio"
+                name="tranche"
+                checked={tranche === "junior"}
+                onChange={() => setTranche("junior")}
+              />
+              Junior
+            </label>
+          </div>
+        </div>
+
+        <div className="execution-actions">
+          <button className="button" type="button">
+            {submitLabel}
+          </button>
+          <WalletConnectButton />
+        </div>
+      </form>
+
+      <div className="execution-summary">
+        <div className="execution-summary__row">
+          <span className="execution-summary__label">Action</span>
+          <span className="execution-summary__value">{actionLabel}</span>
+        </div>
+        <div className="execution-summary__row">
+          <span className="execution-summary__label">Tranche</span>
+          <span className="execution-summary__value">{tranche === "senior" ? "Senior" : "Junior"}</span>
+        </div>
+        <div className="execution-summary__row">
+          <span className="execution-summary__label">Selected APY</span>
+          <span className="execution-summary__value">{selectedApy}</span>
+        </div>
+        <div className="execution-summary__row">
+          <span className="execution-summary__label">Route</span>
+          <span className="execution-summary__value">{routeLabel}</span>
+        </div>
+      </div>
+    </article>
   );
 }

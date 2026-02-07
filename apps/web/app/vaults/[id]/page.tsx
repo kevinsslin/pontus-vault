@@ -87,193 +87,195 @@ export default async function VaultDetailPage({
         </div>
       </section>
 
-      <section className="section section--compact reveal delay-1">
-        <div className="detail-yield-grid">
-          <article className="card card--priority">
-            <div className="stat-label">Senior APY</div>
-            <div className="yield-value">{formatBps(vault.metrics.seniorApyBps ?? null)}</div>
-          </article>
-          <article className="card card--priority">
-            <div className="stat-label">Junior APY</div>
-            <div className="yield-value">{formatBps(vault.metrics.juniorApyBps ?? null)}</div>
-          </article>
-        </div>
-      </section>
-
-      <section className="section section--tight reveal delay-1">
-        <div className="stat-grid">
-          <article className="card">
-            <div className="stat-label">TVL</div>
-            <div className="stat-value">{formatUsd(vault.metrics.tvl)}</div>
-            <p className="micro">Updated {updatedLabel}</p>
-          </article>
-          <article className="card">
-            <div className="stat-label">Senior Share Price</div>
-            <div className="stat-value">{formatSharePrice(vault.metrics.seniorPrice)}</div>
-            <p className="muted">Debt: {formatUsd(vault.metrics.seniorDebt)}</p>
-          </article>
-          <article className="card">
-            <div className="stat-label">Junior Share Price</div>
-            <div className="stat-value">{formatSharePrice(vault.metrics.juniorPrice)}</div>
-            <p className="muted">Supply: {formatUsd(vault.metrics.juniorSupply)}</p>
-          </article>
-        </div>
-      </section>
-
-      <section className="section section--tight reveal delay-1">
-        <VaultPerformanceChart points={trendSeries} />
-      </section>
-
-      <section className="section section--compact reveal delay-2">
-        <VaultAssetAllocationChart slices={assetAllocation} />
-      </section>
-
-      <section className="section section--compact reveal delay-2">
-        <div className="grid grid-2">
-          <article className="card">
-            <h3>Vault terms</h3>
-            <div className="list-rows">
-              <div className="row">
-                <span className="key">Asset</span>
-                <span className="value">
-                  <TokenBadge symbol={vault.assetSymbol} />
-                </span>
-              </div>
-              <div className="row">
-                <span className="key">Route</span>
-                <span className="value">{vault.route}</span>
-              </div>
-              <div className="row">
-                <span className="key">Risk</span>
-                <span className="value">{vault.uiConfig.risk ?? "N/A"}</span>
-              </div>
-              <div className="row">
-                <span className="key">Policy</span>
-                <span className="value">{vault.uiConfig.banner ?? "N/A"}</span>
-              </div>
+      <div className="vault-detail-layout">
+        <div className="vault-detail-main">
+          <section className="section section--compact reveal delay-1">
+            <div className="detail-yield-grid">
+              <article className="card card--priority">
+                <div className="stat-label">Senior APY</div>
+                <div className="yield-value">{formatBps(vault.metrics.seniorApyBps ?? null)}</div>
+              </article>
+              <article className="card card--priority">
+                <div className="stat-label">Junior APY</div>
+                <div className="yield-value">{formatBps(vault.metrics.juniorApyBps ?? null)}</div>
+              </article>
             </div>
-          </article>
+          </section>
 
-          <article className="card">
-            <h3>Execution setup</h3>
-            <div className="list-rows">
-              <div className="row">
-                <span className="key">Status</span>
-                <span className="value">{vault.uiConfig.status}</span>
-              </div>
-              <div className="row">
-                <span className="key">Chain</span>
-                <span className="value">{vault.chain}</span>
-              </div>
-              <div className="row">
-                <span className="key">Teller</span>
-                <span className="value">{vault.tellerAddress}</span>
-              </div>
+          <section className="section section--tight reveal delay-1">
+            <div className="stat-grid">
+              <article className="card">
+                <div className="stat-label">TVL</div>
+                <div className="stat-value">{formatUsd(vault.metrics.tvl)}</div>
+                <p className="micro">Updated {updatedLabel}</p>
+              </article>
+              <article className="card">
+                <div className="stat-label">Senior Share Price</div>
+                <div className="stat-value">{formatSharePrice(vault.metrics.seniorPrice)}</div>
+                <p className="muted">Debt: {formatUsd(vault.metrics.seniorDebt)}</p>
+              </article>
+              <article className="card">
+                <div className="stat-label">Junior Share Price</div>
+                <div className="stat-value">{formatSharePrice(vault.metrics.juniorPrice)}</div>
+                <p className="muted">Supply: {formatUsd(vault.metrics.juniorSupply)}</p>
+              </article>
             </div>
-            {isLive ? null : (
-              <>
-                <div className="card-actions">
-                  <Link className="button button--ghost" href="/discover">
-                    Browse live vaults
-                  </Link>
+          </section>
+
+          <section className="section section--tight reveal delay-1">
+            <VaultPerformanceChart points={trendSeries} />
+          </section>
+
+          <section className="section section--compact reveal delay-2">
+            <VaultAssetAllocationChart slices={assetAllocation} />
+          </section>
+
+          <section className="section section--compact reveal delay-2">
+            <div className="grid grid-2">
+              <article className="card">
+                <h3>Vault terms</h3>
+                <div className="list-rows">
+                  <div className="row">
+                    <span className="key">Asset</span>
+                    <span className="value">
+                      <TokenBadge symbol={vault.assetSymbol} />
+                    </span>
+                  </div>
+                  <div className="row">
+                    <span className="key">Route</span>
+                    <span className="value">{vault.route}</span>
+                  </div>
+                  <div className="row">
+                    <span className="key">Risk</span>
+                    <span className="value">{vault.uiConfig.risk ?? "N/A"}</span>
+                  </div>
+                  <div className="row">
+                    <span className="key">Policy</span>
+                    <span className="value">{vault.uiConfig.banner ?? "N/A"}</span>
+                  </div>
                 </div>
-              </>
-            )}
-          </article>
+              </article>
+
+              <article className="card">
+                <h3>Execution setup</h3>
+                <div className="list-rows">
+                  <div className="row">
+                    <span className="key">Status</span>
+                    <span className="value">{vault.uiConfig.status}</span>
+                  </div>
+                  <div className="row">
+                    <span className="key">Chain</span>
+                    <span className="value">{vault.chain}</span>
+                  </div>
+                  <div className="row">
+                    <span className="key">Teller</span>
+                    <span className="value">{vault.tellerAddress}</span>
+                  </div>
+                </div>
+                {isLive ? null : (
+                  <div className="card-actions">
+                    <Link className="button button--ghost" href="/discover">
+                      Browse live vaults
+                    </Link>
+                  </div>
+                )}
+              </article>
+            </div>
+          </section>
+
+          <section className="section section--compact reveal delay-2">
+            <article className="card">
+              <h3>Tranche allocation</h3>
+              <div className="mix-chart">
+                <div className="mix-chart__bar" aria-hidden="true">
+                  <span className="mix-chart__senior" style={{ width: `${seniorMix ?? 0}%` }} />
+                  <span className="mix-chart__junior" style={{ width: `${juniorMix ?? 0}%` }} />
+                </div>
+                <div className="mix-chart__legend">
+                  <span>Senior {seniorMix === null ? "—" : `${seniorMix.toFixed(2)}%`}</span>
+                  <span>Junior {juniorMix === null ? "—" : `${juniorMix.toFixed(2)}%`}</span>
+                </div>
+              </div>
+              <p className="micro">{`Updated ${updatedLabel}`}</p>
+            </article>
+          </section>
+
+          <section className="section section--compact reveal delay-3">
+            <article className="card">
+              <h3>Addresses</h3>
+              <div className="list-rows">
+                <div className="row">
+                  <span className="key">Controller</span>
+                  <span className="value">{vault.controllerAddress}</span>
+                </div>
+                <div className="row">
+                  <span className="key">Senior token</span>
+                  <span className="value">{vault.seniorTokenAddress}</span>
+                </div>
+                <div className="row">
+                  <span className="key">Junior token</span>
+                  <span className="value">{vault.juniorTokenAddress}</span>
+                </div>
+                <div className="row">
+                  <span className="key">Vault / Teller</span>
+                  <span className="value">
+                    {vault.vaultAddress} / {vault.tellerAddress}
+                  </span>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section className="section section--compact reveal delay-3">
+            <article className="card">
+              <h3>Activity feed</h3>
+              <div className="table-wrap">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Tranche</th>
+                      <th>Amount</th>
+                      <th>Actor</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activity.map((entry) => (
+                      <tr key={entry.id}>
+                        <td>{entry.type}</td>
+                        <td>{entry.tranche}</td>
+                        <td>{entry.amount}</td>
+                        <td>{entry.actor}</td>
+                        <td>{entry.time}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </article>
+          </section>
         </div>
-      </section>
 
-      {isLive ? (
-        <VaultExecutionPanel vault={vault} />
-      ) : (
-        <section className="section section--compact reveal delay-2" id="execute">
-          <article className="card card--spotlight">
-            <h3>Execution unavailable</h3>
-            <p className="muted">
-              {vault.name} is currently {vault.uiConfig.status}. Deposits and redeems are disabled
-              until this vault is activated.
-            </p>
-            <div className="card-actions">
-              <Link className="button button--ghost" href="/discover">
-                Browse live vaults
-              </Link>
-            </div>
-          </article>
-        </section>
-      )}
-
-      <section className="section section--compact reveal delay-2">
-        <article className="card">
-          <h3>Tranche allocation</h3>
-          <div className="mix-chart">
-            <div className="mix-chart__bar" aria-hidden="true">
-              <span className="mix-chart__senior" style={{ width: `${seniorMix ?? 0}%` }} />
-              <span className="mix-chart__junior" style={{ width: `${juniorMix ?? 0}%` }} />
-            </div>
-            <div className="mix-chart__legend">
-              <span>Senior {seniorMix === null ? "—" : `${seniorMix.toFixed(2)}%`}</span>
-              <span>Junior {juniorMix === null ? "—" : `${juniorMix.toFixed(2)}%`}</span>
-            </div>
-          </div>
-          <p className="micro">{`Updated ${updatedLabel}`}</p>
-        </article>
-      </section>
-
-      <section className="section section--compact reveal delay-3">
-        <article className="card">
-          <h3>Addresses</h3>
-          <div className="list-rows">
-            <div className="row">
-              <span className="key">Controller</span>
-              <span className="value">{vault.controllerAddress}</span>
-            </div>
-            <div className="row">
-              <span className="key">Senior token</span>
-              <span className="value">{vault.seniorTokenAddress}</span>
-            </div>
-            <div className="row">
-              <span className="key">Junior token</span>
-              <span className="value">{vault.juniorTokenAddress}</span>
-            </div>
-            <div className="row">
-              <span className="key">Vault / Teller</span>
-              <span className="value">
-                {vault.vaultAddress} / {vault.tellerAddress}
-              </span>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <section className="section section--compact reveal delay-3">
-        <article className="card">
-          <h3>Activity feed</h3>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Tranche</th>
-                  <th>Amount</th>
-                  <th>Actor</th>
-                  <th>Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.map((entry) => (
-                  <tr key={entry.id}>
-                    <td>{entry.type}</td>
-                    <td>{entry.tranche}</td>
-                    <td>{entry.amount}</td>
-                    <td>{entry.actor}</td>
-                    <td>{entry.time}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
+        <aside className="vault-detail-cta reveal delay-2">
+          {isLive ? (
+            <VaultExecutionPanel vault={vault} />
+          ) : (
+            <article className="card card--spotlight" id="execute">
+              <h3>Execution unavailable</h3>
+              <p className="muted">
+                {vault.name} is currently {vault.uiConfig.status}. Deposits and redeems are disabled
+                until this vault is activated.
+              </p>
+              <div className="card-actions">
+                <Link className="button button--ghost" href="/discover">
+                  Browse live vaults
+                </Link>
+              </div>
+            </article>
+          )}
+        </aside>
+      </div>
     </main>
   );
 }

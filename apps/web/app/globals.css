@@ -1202,6 +1202,79 @@ p {
   gap: 12px;
 }
 
+.vault-detail-layout {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
+  gap: 22px;
+  align-items: start;
+}
+
+.vault-detail-main {
+  min-width: 0;
+}
+
+.vault-detail-cta {
+  position: sticky;
+  top: 94px;
+}
+
+.execution-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.execution-panel__header {
+  display: grid;
+  gap: 6px;
+}
+
+.execution-panel__header .eyebrow {
+  margin-bottom: 0;
+}
+
+.execution-panel .execution-segment {
+  width: 100%;
+}
+
+.execution-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.execution-actions .button {
+  width: 100%;
+}
+
+.execution-summary {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--pv-line);
+  padding-top: 12px;
+}
+
+.execution-summary__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.execution-summary__label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pv-ink-500);
+}
+
+.execution-summary__value {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--pv-ink-900);
+  text-align: right;
+}
+
 .card--priority {
   background: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(225, 241, 255, 0.75));
 }
@@ -1918,6 +1991,17 @@ a:focus-visible {
 
   .form-layout {
     grid-template-columns: 1fr;
+  }
+
+  .vault-detail-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .vault-detail-cta {
+    position: static;
+    top: auto;
+    order: -1;
   }
 
   .execution-toolbar {
