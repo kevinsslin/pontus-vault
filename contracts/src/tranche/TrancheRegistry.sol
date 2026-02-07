@@ -5,9 +5,10 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-import {ITrancheRegistry} from "../interfaces/ITrancheRegistry.sol";
+import {ITrancheRegistry} from "../interfaces/tranche/ITrancheRegistry.sol";
 
 /// @title Tranche Registry
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Persists tranche vault metadata keyed by params hash.
 contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable, UUPSUpgradeable {
     /// @custom:storage-location erc7201:pontus.storage.TrancheRegistry

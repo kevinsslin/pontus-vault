@@ -3,21 +3,15 @@ pragma solidity ^0.8.33;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import {IRateModel} from "../interfaces/IRateModel.sol";
+import {IFixedRateModel} from "../interfaces/rates/IFixedRateModel.sol";
+import {IRateModel} from "../interfaces/rates/IRateModel.sol";
 
 /// @title Fixed Rate Model
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Returns a manually managed constant per-second WAD rate.
-contract FixedRateModel is IRateModel, Ownable {
-    /// @notice Reserved error for zero-rate validation.
-    error ZeroRate();
-
+contract FixedRateModel is IFixedRateModel, Ownable {
     /// @notice Configured per-second WAD rate.
     uint256 public ratePerSecondWad;
-
-    /// @notice Emitted when fixed rate is updated.
-    /// @param oldRate Previous rate.
-    /// @param newRate New rate.
-    event RateUpdated(uint256 oldRate, uint256 newRate);
 
     /// @notice Initializes fixed rate model.
     /// @param _owner Contract owner.
@@ -30,8 +24,7 @@ contract FixedRateModel is IRateModel, Ownable {
                             OWNER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Updates fixed rate value.
-    /// @param _newRate New per-second WAD rate.
+    /// @inheritdoc IFixedRateModel
     function setRatePerSecondWad(uint256 _newRate) external onlyOwner {
         emit RateUpdated(ratePerSecondWad, _newRate);
         ratePerSecondWad = _newRate;

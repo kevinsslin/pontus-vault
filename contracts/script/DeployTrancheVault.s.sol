@@ -12,8 +12,8 @@ import {ERC20} from "../lib/boring-vault/lib/solmate/src/tokens/ERC20.sol";
 import {WETH} from "../lib/boring-vault/lib/solmate/src/tokens/WETH.sol";
 
 import {BaseScript} from "./BaseScript.sol";
-import {ITrancheFactory} from "../src/interfaces/ITrancheFactory.sol";
-import {ITrancheRegistry} from "../src/interfaces/ITrancheRegistry.sol";
+import {ITrancheFactory} from "../src/interfaces/tranche/ITrancheFactory.sol";
+import {ITrancheRegistry} from "../src/interfaces/tranche/ITrancheRegistry.sol";
 
 contract DeployTrancheVault is BaseScript {
     uint8 internal constant MINTER_ROLE = 7;

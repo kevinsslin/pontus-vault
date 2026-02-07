@@ -2,6 +2,7 @@
 pragma solidity ^0.8.33;
 
 /// @title Tranche Registry Interface
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Stores tranche vault metadata keyed by deterministic params hash.
 interface ITrancheRegistry {
     /// @notice Emitted when caller is not registered factory.

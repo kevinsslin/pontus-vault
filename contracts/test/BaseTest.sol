@@ -5,11 +5,11 @@ import "forge-std/Test.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {MockERC20} from "./mocks/MockERC20.sol";
-import {MockAccountant} from "./mocks/MockAccountant.sol";
-import {ITrancheController} from "../src/interfaces/ITrancheController.sol";
+import {ITrancheController} from "../src/interfaces/tranche/ITrancheController.sol";
 import {TrancheController} from "../src/tranche/TrancheController.sol";
 import {TrancheToken} from "../src/tranche/TrancheToken.sol";
+import {MockAccountant} from "./mocks/MockAccountant.sol";
+import {MockERC20} from "./mocks/MockERC20.sol";
 import {TestConstants} from "./utils/Constants.sol";
 import {TestDefaults} from "./utils/Defaults.sol";
 

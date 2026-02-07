@@ -3,7 +3,7 @@ pragma solidity ^0.8.33;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {ITrancheToken} from "../../src/interfaces/ITrancheToken.sol";
+import {ITrancheToken} from "../../src/interfaces/tranche/ITrancheToken.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
 import {BaseTest} from "../BaseTest.sol";
 import {TestConstants} from "../utils/Constants.sol";

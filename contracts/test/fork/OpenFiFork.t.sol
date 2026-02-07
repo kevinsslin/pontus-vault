@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {IOpenFiPool} from "../../src/interfaces/IOpenFiPool.sol";
+import {IOpenFiPool} from "../../src/interfaces/openfi/IOpenFiPool.sol";
 import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
 import {TestConstants} from "../utils/Constants.sol";
 import {TestDefaults} from "../utils/Defaults.sol";

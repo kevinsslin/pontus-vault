@@ -5,7 +5,7 @@ import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.s
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import {ITrancheRegistry} from "../../src/interfaces/ITrancheRegistry.sol";
+import {ITrancheRegistry} from "../../src/interfaces/tranche/ITrancheRegistry.sol";
 import {TrancheRegistry} from "../../src/tranche/TrancheRegistry.sol";
 import {BaseTest} from "../BaseTest.sol";
 import {TrancheRegistryV2} from "../mocks/TrancheRegistryV2.sol";

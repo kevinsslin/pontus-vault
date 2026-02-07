@@ -6,12 +6,13 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-import {ITrancheController} from "../interfaces/ITrancheController.sol";
-import {ITrancheFactory} from "../interfaces/ITrancheFactory.sol";
-import {ITrancheRegistry} from "../interfaces/ITrancheRegistry.sol";
-import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
+import {ITrancheController} from "../interfaces/tranche/ITrancheController.sol";
+import {ITrancheFactory} from "../interfaces/tranche/ITrancheFactory.sol";
+import {ITrancheRegistry} from "../interfaces/tranche/ITrancheRegistry.sol";
+import {ITrancheToken} from "../interfaces/tranche/ITrancheToken.sol";
 
 /// @title Tranche Factory
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Deploys tranche controller/token clones and registers metadata in `TrancheRegistry`.
 contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, UUPSUpgradeable {
     /// @custom:storage-location erc7201:pontus.storage.TrancheFactory

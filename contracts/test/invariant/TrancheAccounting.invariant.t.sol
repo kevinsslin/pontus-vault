@@ -5,12 +5,12 @@ import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {BaseTest} from "../BaseTest.sol";
-import {MockTeller} from "../mocks/MockTeller.sol";
-import {MockAccountant} from "../mocks/MockAccountant.sol";
-import {MockERC20} from "../mocks/MockERC20.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
+import {BaseTest} from "../BaseTest.sol";
+import {MockAccountant} from "../mocks/MockAccountant.sol";
+import {MockERC20} from "../mocks/MockERC20.sol";
+import {MockTeller} from "../mocks/MockTeller.sol";
 import {TestConstants} from "../utils/Constants.sol";
 
 contract TrancheHandler is Test {

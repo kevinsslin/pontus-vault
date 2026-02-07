@@ -5,7 +5,9 @@ This workspace holds the BoringVault stack integration and tranche wrapper contr
 **Structure**
 - `src/tranche/`: tranche controller/factory/registry/token/rate-model contracts
 - `src/libraries/`: constants + OpenFi calldata builder
-- `src/interfaces/`: OpenFi + tranche interfaces
+- `src/interfaces/tranche/`: tranche controller/factory/registry/token interfaces
+- `src/interfaces/rates/`: shared + model-specific rate interfaces
+- `src/interfaces/openfi/`: OpenFi-facing interfaces
 - `script/DeployInfra.s.sol`: one-time infra deploy (UUPS `TrancheRegistry` + `TrancheFactory` proxies + implementations)
 - `script/DeployTrancheVault.s.sol`: per-vault deploy (BoringVault set + tranche vault creation)
 - `script/Deploy.s.sol`: backward-compatible alias to `DeployInfra.s.sol`

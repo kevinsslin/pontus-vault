@@ -2,6 +2,7 @@
 pragma solidity ^0.8.33;
 
 /// @title OpenFi Pool Interface
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Minimal pool actions used by Pontus vault integrations.
 interface IOpenFiPool {
     /// @notice Supplies asset liquidity into the OpenFi pool.

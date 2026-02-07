@@ -4,6 +4,7 @@ pragma solidity ^0.8.33;
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 /// @title Tranche Token Interface
+/// @author Kevin Lin (@kevinsslin)
 /// @notice ERC20-compatible tranche share token controlled by a tranche controller.
 interface ITrancheToken is IERC20Metadata {
     /// @notice Emitted when a non-controller caller invokes a controller-only function.

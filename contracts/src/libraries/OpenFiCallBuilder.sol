@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-import {IOpenFiPool} from "../interfaces/IOpenFiPool.sol";
+import {IOpenFiPool} from "../interfaces/openfi/IOpenFiPool.sol";
 
 /// @title OpenFi Call Builder
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Helper utilities to build canonical OpenFi pool calldata/selectors.
 library OpenFiCallBuilder {
     /// @notice Selector for `IOpenFiPool.supply`.

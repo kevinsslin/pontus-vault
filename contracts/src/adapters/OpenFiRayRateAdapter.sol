@@ -4,10 +4,11 @@ pragma solidity ^0.8.33;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import {IRefRateProvider} from "../interfaces/IRefRateProvider.sol";
-import {IOpenFiRateSource} from "../interfaces/IOpenFiRateSource.sol";
+import {IRefRateProvider} from "../interfaces/rates/IRefRateProvider.sol";
+import {IOpenFiRateSource} from "../interfaces/openfi/IOpenFiRateSource.sol";
 
 /// @title OpenFi RAY Rate Adapter
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Adapts OpenFi annualized RAY supply rates into per-second WAD rates.
 contract OpenFiRayRateAdapter is IRefRateProvider, Ownable {
     /// @notice Emitted when an address input is zero.

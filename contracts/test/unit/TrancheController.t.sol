@@ -5,10 +5,10 @@ import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol"
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {BaseTest} from "../BaseTest.sol";
-import {ITrancheController} from "../../src/interfaces/ITrancheController.sol";
-import {MockTeller} from "../mocks/MockTeller.sol";
+import {ITrancheController} from "../../src/interfaces/tranche/ITrancheController.sol";
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
+import {BaseTest} from "../BaseTest.sol";
+import {MockTeller} from "../mocks/MockTeller.sol";
 import {TestConstants} from "../utils/Constants.sol";
 
 contract MockRateModel {

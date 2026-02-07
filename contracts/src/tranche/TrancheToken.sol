@@ -5,9 +5,10 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
+import {ITrancheToken} from "../interfaces/tranche/ITrancheToken.sol";
 
 /// @title Tranche Token
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Upgradeable ERC20 clone minted and burned only by a tranche controller.
 contract TrancheToken is Initializable, ERC20Upgradeable, ITrancheToken {
     /// @inheritdoc ITrancheToken

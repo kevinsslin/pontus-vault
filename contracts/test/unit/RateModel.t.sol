@@ -3,6 +3,7 @@ pragma solidity ^0.8.33;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
+import {ICapSafetyRateModel} from "../../src/interfaces/rates/ICapSafetyRateModel.sol";
 import {CapSafetyRateModel} from "../../src/rate-models/CapSafetyRateModel.sol";
 import {FixedRateModel} from "../../src/rate-models/FixedRateModel.sol";
 import {BaseTest} from "../BaseTest.sol";
@@ -79,7 +80,7 @@ contract RateModelTest is BaseTest {
     }
 
     function test_capSafetyRateModel_revertsForInvalidSafetyFactor() public {
-        vm.expectRevert(CapSafetyRateModel.InvalidSafetyFactor.selector);
+        vm.expectRevert(ICapSafetyRateModel.InvalidSafetyFactor.selector);
         new CapSafetyRateModel(owner, address(refProvider), TestConstants.CAP_MODEL_CAP, TestConstants.ONE_WAD + 1);
     }
 }

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.33;
 
 /// @title OpenFi Rate Source Interface
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Protocol-facing source consumed by `OpenFiRayRateAdapter`.
 /// @dev Return value must be annualized RAY (1e27) for the given asset.
 interface IOpenFiRateSource {

@@ -7,7 +7,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {TrancheController} from "../../src/tranche/TrancheController.sol";
 import {TrancheFactory} from "../../src/tranche/TrancheFactory.sol";
 import {TrancheToken} from "../../src/tranche/TrancheToken.sol";
-import {ITrancheFactory} from "../../src/interfaces/ITrancheFactory.sol";
+import {ITrancheFactory} from "../../src/interfaces/tranche/ITrancheFactory.sol";
 import {BaseTest} from "../BaseTest.sol";
 import {TrancheFactoryV2} from "../mocks/TrancheFactoryV2.sol";
 import {TestConstants} from "../utils/Constants.sol";

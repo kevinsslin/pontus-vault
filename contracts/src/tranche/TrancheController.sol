@@ -15,11 +15,12 @@ import {AccountantWithRateProviders} from "../../lib/boring-vault/src/base/Roles
 import {TellerWithMultiAssetSupport} from "../../lib/boring-vault/src/base/Roles/TellerWithMultiAssetSupport.sol";
 
 import {Constants} from "../libraries/Constants.sol";
-import {IRateModel} from "../interfaces/IRateModel.sol";
-import {ITrancheController} from "../interfaces/ITrancheController.sol";
-import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
+import {IRateModel} from "../interfaces/rates/IRateModel.sol";
+import {ITrancheController} from "../interfaces/tranche/ITrancheController.sol";
+import {ITrancheToken} from "../interfaces/tranche/ITrancheToken.sol";
 
 /// @title Tranche Controller
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Handles tranche accounting, debt accrual, and user flow between asset and tranche tokens.
 contract TrancheController is ITrancheController, AccessControl, Initializable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;

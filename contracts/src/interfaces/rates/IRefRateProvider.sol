@@ -2,6 +2,7 @@
 pragma solidity ^0.8.33;
 
 /// @title Reference Rate Provider Interface
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Canonical adapter interface consumed by `CapSafetyRateModel`.
 /// @dev Implementations must return a per-second rate scaled as WAD (1e18).
 ///      External protocols (for example OpenFi/Aave) generally do not implement

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.33;
 
 /// @title Tranche Factory Interface
+/// @author Kevin Lin (@kevinsslin)
 /// @notice Deploys tranche controller/token clones and registers vault metadata.
 interface ITrancheFactory {
     /// @notice Emitted when a required address argument is zero.
