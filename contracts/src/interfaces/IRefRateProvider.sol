@@ -9,5 +9,6 @@ pragma solidity ^0.8.33;
 ///      specific rates and normalizes them into this format.
 interface IRefRateProvider {
     /// @notice Returns the normalized reference rate in per-second WAD units.
+    /// @return _ratePerSecondWad Reference rate scaled by 1e18.
     function getRatePerSecondWad() external view returns (uint256);
 }

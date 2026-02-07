@@ -7,14 +7,19 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 
 import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
 
+/// @title Tranche Token
+/// @notice Upgradeable ERC20 clone minted and burned only by a tranche controller.
 contract TrancheToken is Initializable, ERC20Upgradeable, ITrancheToken {
+    /// @inheritdoc ITrancheToken
     address public controller;
+    /// @dev Custom decimals persisted for clone instances.
     uint8 private _tokenDecimals;
 
     /*//////////////////////////////////////////////////////////////
                               INITIALIZER
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheToken
     function initialize(string calldata _name, string calldata _symbol, uint8 _decimals, address _controller)
         external
         override
@@ -30,11 +35,13 @@ contract TrancheToken is Initializable, ERC20Upgradeable, ITrancheToken {
                           CONTROLLER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheToken
     function mint(address _to, uint256 _amount) external override {
         if (msg.sender != controller) revert NotController();
         _mint(_to, _amount);
     }
 
+    /// @inheritdoc ITrancheToken
     function burnFrom(address _from, uint256 _amount) external override {
         if (msg.sender != controller) revert NotController();
         uint256 currentAllowance = allowance(_from, msg.sender);
@@ -49,6 +56,7 @@ contract TrancheToken is Initializable, ERC20Upgradeable, ITrancheToken {
                              VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc IERC20Metadata
     function decimals() public view override(ERC20Upgradeable, IERC20Metadata) returns (uint8) {
         return _tokenDecimals;
     }

@@ -7,17 +7,23 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 
 import {ITrancheRegistry} from "../interfaces/ITrancheRegistry.sol";
 
+/// @title Tranche Registry
+/// @notice Persists tranche vault metadata keyed by params hash.
 contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable, UUPSUpgradeable {
     /// @custom:storage-location erc7201:pontus.storage.TrancheRegistry
+    /// @notice EIP-7201 storage container for registry data.
     struct TrancheRegistryStorage {
+        /// @notice Authorized factory allowed to register new vault records.
         address factory;
+        /// @notice Vault metadata keyed by deterministic params hash.
         mapping(bytes32 paramsHash => TrancheVaultInfo info) trancheVaultsByParamsHash;
     }
 
-    // keccak256(abi.encode(uint256(keccak256("pontus.storage.TrancheRegistry")) - 1)) & ~bytes32(uint256(0xff))
+    /// @dev keccak256(abi.encode(uint256(keccak256("pontus.storage.TrancheRegistry")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant TRANCHE_REGISTRY_STORAGE_LOCATION =
         0x8e5d8f9d12f75b408e3765ef5743b79724b9415f249c865effeedac3a7fbcc00;
 
+    /// @notice Disables implementation initialization.
     constructor() {
         _disableInitializers();
     }
@@ -26,14 +32,17 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
                                MODIFIERS
     //////////////////////////////////////////////////////////////*/
 
+    /// @notice Restricts caller to configured factory.
     modifier onlyFactory() {
         if (msg.sender != factory()) revert NotFactory();
         _;
     }
+
     /*//////////////////////////////////////////////////////////////
                               INITIALIZER
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheRegistry
     function initialize(address _owner, address _factory) external override initializer {
         if (_owner == address(0)) revert ZeroAddress();
         __Ownable_init(_owner);
@@ -45,6 +54,7 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
                             OWNER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheRegistry
     function setFactory(address _newFactory) external override onlyOwner {
         if (_newFactory == address(0)) revert ZeroAddress();
         TrancheRegistryStorage storage $ = _getStorage();
@@ -56,6 +66,7 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
                            FACTORY FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheRegistry
     function registerTrancheVault(TrancheVaultInfo calldata _info)
         external
         override
@@ -88,6 +99,7 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
                              VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheRegistry
     function trancheVaultByParamsHash(bytes32 _paramsHash)
         external
         view
@@ -98,10 +110,12 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
         if (_info.controller == address(0)) revert TrancheVaultNotFound(_paramsHash);
     }
 
+    /// @inheritdoc ITrancheRegistry
     function trancheVaultExists(bytes32 _paramsHash) external view override returns (bool _exists) {
         return _getStorage().trancheVaultsByParamsHash[_paramsHash].controller != address(0);
     }
 
+    /// @inheritdoc ITrancheRegistry
     function factory() public view override returns (address) {
         return _getStorage().factory;
     }
@@ -110,8 +124,11 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
                            INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc UUPSUpgradeable
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
+    /// @notice Ensures all required vault metadata fields are non-zero.
+    /// @param _info Vault metadata to validate.
     function _assertValidTrancheVaultInfo(TrancheVaultInfo calldata _info) private pure {
         if (_info.controller == address(0)) revert ZeroAddress();
         if (_info.seniorToken == address(0)) revert ZeroAddress();
@@ -123,6 +140,8 @@ contract TrancheRegistry is ITrancheRegistry, Initializable, OwnableUpgradeable,
         if (_info.asset == address(0)) revert ZeroAddress();
     }
 
+    /// @notice Returns pointer to EIP-7201 storage slot.
+    /// @return $ Storage pointer.
     function _getStorage() private pure returns (TrancheRegistryStorage storage $) {
         assembly {
             $.slot := TRANCHE_REGISTRY_STORAGE_LOCATION

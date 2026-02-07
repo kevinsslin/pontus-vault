@@ -19,30 +19,47 @@ import {IRateModel} from "../interfaces/IRateModel.sol";
 import {ITrancheController} from "../interfaces/ITrancheController.sol";
 import {ITrancheToken} from "../interfaces/ITrancheToken.sol";
 
+/// @title Tranche Controller
+/// @notice Handles tranche accounting, debt accrual, and user flow between asset and tranche tokens.
 contract TrancheController is ITrancheController, AccessControl, Initializable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
+    /// @inheritdoc ITrancheController
     bytes32 public constant override OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+    /// @inheritdoc ITrancheController
     bytes32 public constant override GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
 
+    /// @inheritdoc ITrancheController
     IERC20 public asset;
+    /// @inheritdoc ITrancheController
     AccountantWithRateProviders public accountant;
+    /// @inheritdoc ITrancheController
     TellerWithMultiAssetSupport public teller;
+    /// @inheritdoc ITrancheController
     ITrancheToken public seniorToken;
+    /// @inheritdoc ITrancheController
     ITrancheToken public juniorToken;
 
+    /// @inheritdoc ITrancheController
     uint256 public seniorDebt;
+    /// @inheritdoc ITrancheController
     uint256 public seniorRatePerSecondWad;
+    /// @inheritdoc ITrancheController
     address public rateModel;
+    /// @inheritdoc ITrancheController
     uint256 public lastAccrualTs;
+    /// @inheritdoc ITrancheController
     uint256 public maxSeniorRatioBps;
+    /// @inheritdoc ITrancheController
     address public vault;
+    /// @inheritdoc ITrancheController
     uint256 public oneShare;
 
     /*//////////////////////////////////////////////////////////////
                               INITIALIZER
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheController
     function initialize(InitParams calldata _params) external override initializer {
         _validateInit(_params);
         _setCore(_params);
@@ -54,10 +71,12 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
                            GUARDIAN FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheController
     function pause() external override onlyRole(GUARDIAN_ROLE) {
         _pause();
     }
 
+    /// @inheritdoc ITrancheController
     function unpause() external override onlyRole(GUARDIAN_ROLE) {
         _unpause();
     }
@@ -66,24 +85,28 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
                            OPERATOR FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheController
     function setSeniorRatePerSecondWad(uint256 _newRate) external override onlyRole(OPERATOR_ROLE) {
         accrue();
         emit SeniorRateUpdated(seniorRatePerSecondWad, _newRate);
         seniorRatePerSecondWad = _newRate;
     }
 
+    /// @inheritdoc ITrancheController
     function setRateModel(address _newRateModel) external override onlyRole(OPERATOR_ROLE) {
         accrue();
         emit RateModelUpdated(rateModel, _newRateModel);
         rateModel = _newRateModel;
     }
 
+    /// @inheritdoc ITrancheController
     function setTeller(address _newTeller) external override onlyRole(OPERATOR_ROLE) {
         if (_newTeller == address(0)) revert ZeroAddress();
         emit TellerUpdated(address(teller), _newTeller);
         teller = TellerWithMultiAssetSupport(payable(_newTeller));
     }
 
+    /// @inheritdoc ITrancheController
     function setMaxSeniorRatioBps(uint256 _newRatioBps) external override onlyRole(OPERATOR_ROLE) {
         if (_newRatioBps > Constants.BPS) revert InvalidBps();
         emit MaxSeniorRatioUpdated(maxSeniorRatioBps, _newRatioBps);
@@ -94,6 +117,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
                              USER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheController
     function depositSenior(uint256 _assetsIn, address _receiver)
         external
         override
@@ -128,6 +152,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         emit SeniorDeposited(msg.sender, _receiver, _assetsIn, _sharesOut);
     }
 
+    /// @inheritdoc ITrancheController
     function depositJunior(uint256 _assetsIn, address _receiver)
         external
         override
@@ -160,6 +185,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         emit JuniorDeposited(msg.sender, _receiver, _assetsIn, _sharesOut);
     }
 
+    /// @inheritdoc ITrancheController
     function redeemSenior(uint256 _sharesIn, address _receiver)
         external
         override
@@ -189,6 +215,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         emit SeniorRedeemed(msg.sender, _receiver, _sharesIn, _assetsOut);
     }
 
+    /// @inheritdoc ITrancheController
     function redeemJunior(uint256 _sharesIn, address _receiver)
         external
         override
@@ -221,6 +248,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
                              VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheController
     function previewDepositSenior(uint256 _assetsIn) external view override returns (uint256 _sharesOut) {
         if (_assetsIn == 0) return 0;
         uint256 V0 = previewV();
@@ -233,6 +261,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         return Math.mulDiv(_assetsIn, S0, seniorValue0);
     }
 
+    /// @inheritdoc ITrancheController
     function previewDepositJunior(uint256 _assetsIn) external view override returns (uint256 _sharesOut) {
         if (_assetsIn == 0) return 0;
         uint256 V0 = previewV();
@@ -246,6 +275,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         return Math.mulDiv(_assetsIn, J0, juniorValue0);
     }
 
+    /// @inheritdoc ITrancheController
     function previewRedeemSenior(uint256 _sharesIn) external view override returns (uint256 _assetsOut) {
         if (_sharesIn == 0) return 0;
         uint256 V0 = previewV();
@@ -256,6 +286,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         return Math.mulDiv(_sharesIn, seniorValue0, S0);
     }
 
+    /// @inheritdoc ITrancheController
     function previewRedeemJunior(uint256 _sharesIn) external view override returns (uint256 _assetsOut) {
         if (_sharesIn == 0) return 0;
         uint256 V0 = previewV();
@@ -270,6 +301,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
                           ACCOUNTING FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc ITrancheController
     function accrue() public override {
         uint256 ts = block.timestamp;
         uint256 dt = ts - lastAccrualTs;
@@ -289,6 +321,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         emit Accrued(seniorDebt, dt);
     }
 
+    /// @inheritdoc ITrancheController
     function previewV() public view override returns (uint256) {
         uint256 shares = IERC20(vault).balanceOf(address(this));
         if (shares == 0) return 0;
@@ -301,6 +334,8 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
                            INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /// @notice Validates initialization payload.
+    /// @param _params Initialization parameter bundle.
     function _validateInit(InitParams calldata _params) internal pure {
         if (
             _params.asset == address(0) || _params.vault == address(0) || _params.teller == address(0)
@@ -313,6 +348,8 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         if (_params.maxSeniorRatioBps > Constants.BPS) revert InvalidBps();
     }
 
+    /// @notice Sets core protocol dependencies and baseline accounting state.
+    /// @param _params Initialization parameter bundle.
     function _setCore(InitParams calldata _params) internal {
         asset = IERC20(_params.asset);
         vault = _params.vault;
@@ -324,18 +361,25 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         lastAccrualTs = block.timestamp;
     }
 
+    /// @notice Sets rate configuration values.
+    /// @param _params Initialization parameter bundle.
     function _setRates(InitParams calldata _params) internal {
         seniorRatePerSecondWad = _params.seniorRatePerSecondWad;
         rateModel = _params.rateModel;
         maxSeniorRatioBps = _params.maxSeniorRatioBps;
     }
 
+    /// @notice Grants admin/operator/guardian roles.
+    /// @param _params Initialization parameter bundle.
     function _setRoles(InitParams calldata _params) internal {
         _grantRole(DEFAULT_ADMIN_ROLE, _params.operator);
         _grantRole(OPERATOR_ROLE, _params.operator);
         _grantRole(GUARDIAN_ROLE, _params.guardian);
     }
 
+    /// @notice Resolves the active per-second WAD rate.
+    /// @dev Returns static rate when no `rateModel` is configured.
+    /// @return _ratePerSecondWad Current accrual rate.
     function _currentRatePerSecondWad() internal view returns (uint256) {
         if (rateModel == address(0)) {
             return seniorRatePerSecondWad;
@@ -343,6 +387,8 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         return IRateModel(rateModel).getRatePerSecondWad();
     }
 
+    /// @notice Previews senior debt including unaccrued interval from `lastAccrualTs`.
+    /// @return _debtPreview Debt value after hypothetical accrual to current timestamp.
     function _previewDebt() internal view returns (uint256) {
         uint256 D0 = seniorDebt;
         if (D0 == 0) return 0;
@@ -354,14 +400,26 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         return D0 + interest;
     }
 
+    /// @notice Returns senior claimable value as `min(V, D)`.
+    /// @param _v Current vault value.
+    /// @param _d Current senior debt.
+    /// @return _value Senior claimable value.
     function _seniorValue(uint256 _v, uint256 _d) internal pure returns (uint256) {
         return _v < _d ? _v : _d;
     }
 
+    /// @notice Returns junior residual value as `max(V - D, 0)`.
+    /// @param _v Current vault value.
+    /// @param _d Current senior debt.
+    /// @return _value Junior residual value.
     function _juniorValue(uint256 _v, uint256 _d) internal pure returns (uint256) {
         return _v > _d ? (_v - _d) : 0;
     }
 
+    /// @notice Enforces max senior ratio using post-deposit state.
+    /// @param _v0 Current vault value.
+    /// @param _d0 Current senior debt.
+    /// @param _assetsIn Proposed senior deposit amount.
     function _enforceSeniorRatioCap(uint256 _v0, uint256 _d0, uint256 _assetsIn) internal view {
         if (maxSeniorRatioBps == 0) return;
         uint256 V1 = _v0 + _assetsIn;
@@ -370,6 +428,9 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         if (ratioBps > maxSeniorRatioBps) revert MaxSeniorRatioExceeded();
     }
 
+    /// @notice Converts target assets into required vault shares with round-up.
+    /// @param _assets Asset amount target.
+    /// @return _shares Vault shares required.
     function _sharesForAssets(uint256 _assets) internal view returns (uint256) {
         uint256 rate = accountant.getRateInQuoteSafe(ERC20(address(asset)));
         if (rate == 0) return 0;
