@@ -168,7 +168,7 @@ pnpm --filter @pti/contracts deploy:vault
 **Deploy + Verify (Blockscout)**
 - `deploy` / `deploy:infra` / `deploy:vault` all run `forge script ... --broadcast --verify` by default.
 - Chain ID and verifier endpoint are pinned in `contracts/package.json`:
-  - `--chain-id 688688`
+  - `--chain-id 688689`
   - `--verifier blockscout`
   - `--verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract`
 - Example:
@@ -178,6 +178,14 @@ source .env.example
 pnpm deploy:infra
 pnpm deploy:vault
 ```
+
+**Execution Mode Guide**
+- Manual (local runner):
+  use when bootstrapping infrastructure, running one-off emergency actions, or validating scripts before automation.
+- Server-side (API/worker runner):
+  use for repeatable operations such as periodic `updateExchangeRate`, scheduled rebalance jobs, and operator workflow persistence.
+- Recommended production split:
+  manual for initial deploy and break-glass actions, server-side for recurring tasks with audited logs and idempotency controls.
 
 **Test Notes**
 - `test/utils/Constants.sol`: objective test constants only (time anchors, unit scales, zero address, immutable fork addresses).

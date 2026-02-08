@@ -55,6 +55,34 @@ pnpm --filter @pti/contracts deploy:vault
 pnpm --filter @pti/contracts keeper:update-rate
 ```
 
+**End-to-End Runbook (Create Vault -> Index -> Operate)**
+1. Deploy core infra (UUPS registry/factory):
+   `pnpm --filter @pti/contracts deploy:infra`
+2. Deploy one vault stack (BoringVault + teller + accountant + manager + tranche set):
+   `pnpm --filter @pti/contracts deploy:vault`
+3. Record deploy outputs:
+   persist `controller`, `seniorToken`, `juniorToken`, `vault`, `teller`, `manager`, `paramsHash` in `supabase.vault_registry`.
+4. Point indexer to your registry:
+   run `contracts/script/update-indexer-subgraph.sh --registry <TRANCHE_REGISTRY> --start-block <DEPLOY_START_BLOCK>`
+   (or edit `apps/indexer/subgraph.yaml` manually), then verify `dataSources[0].source.address` and `startBlock`.
+5. Build and deploy subgraph:
+   `pnpm --filter @pti/indexer build`
+   `pnpm --filter @pti/indexer deploy`
+6. Enable live data path:
+   set `DATA_SOURCE=live`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `INDEXER_URL`.
+7. Start keeper for accountant updates:
+   `pnpm keeper:start` (or one-off: `pnpm keeper:once`).
+8. Run operator workflows from `/operator`:
+   configure vault profile/caps/routes, then execute rebalance with `raise-cash` intent before large redemptions when needed.
+
+**Manual vs Server-Side Execution**
+- Manual execution:
+  best for bootstrap deploys, one-off maintenance, and break-glass operations.
+- Server-side execution:
+  best for recurring jobs (keeper rate updates, scheduled rebalance, operation persistence).
+- Recommended:
+  hybrid model. Keep deploy + emergency actions manual; move repetitive tasks to server workers/API with logs and idempotency keys.
+
 **BoringVault Dependency**
 Install once inside `contracts/` (commit pinned):
 ```bash
@@ -82,3 +110,4 @@ forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 -
 - Reference implementation: `OpenFiRayRateAdapter` + `IOpenFiRateSource` for `ray/year -> per-second WAD` normalization.
 - If you add a new workspace, update `pnpm-workspace.yaml` and root scripts.
 - Dependencies are pinned to exact versions; update intentionally when needed.
+- Pharos Atlantic chain id is standardized as `688689` across wallet network config, deploy scripts, and keeper jobs.

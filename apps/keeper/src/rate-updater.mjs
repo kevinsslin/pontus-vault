@@ -31,7 +31,7 @@ async function runUpdateOnce(contractsDir) {
     "--rpc-url",
     getRequiredEnv("PHAROS_ATLANTIC_RPC_URL"),
     "--chain-id",
-    "688688"
+    "688689"
   ];
 
   const {stdout, stderr} = await execFileAsync("forge", args, {
