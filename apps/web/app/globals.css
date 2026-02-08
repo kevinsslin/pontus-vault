@@ -50,7 +50,7 @@ body {
 }
 
 body {
-  font-family: var(--font-body), "Sora", sans-serif;
+  font-family: var(--font-body), "Manrope", sans-serif;
   color: var(--pv-ink-900);
   background:
     radial-gradient(1400px 760px at -8% -22%, rgba(24, 87, 146, 0.2), transparent 66%),
@@ -184,9 +184,9 @@ main {
 
 .eyebrow {
   margin: 0 0 10px;
-  font-size: 12px;
-  font-weight: 660;
-  letter-spacing: 0.18em;
+  font-size: 11px;
+  font-weight: 640;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--pv-ink-500);
 }
@@ -196,24 +196,24 @@ h2,
 h3,
 h4 {
   margin: 0;
-  font-family: var(--font-display), "Cormorant Garamond", serif;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display), "Plus Jakarta Sans", sans-serif;
+  letter-spacing: -0.015em;
   color: var(--pv-ink-900);
 }
 
 h1 {
-  font-size: clamp(40px, 5vw, 68px);
-  line-height: 1.01;
+  font-size: clamp(36px, 4.6vw, 60px);
+  line-height: 1.06;
 }
 
 h2 {
-  font-size: clamp(30px, 3.3vw, 48px);
-  line-height: 1.08;
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1.1;
 }
 
 h3 {
-  font-size: clamp(24px, 2vw, 32px);
-  line-height: 1.16;
+  font-size: clamp(22px, 1.8vw, 30px);
+  line-height: 1.2;
 }
 
 h4 {
@@ -732,13 +732,34 @@ p {
   gap: 10px;
 }
 
-.vault-meta {
+.vault-head-status {
   gap: 8px;
 }
 
-.vault-meta .chip {
-  max-width: 100%;
-  letter-spacing: 0.04em;
+.vault-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.vault-profile-item {
+  padding: 12px 13px;
+  border-radius: 14px;
+  box-shadow: var(--pv-shadow-sm);
+  display: grid;
+  gap: 6px;
+}
+
+.vault-profile-item .stat-label {
+  font-size: 10px;
+}
+
+.vault-profile-item strong {
+  font-size: 15px;
+  font-weight: 670;
+  color: var(--pv-ink-900);
+  line-height: 1.2;
 }
 
 .flow-note {
@@ -930,10 +951,28 @@ p {
   gap: 8px;
 }
 
-.vault-card__chips {
-  display: flex;
-  flex-wrap: wrap;
+.vault-card__meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+}
+
+.vault-card__meta-item {
+  border: 1px solid var(--pv-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 8px 10px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.vault-card__meta-item strong {
+  font-size: 13px;
+  font-weight: 660;
+  color: var(--pv-ink-900);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .vault-card__overview {
@@ -1585,7 +1624,7 @@ p {
   padding: 12px 14px;
   font-size: 16px;
   color: var(--pv-ink-900);
-  font-family: var(--font-body), "Sora", sans-serif;
+  font-family: var(--font-body), "Manrope", sans-serif;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1672,7 +1711,7 @@ a:focus-visible {
   padding: 8px 14px;
   background: transparent;
   color: var(--pv-ink-600, #25496d);
-  font-family: var(--font-body), "Sora", sans-serif;
+  font-family: var(--font-body), "Manrope", sans-serif;
   font-size: 13px;
   font-weight: 620;
   letter-spacing: 0.02em;
@@ -1820,7 +1859,7 @@ a:focus-visible {
   border: 1px solid var(--pv-line-strong);
   background: rgba(255, 255, 255, 0.9);
   color: var(--pv-ink-900);
-  font-family: var(--font-body), "Sora", sans-serif;
+  font-family: var(--font-body), "Manrope", sans-serif;
   font-size: 14px;
   padding: 10px 12px;
 }
@@ -2037,26 +2076,26 @@ a:focus-visible {
 }
 
 .reveal {
-  animation: rise 0.62s cubic-bezier(0.18, 0.82, 0.2, 1) both;
+  animation: rise 0.36s cubic-bezier(0.22, 0.84, 0.24, 1) both;
 }
 
 .delay-1 {
-  animation-delay: 0.08s;
+  animation-delay: 0.04s;
 }
 
 .delay-2 {
-  animation-delay: 0.14s;
+  animation-delay: 0.08s;
 }
 
 .delay-3 {
-  animation-delay: 0.2s;
+  animation-delay: 0.12s;
 }
 
 @keyframes rise {
   from {
-    opacity: 0;
-    transform: translateY(14px);
-    filter: blur(3px);
+    opacity: 0.94;
+    transform: translateY(6px);
+    filter: blur(0.6px);
   }
   to {
     opacity: 1;
@@ -2195,8 +2234,8 @@ a:focus-visible {
 
 @media (max-width: 760px) {
   h1 {
-    font-size: clamp(30px, 9vw, 40px);
-    line-height: 1.08;
+    font-size: clamp(28px, 8.2vw, 36px);
+    line-height: 1.12;
   }
 
   .vault-title {
@@ -2266,10 +2305,17 @@ a:focus-visible {
     flex: 0 1 auto;
   }
 
-  .vault-meta .chip {
-    font-size: 10px;
-    letter-spacing: 0.02em;
-    padding: 5px 8px;
+  .vault-head-status {
+    gap: 6px;
+  }
+
+  .vault-profile-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .vault-profile-item {
+    padding: 10px 11px;
   }
 
   .section-copy {
@@ -2425,6 +2471,10 @@ a:focus-visible {
   }
 
   .vault-card__focus-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vault-card__meta-grid {
     grid-template-columns: 1fr;
   }
 

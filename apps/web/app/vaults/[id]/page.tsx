@@ -74,13 +74,25 @@ export default async function VaultDetailPage({
           <span className="vault-title__text vault-title__text--mobile">{mobileVaultTitle}</span>
         </h1>
         <p className="muted">{vault.uiConfig.summary}</p>
-        <div className="card-actions vault-meta">
+        <div className="card-actions vault-head-status">
           <span className={`badge ${isLive ? "badge--live" : "badge--soon"}`}>
             {vault.uiConfig.status}
           </span>
           <TokenBadge symbol={vault.assetSymbol} />
-          <span className="chip">{vault.uiConfig.routeLabel ?? vault.route}</span>
-          <span className="chip">Risk: {vault.uiConfig.risk ?? "N/A"}</span>
+        </div>
+        <div className="vault-profile-grid">
+          <article className="card vault-profile-item">
+            <span className="stat-label">Quote asset</span>
+            <strong>{vault.assetSymbol}</strong>
+          </article>
+          <article className="card vault-profile-item">
+            <span className="stat-label">Risk profile</span>
+            <strong>{vault.uiConfig.risk ?? "N/A"}</strong>
+          </article>
+          <article className="card vault-profile-item">
+            <span className="stat-label">Route</span>
+            <strong>{vault.uiConfig.routeLabel ?? vault.route}</strong>
+          </article>
         </div>
       </section>
 

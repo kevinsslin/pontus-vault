@@ -45,10 +45,19 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
         <p className="muted">{vault.uiConfig.summary ?? "Structured yield vault."}</p>
       </div>
 
-      <div className="vault-card__chips">
-        <span className="chip chip--soft">{vault.uiConfig.routeLabel ?? vault.route}</span>
-        <span className="chip chip--soft">Risk: {vault.uiConfig.risk ?? "N/A"}</span>
-        <span className="chip chip--soft">{vault.assetSymbol}</span>
+      <div className="vault-card__meta-grid">
+        <div className="vault-card__meta-item">
+          <span className="stat-label">Quote asset</span>
+          <strong>{vault.assetSymbol}</strong>
+        </div>
+        <div className="vault-card__meta-item">
+          <span className="stat-label">Risk profile</span>
+          <strong>{vault.uiConfig.risk ?? "N/A"}</strong>
+        </div>
+        <div className="vault-card__meta-item">
+          <span className="stat-label">Route</span>
+          <strong>{vault.uiConfig.routeLabel ?? vault.route}</strong>
+        </div>
       </div>
 
       <div className="vault-card__focus-grid">
