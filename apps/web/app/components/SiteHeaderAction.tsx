@@ -2,13 +2,12 @@
 
 import { usePathname } from "next/navigation";
 import type { DataSource } from "@pti/shared";
+import { APP_ROUTE_PREFIXES, DATA_SOURCE_LABEL } from "../../lib/constants/navigation";
 import WalletConnectButton from "./WalletConnectButton";
 
 type SiteHeaderActionProps = {
   dataSource: DataSource;
 };
-
-const APP_ROUTE_PREFIXES = ["/discover", "/portfolio", "/operator", "/vaults"];
 
 function isAppRoute(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -25,5 +24,5 @@ export default function SiteHeaderAction({ dataSource }: SiteHeaderActionProps) 
     return <WalletConnectButton />;
   }
 
-  return <span className="pill">{dataSource === "live" ? "Live data" : "Demo data"}</span>;
+  return <span className="pill">{DATA_SOURCE_LABEL[dataSource]}</span>;
 }

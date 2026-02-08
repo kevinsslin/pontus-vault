@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { VAULT_TREND_POINTS } from "../../../lib/constants/vault-detail";
 import { getActivityForVault, getVaultById } from "../../../lib/data/vaults";
 import { buildAssetAllocation } from "../../../lib/asset-allocation";
 import { formatBps, formatRelativeTimestamp, formatSharePrice, formatUsd } from "../../../lib/format";
@@ -34,14 +35,10 @@ function buildTrendSeries(
   const seniorBase = parseWad(seniorNav) ?? 1.0;
   const juniorBase = parseWad(juniorNav) ?? 1.0;
 
-  const labels = ["W-12", "W-10", "W-8", "W-6", "W-4", "W-2", "Now"];
-  const seniorFactors = [0.994, 0.996, 0.998, 0.999, 1.001, 1.003, 1.0];
-  const juniorFactors = [0.91, 0.94, 0.97, 0.99, 1.03, 1.07, 1.0];
-
-  return labels.map((label, index) => ({
-    label,
-    seniorSharePrice: seniorBase * seniorFactors[index],
-    juniorSharePrice: juniorBase * juniorFactors[index],
+  return VAULT_TREND_POINTS.map((point) => ({
+    label: point.label,
+    seniorSharePrice: seniorBase * point.seniorFactor,
+    juniorSharePrice: juniorBase * point.juniorFactor,
   }));
 }
 

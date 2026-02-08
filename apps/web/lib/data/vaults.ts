@@ -7,17 +7,14 @@ import type {
   VaultsApiResponse,
 } from "@pti/shared";
 import { normalizeVaultUiConfig, VaultsApiResponseSchema } from "@pti/shared";
+import {
+  resolveDataSource,
+  resolveLiveDataRuntimeConfig,
+  type LiveDataRuntimeConfig,
+} from "../constants/runtime";
 import { fetchIndexerVaults, normalizeAddress } from "./indexer";
 import { MOCK_ACTIVITY, MOCK_PORTFOLIO, MOCK_VAULTS } from "./mock";
 import { fetchVaultRegistry, updateVaultRegistryRow } from "./supabase";
-
-const DEFAULT_SOURCE: DataSource = "demo";
-
-type LiveConfig = {
-  supabaseUrl: string;
-  supabaseKey: string;
-  indexerUrl: string | null;
-};
 
 type LiveVaultsResult = {
   vaults: VaultRecord[];
@@ -82,39 +79,12 @@ function applyDemoOverrides(vaults: VaultRecord[]): VaultRecord[] {
 }
 
 export function getDataSource(): DataSource {
-  const value =
-    process.env.NEXT_PUBLIC_DATA_SOURCE ??
-    process.env.DATA_SOURCE ??
-    DEFAULT_SOURCE;
-  if (value === "live") return "live";
-  return "demo";
-}
-
-function getLiveConfig(): LiveConfig {
-  const supabaseUrl =
-    process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  const supabaseKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.SUPABASE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-    "";
-  const indexerUrl =
-    process.env.INDEXER_URL ??
-    "";
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase configuration.");
-  }
-
-  return {
-    supabaseUrl,
-    supabaseKey,
-    indexerUrl: indexerUrl || null,
-  };
+  return resolveDataSource();
 }
 
 async function getLiveVaults(): Promise<LiveVaultsResult> {
-  const { supabaseUrl, supabaseKey, indexerUrl } = getLiveConfig();
+  const { supabaseUrl, supabaseKey, indexerUrl }: LiveDataRuntimeConfig =
+    resolveLiveDataRuntimeConfig();
   const errors: string[] = [];
 
   const registryPromise = fetchVaultRegistry(supabaseUrl, supabaseKey);
@@ -254,7 +224,7 @@ export async function updateVaultMetadata(
     return applyVaultPatch(current, nextPatch);
   }
 
-  const { supabaseUrl, supabaseKey } = getLiveConfig();
+  const { supabaseUrl, supabaseKey } = resolveLiveDataRuntimeConfig();
   const liveVault = await getVaultById(vaultId, "live");
   if (!liveVault) {
     throw new Error("Vault not found.");

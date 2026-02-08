@@ -1,4 +1,8 @@
 import Link from "next/link";
+import {
+  PHAROS_NETWORK_LABEL,
+  PHAROS_NETWORK_LABEL_MOBILE,
+} from "../../lib/constants/app";
 import { getDataSource } from "../../lib/data/vaults";
 import SiteHeaderAction from "./SiteHeaderAction";
 
@@ -18,10 +22,10 @@ export default function SiteHeader() {
           <span className="chip chip--soft site-header__network">
             <span className="live-dot" />
             <span className="site-header__network-label site-header__network-label--desktop">
-              Pharos Atlantic
+              {PHAROS_NETWORK_LABEL}
             </span>
             <span className="site-header__network-label site-header__network-label--mobile">
-              Atlantic
+              {PHAROS_NETWORK_LABEL_MOBILE}
             </span>
           </span>
         </div>

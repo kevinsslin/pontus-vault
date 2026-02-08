@@ -1,9 +1,10 @@
 import type { ActivityEvent, PortfolioSnapshot, VaultRecord } from "@pti/shared";
+import { PHAROS_CHAIN_SLUG } from "../constants/app";
 
 export const MOCK_VAULTS: VaultRecord[] = [
   {
     vaultId: "0",
-    chain: "pharos-atlantic",
+    chain: PHAROS_CHAIN_SLUG,
     name: "Pontus Vault USDC Lending S1",
     route: "lending",
     assetSymbol: "USDC",
@@ -38,7 +39,7 @@ export const MOCK_VAULTS: VaultRecord[] = [
   },
   {
     vaultId: "1",
-    chain: "pharos-atlantic",
+    chain: PHAROS_CHAIN_SLUG,
     name: "Pontus Vault USDT T-Bills S1",
     route: "t-bill",
     assetSymbol: "USDT",
@@ -73,7 +74,7 @@ export const MOCK_VAULTS: VaultRecord[] = [
   },
   {
     vaultId: "2",
-    chain: "pharos-atlantic",
+    chain: PHAROS_CHAIN_SLUG,
     name: "Pontus Vault Delta Neutral Credit S1",
     route: "credit",
     assetSymbol: "USDC",

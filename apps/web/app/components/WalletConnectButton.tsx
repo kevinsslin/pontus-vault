@@ -1,8 +1,7 @@
 "use client";
 
 import { DynamicWidget, useDynamicContext } from "@dynamic-labs/sdk-react-core";
-
-const DYNAMIC_ENVIRONMENT_ID = process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID ?? "";
+import { HAS_DYNAMIC_CONFIG } from "../../lib/constants/dynamic";
 
 function DynamicWalletButton() {
   const { primaryWallet, setShowAuthFlow } = useDynamicContext();
@@ -23,7 +22,7 @@ function DynamicWalletButton() {
 }
 
 export default function WalletConnectButton() {
-  if (!DYNAMIC_ENVIRONMENT_ID) {
+  if (!HAS_DYNAMIC_CONFIG) {
     return (
       <button className="button button--ghost button--disabled" type="button" disabled>
         Connect Wallet
