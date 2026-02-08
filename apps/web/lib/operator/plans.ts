@@ -145,9 +145,10 @@ function buildDeploySteps(
       kind: "OFFCHAIN",
       label: "Execute deployment transaction",
       description:
-        "Run per-vault deployment via script/backend executor and attach resulting transaction hash for audit.",
+        "Run per-vault deployment via backend deploy executor and attach resulting transaction hash for audit.",
       metadata: {
-        command: "forge script script/DeployTrancheVault.s.sol --broadcast",
+        api: "/api/operator/deploy",
+        command: "forge script script/DeployTrancheVault.s.sol --broadcast --verify",
         script: String(options.deployScript ?? "DeployTrancheVault.s.sol"),
       },
     },
@@ -155,9 +156,17 @@ function buildDeploySteps(
       kind: "OFFCHAIN",
       label: "Register deployment outputs",
       description:
-        "Record deployed addresses and params hash in metadata/indexer references for operator replay.",
+        "Record deployed addresses plus registry/factory metadata for operator replay and indexer wiring.",
       metadata: {
-        requires: ["controller", "seniorToken", "juniorToken", "paramsHash"],
+        requires: [
+          "controller",
+          "seniorToken",
+          "juniorToken",
+          "accountant",
+          "paramsHash",
+          "trancheRegistry",
+          "trancheFactory",
+        ],
       },
     },
   ];

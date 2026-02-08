@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/rate-updater.mjs",
-    "start:once": "KEEPER_RUN_ONCE=true node src/rate-updater.mjs"
+    "start:once": "KEEPER_RUN_ONCE=true node src/rate-updater.mjs",
+    "start:deploy-executor": "node src/deploy-executor.mjs"
   }
 }

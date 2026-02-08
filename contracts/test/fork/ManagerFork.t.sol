@@ -45,18 +45,21 @@ contract ManagerForkTest is BaseForkTest {
     function test_open_fi_managed_roundtrip_on_pharos_fork() external {
         _createFork();
 
-        uint256 amount = vm.envOr("OPENFI_MANAGER_FORK_AMOUNT", TestDefaults.OPENFI_FORK_ROUNDTRIP);
-        address openFiPool = vm.envOr("OPENFI_MANAGER_POOL", TestConstants.PHAROS_ATLANTIC_OPENFI_POOL);
-        _runOpenFiManagedRoundtrip(openFiPool, TestConstants.PHAROS_ATLANTIC_USDC, amount);
-        _runOpenFiManagedRoundtrip(openFiPool, TestConstants.PHAROS_ATLANTIC_USDT, amount);
+        uint256 amount = TestDefaults.OPENFI_FORK_ROUNDTRIP;
+        _runOpenFiManagedRoundtrip(
+            TestConstants.PHAROS_ATLANTIC_OPENFI_POOL, TestConstants.PHAROS_ATLANTIC_USDC, amount
+        );
+        _runOpenFiManagedRoundtrip(
+            TestConstants.PHAROS_ATLANTIC_OPENFI_POOL, TestConstants.PHAROS_ATLANTIC_USDT, amount
+        );
     }
 
     function test_asseto_managed_subscribe_redemption_on_pharos_fork() external {
         _createFork();
 
-        address assetoProduct = vm.envOr("ASSETO_MANAGER_PRODUCT", TestConstants.PHAROS_ATLANTIC_ASSETO_CASH_PLUS);
-        uint256 amount = vm.envOr("ASSETO_MANAGER_FORK_AMOUNT", TestDefaults.OPENFI_FORK_ROUNDTRIP);
-        address asset = vm.envOr("ASSETO_MANAGER_ASSET", TestConstants.PHAROS_ATLANTIC_USDT);
+        address assetoProduct = TestConstants.PHAROS_ATLANTIC_ASSETO_CASH_PLUS;
+        uint256 amount = TestDefaults.OPENFI_FORK_ROUNDTRIP;
+        address asset = TestConstants.PHAROS_ATLANTIC_USDT;
 
         try this.runAssetoManagedRoundtripProbe(assetoProduct, asset, amount) {
             return;

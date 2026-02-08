@@ -48,6 +48,7 @@ pnpm test
 pnpm lint
 pnpm keeper:start
 pnpm keeper:once
+pnpm --filter @pti/keeper start:deploy-executor
 pnpm --filter @pti/contracts deps
 pnpm --filter @pti/contracts test:fork
 pnpm --filter @pti/contracts deploy:infra
@@ -99,10 +100,16 @@ forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 -
   - `POST/GET /api/operator/operations`
   - `GET /api/operator/operations/:operationId`
   - `PATCH /api/operator/operations/:operationId/steps/:stepIndex`
+  - `POST /api/operator/deploy` (UI-triggered deploy automation; server-side executor)
+  - `POST /api/operator/accountant/update-rate` (UI-triggered `updateExchangeRate` execution)
+  - `GET /api/operator/infra` (returns current `TRANCHE_FACTORY` / `TRANCHE_REGISTRY` bindings)
   - `PATCH /api/operator/vaults/:vaultId` (vault profile metadata: name/summary/risk/status/order/tags)
 - Operator persistence tables are `operator_operations` and `operator_operation_steps` in Supabase.
 - `NEXT_PUBLIC_OPERATOR_TX_MODE=send_transaction` enables direct wallet tx broadcast on onchain steps; default behavior is `sign_only`.
 - `OPERATOR_ADMIN_ADDRESSES` can lock operator write actions to a comma-separated wallet allowlist; in `demo` mode an empty allowlist is allowed.
+- Deploy automation options:
+  - local Forge mode (`DEPLOYER_PRIVATE_KEY`, `TRANCHE_FACTORY`, `CONTRACTS_WORKSPACE_DIR`)
+  - remote worker mode (`DEPLOY_EXECUTOR_URL`, optional `DEPLOY_EXECUTOR_TOKEN`)
 - Contracts test layers include unit, integration (self-deployed BoringVault stack), fork (OpenFi on Atlantic), and invariant suites.
 - Tranche deposits can be guarded by accountant rate staleness (`maxRateAge`), so production should run the keeper worker continuously.
 - Hybrid withdraw with tranche `QueueAdapter` is tracked as a future roadmap item in `contracts/README.md` (deferred in the current release).

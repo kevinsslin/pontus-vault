@@ -108,6 +108,79 @@ export type OperatorListOperationsResponse = z.infer<
   typeof OperatorListOperationsResponseSchema
 >;
 
+const AddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid address");
+const Hash32Schema = z.string().regex(/^0x[a-fA-F0-9]{64}$/, "Invalid bytes32 hash");
+
+export const OperatorDeployVaultRequestSchema = z.object({
+  requestedBy: AddressSchema,
+  owner: AddressSchema.optional(),
+  vaultId: z.string().min(1).max(120),
+  chain: z.string().default("pharos-atlantic"),
+  name: z.string().min(1).max(140),
+  route: z.string().min(1).max(120),
+  assetSymbol: z.string().min(1).max(40),
+  assetAddress: AddressSchema,
+  uiConfig: z.record(z.string(), z.unknown()).optional(),
+});
+export type OperatorDeployVaultRequest = z.infer<
+  typeof OperatorDeployVaultRequestSchema
+>;
+
+export const OperatorDeployVaultResponseSchema = z.object({
+  vaultId: z.string(),
+  paramsHash: Hash32Schema,
+  txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/).nullable(),
+  chain: z.string(),
+  addresses: z.object({
+    trancheRegistry: AddressSchema,
+    trancheController: AddressSchema,
+    seniorToken: AddressSchema,
+    juniorToken: AddressSchema,
+    boringVault: AddressSchema,
+    teller: AddressSchema,
+    manager: AddressSchema,
+    accountant: AddressSchema,
+  }),
+  command: z.string(),
+});
+export type OperatorDeployVaultResponse = z.infer<
+  typeof OperatorDeployVaultResponseSchema
+>;
+
+export const OperatorUpdateExchangeRateRequestSchema = z.object({
+  requestedBy: AddressSchema,
+  vaultAddress: AddressSchema,
+  accountantAddress: AddressSchema,
+  assetAddress: AddressSchema,
+  minUpdateBps: z.number().int().nonnegative().max(10_000).optional(),
+  allowPauseUpdate: z.boolean().optional(),
+});
+export type OperatorUpdateExchangeRateRequest = z.infer<
+  typeof OperatorUpdateExchangeRateRequestSchema
+>;
+
+export const OperatorUpdateExchangeRateResponseSchema = z.object({
+  vaultAddress: AddressSchema,
+  accountantAddress: AddressSchema,
+  assetAddress: AddressSchema,
+  command: z.string(),
+  txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/).nullable(),
+  skipped: z.boolean(),
+  skipReason: z.string().nullable(),
+  currentRate: z.string().nullable(),
+  nextRate: z.string().nullable(),
+});
+export type OperatorUpdateExchangeRateResponse = z.infer<
+  typeof OperatorUpdateExchangeRateResponseSchema
+>;
+
+export const OperatorInfraResponseSchema = z.object({
+  chainId: z.number().int().positive(),
+  trancheFactory: z.string().nullable(),
+  trancheRegistry: z.string().nullable(),
+});
+export type OperatorInfraResponse = z.infer<typeof OperatorInfraResponseSchema>;
+
 export const SupabaseOperatorOperationRowSchema = z.object({
   operation_id: z.string(),
   vault_id: z.string(),

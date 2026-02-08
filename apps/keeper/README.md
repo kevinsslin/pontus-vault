@@ -35,3 +35,37 @@ Single tick:
 ```bash
 pnpm --filter @pti/keeper start:once
 ```
+
+## Deploy Executor Worker
+
+This worker exposes an HTTP endpoint so web/operator UI can trigger contract deploy automation.
+
+### Endpoints
+
+- `GET /health`
+- `POST /deploy`
+- `POST /update-rate`
+
+### Required Environment
+
+- `PHAROS_ATLANTIC_RPC_URL`
+- `DEPLOYER_PRIVATE_KEY`
+- `TRANCHE_FACTORY`
+
+### Optional Environment
+
+- `CONTRACTS_WORKSPACE_DIR` (or `KEEPER_CONTRACTS_DIR`)
+- `DEPLOYER_OPERATOR`
+- `DEPLOYER_GUARDIAN`
+- `DEPLOYER_STRATEGIST`
+- `DEPLOYER_MANAGER_ADMIN`
+- `ACCOUNTANT_UPDATER_PRIVATE_KEY` (fallback: `PRIVATE_KEY`, then `DEPLOYER_PRIVATE_KEY`)
+- `DEPLOY_EXECUTOR_TOKEN`
+- `DEPLOY_EXECUTOR_HOST` (default `0.0.0.0`)
+- `DEPLOY_EXECUTOR_PORT` (default `8787`)
+
+### Run
+
+```bash
+pnpm --filter @pti/keeper start:deploy-executor
+```

@@ -27,6 +27,22 @@ type VaultRegistryUpdate = {
   uiConfig?: Record<string, unknown>;
 };
 
+type VaultRegistryUpsert = {
+  vaultId: string;
+  chain: string;
+  name: string;
+  route: string;
+  assetSymbol: string;
+  assetAddress: string;
+  controllerAddress: string;
+  seniorTokenAddress: string;
+  juniorTokenAddress: string;
+  vaultAddress: string;
+  tellerAddress: string;
+  managerAddress: string;
+  uiConfig?: Record<string, unknown>;
+};
+
 export async function updateVaultRegistryRow(
   supabaseUrl: string,
   supabaseKey: string,
@@ -79,6 +95,45 @@ export async function updateVaultRegistryRow(
   }
   if (!data) {
     throw new Error("Vault update returned no rows.");
+  }
+
+  return SupabaseVaultRegistryRowSchema.parse(data);
+}
+
+export async function upsertVaultRegistryRow(
+  supabaseUrl: string,
+  supabaseKey: string,
+  payload: VaultRegistryUpsert
+): Promise<SupabaseVaultRegistryRow> {
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false },
+  });
+
+  const { data, error } = await supabase
+    .from("vault_registry")
+    .upsert(
+      {
+        vault_id: payload.vaultId,
+        chain: payload.chain,
+        name: payload.name,
+        route: payload.route,
+        asset_symbol: payload.assetSymbol,
+        asset_address: payload.assetAddress,
+        controller_address: payload.controllerAddress,
+        senior_token_address: payload.seniorTokenAddress,
+        junior_token_address: payload.juniorTokenAddress,
+        vault_address: payload.vaultAddress,
+        teller_address: payload.tellerAddress,
+        manager_address: payload.managerAddress,
+        ui_config: normalizeVaultUiConfig(payload.uiConfig),
+      },
+      { onConflict: "vault_id" }
+    )
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
   }
 
   return SupabaseVaultRegistryRowSchema.parse(data);

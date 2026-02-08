@@ -2,6 +2,8 @@ export const PHAROS_ATLANTIC = {
   chainId: 688689,
   rpcUrl: "https://atlantic.dplabs-internal.com",
   explorerUrl: "https://atlantic.pharosscan.xyz",
+  blockscoutVerifierUrl:
+    "https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract",
   tokens: {
     USDC: "0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8",
     USDT: "0xE7E84B8B4f39C507499c40B4ac199B050e2882d5",

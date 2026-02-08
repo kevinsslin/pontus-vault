@@ -14,6 +14,13 @@ export const VaultUiConfigSchema = z.object({
   summary: z.string().optional(),
   tags: z.array(z.string()).optional(),
   banner: z.string().optional(),
+  owner: z.string().optional(),
+  paramsHash: z.string().optional(),
+  deployTxHash: z.string().optional(),
+  accountantAddress: z.string().optional(),
+  trancheRegistry: z.string().optional(),
+  trancheFactory: z.string().optional(),
+  indexerStartBlock: z.number().int().nonnegative().optional(),
 });
 export type VaultUiConfig = z.infer<typeof VaultUiConfigSchema>;
 

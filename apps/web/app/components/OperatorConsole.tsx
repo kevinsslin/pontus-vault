@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   OperatorCreateOperationRequest,
+  OperatorDeployVaultResponse,
+  OperatorInfraResponse,
   OperatorJobType,
   OperatorOperation,
   OperatorOperationStep,
   OperatorOperationWithSteps,
   OperatorStepStatus,
+  OperatorUpdateExchangeRateResponse,
   VaultRecord,
   VaultStatus,
 } from "@pti/shared";
@@ -21,6 +24,7 @@ type OperatorModule =
   | "overview"
   | "vault_profile"
   | "vault_factory"
+  | "accountant"
   | "risk_caps"
   | "listing"
   | "rebalance"
@@ -51,6 +55,11 @@ const MODULES: Array<{ id: OperatorModule; label: string; helper: string }> = [
     helper: "Define supported strategy routes and prepare vault deployment intent.",
   },
   {
+    id: "accountant",
+    label: "Accountant",
+    helper: "Trigger exchange-rate sync and keep deposit/redeem pricing fresh.",
+  },
+  {
     id: "risk_caps",
     label: "Risk & Caps",
     helper: "Set max senior ratio and senior carry model on controller.",
@@ -73,7 +82,7 @@ const MODULES: Array<{ id: OperatorModule; label: string; helper: string }> = [
 ];
 
 const MODULE_TO_JOB: Record<
-  Exclude<OperatorModule, "overview" | "vault_profile" | "history">,
+  Exclude<OperatorModule, "overview" | "vault_profile" | "accountant" | "history">,
   OperatorJobType
 > =
   {
@@ -175,6 +184,10 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const [rebalanceNotionalUsd, setRebalanceNotionalUsd] = useState("250000");
   const [minCashBufferBps, setMinCashBufferBps] = useState("500");
   const [deploymentNote, setDeploymentNote] = useState("");
+  const [deploymentOwner, setDeploymentOwner] = useState("");
+  const [rateUpdateAccountant, setRateUpdateAccountant] = useState("");
+  const [rateUpdateMinBps, setRateUpdateMinBps] = useState("1");
+  const [rateUpdateAllowPause, setRateUpdateAllowPause] = useState(false);
   const [profileName, setProfileName] = useState("");
   const [profileRoute, setProfileRoute] = useState("");
   const [profileStatus, setProfileStatus] = useState<VaultStatus>("COMING_SOON");
@@ -196,6 +209,8 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [infraInfo, setInfraInfo] = useState<OperatorInfraResponse | null>(null);
+  const [indexerStartBlockHint, setIndexerStartBlockHint] = useState("");
 
   const selectedVault = useMemo(
     () => vaultRecords.find((vault) => vault.vaultId === selectedVaultId) ?? null,
@@ -211,6 +226,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     if (
       activeModule === "overview" ||
       activeModule === "vault_profile" ||
+      activeModule === "accountant" ||
       activeModule === "history"
     ) {
       return null;
@@ -278,7 +294,41 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         : ""
     );
     setProfileTags((selectedVault.uiConfig.tags ?? []).join(", "));
+    setRateUpdateAccountant(selectedVault.uiConfig.accountantAddress ?? "");
+    setIndexerStartBlockHint(
+      selectedVault.uiConfig.indexerStartBlock !== undefined
+        ? String(selectedVault.uiConfig.indexerStartBlock)
+        : ""
+    );
   }, [selectedVault]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadInfra() {
+      try {
+        const response = await fetch("/api/operator/infra", { cache: "no-store" });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error ?? "Failed to load infra settings.");
+        }
+        if (!cancelled) {
+          setInfraInfo(payload as OperatorInfraResponse);
+        }
+      } catch {
+        if (!cancelled) {
+          setInfraInfo(null);
+        }
+      }
+    }
+    void loadInfra();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    setDeploymentOwner(walletAddress || "");
+  }, [walletAddress, selectedVaultId]);
 
   useEffect(() => {
     if (!activeOperation) return;
@@ -305,6 +355,13 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       options.managerMode = "allowlist";
       options.assetSymbol = selectedVault.assetSymbol;
       options.deployScript = "DeployTrancheVault.s.sol";
+      const deployOwner = deploymentOwner.trim();
+      if (deployOwner.length > 0) {
+        if (!isAddressLike(deployOwner)) {
+          throw new Error("Owner address is invalid.");
+        }
+        options.owner = deployOwner;
+      }
       if (deploymentNote.trim()) options.note = deploymentNote.trim();
     } else if (activeModule === "risk_caps") {
       options.maxSeniorRatioBps = Number(maxSeniorRatioBps || "8000");
@@ -422,6 +479,75 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       setInfoMessage("Vault profile updated. Discovery and detail pages now use the new metadata.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Vault profile save failed.");
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  async function runAccountantUpdateRate() {
+    if (!selectedVault) {
+      setErrorMessage("Select a vault first.");
+      return;
+    }
+    if (!walletAddress) {
+      setErrorMessage("Connect an operator wallet first.");
+      return;
+    }
+
+    const accountantAddress = rateUpdateAccountant.trim();
+    if (!isAddressLike(accountantAddress)) {
+      setErrorMessage("Accountant address is invalid.");
+      return;
+    }
+    if (!isAddressLike(selectedVault.vaultAddress)) {
+      setErrorMessage("Vault address is invalid.");
+      return;
+    }
+    if (!isAddressLike(selectedVault.assetAddress)) {
+      setErrorMessage("Asset address is invalid.");
+      return;
+    }
+
+    const minUpdateBps = Number(rateUpdateMinBps.trim() || "1");
+    if (!Number.isFinite(minUpdateBps) || minUpdateBps < 0 || minUpdateBps > 10_000) {
+      setErrorMessage("Min update bps must be between 0 and 10000.");
+      return;
+    }
+
+    setBusyAction("accountant:update-rate");
+    setErrorMessage(null);
+    setInfoMessage(null);
+    try {
+      const response = await fetch("/api/operator/accountant/update-rate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          requestedBy: walletAddress,
+          vaultAddress: selectedVault.vaultAddress,
+          accountantAddress,
+          assetAddress: selectedVault.assetAddress,
+          minUpdateBps: Math.floor(minUpdateBps),
+          allowPauseUpdate: rateUpdateAllowPause,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Failed to update exchange rate.");
+      }
+
+      const result = payload as OperatorUpdateExchangeRateResponse;
+      if (result.skipped) {
+        setInfoMessage(
+          `Exchange-rate update skipped: ${result.skipReason ?? "threshold or supply guard"}.`
+        );
+      } else if (result.txHash) {
+        setInfoMessage(`Exchange-rate updated onchain: ${shortHash(result.txHash)}.`);
+      } else {
+        setInfoMessage("Exchange-rate update executed.");
+      }
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Update exchange rate failed.");
     } finally {
       setBusyAction(null);
     }
@@ -574,6 +700,82 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     await loadOperations(selectedVaultId);
   }
 
+  async function refreshVaultRecord(vaultId: string) {
+    const response = await fetch(`/api/operator/vaults/${vaultId}`, {
+      cache: "no-store",
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error ?? "Failed to refresh vault record.");
+    }
+    const refreshedVault = payload.vault as VaultRecord;
+    setVaultRecords((previous) =>
+      previous.map((vault) =>
+        vault.vaultId === refreshedVault.vaultId ? refreshedVault : vault
+      )
+    );
+  }
+
+  async function runServerDeployStep(step: OperatorOperationStep) {
+    if (!activeOperation) {
+      throw new Error("No active operation selected.");
+    }
+    if (!selectedVault) {
+      throw new Error("Select a vault first.");
+    }
+    if (!walletAddress) {
+      throw new Error("Connect an operator wallet first.");
+    }
+
+    const owner = (deploymentOwner.trim() || walletAddress).trim();
+    if (!isAddressLike(owner)) {
+      throw new Error("Owner address is invalid.");
+    }
+
+    const response = await fetch("/api/operator/deploy", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        requestedBy: walletAddress,
+        owner,
+        vaultId: selectedVault.vaultId,
+        chain: selectedVault.chain,
+        name: selectedVault.name,
+        route: selectedVault.route,
+        assetSymbol: selectedVault.assetSymbol,
+        assetAddress: selectedVault.assetAddress,
+        uiConfig: selectedVault.uiConfig,
+      }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error ?? "Server deploy failed.");
+    }
+
+    const deployment = payload as OperatorDeployVaultResponse;
+    await patchStep(activeOperation.operation.operationId, step.stepIndex, {
+      status: "SUCCEEDED",
+      txHash: deployment.txHash ?? undefined,
+      proof: deployment.paramsHash,
+    });
+
+    const registerStep = activeOperation.steps.find(
+      (candidate) => candidate.stepIndex === step.stepIndex + 1
+    );
+    if (registerStep && !isStepTerminal(registerStep.status)) {
+      await patchStep(activeOperation.operation.operationId, registerStep.stepIndex, {
+        status: "SUCCEEDED",
+        proof: deployment.paramsHash,
+      });
+    }
+
+    await refreshVaultRecord(selectedVault.vaultId);
+    setInfoMessage(
+      `Deployment complete. Controller ${shortHash(deployment.addresses.trancheController)}`
+    );
+  }
+
   async function executeStep(step: OperatorOperationStep) {
     if (!activeOperation) return;
     const actionKey = `${activeOperation.operation.operationId}:${step.stepIndex}`;
@@ -581,6 +783,15 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     setErrorMessage(null);
     setInfoMessage(null);
     try {
+      if (
+        activeOperation.operation.jobType === "DEPLOY_VAULT" &&
+        step.kind === "OFFCHAIN" &&
+        step.label === "Execute deployment transaction"
+      ) {
+        await runServerDeployStep(step);
+        return;
+      }
+
       if (step.kind === "ONCHAIN" && EXECUTION_MODE === "send_transaction") {
         const txHash = await sendOnchainStep(step);
         await patchStep(activeOperation.operation.operationId, step.stepIndex, {
@@ -625,8 +836,15 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   }
 
   const liveCount = vaultRecords.filter((vault) => vault.uiConfig.status === "LIVE").length;
-  const hasCashSupport = routeCapabilities["openfi-withdraw"] || routeCapabilities["asseto-redeem"] || routeCapabilities["erc4626"];
+  const hasCashSupport =
+    routeCapabilities["openfi-withdraw"] ||
+    routeCapabilities["asseto-redeem"] ||
+    routeCapabilities["erc4626"];
   const selectedOperationProgress = activeOperation ? summarizeProgress(activeOperation.steps) : null;
+  const registryForIndexer =
+    infraInfo?.trancheRegistry ?? selectedVault?.uiConfig.trancheRegistry ?? "";
+  const factoryForIndexer =
+    infraInfo?.trancheFactory ?? selectedVault?.uiConfig.trancheFactory ?? "";
 
   return (
     <>
@@ -788,6 +1006,49 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                     placeholder="e.g. Demo day vault for OpenFi USDC route"
                   />
                 </label>
+                <label className="field">
+                  <span>Owner address (optional)</span>
+                  <input
+                    value={deploymentOwner}
+                    onChange={(event) => setDeploymentOwner(event.target.value)}
+                    placeholder={walletAddress || "0x..."}
+                  />
+                </label>
+                <div className="operator-grid">
+                  <label className="field">
+                    <span>Tranche Factory</span>
+                    <input value={factoryForIndexer || "Not configured"} readOnly />
+                  </label>
+                  <label className="field">
+                    <span>Tranche Registry</span>
+                    <input value={registryForIndexer || "Not configured"} readOnly />
+                  </label>
+                  <label className="field">
+                    <span>Indexer start block</span>
+                    <input
+                      value={indexerStartBlockHint}
+                      onChange={(event) => setIndexerStartBlockHint(event.target.value)}
+                      inputMode="numeric"
+                      placeholder="e.g. 13042511"
+                    />
+                  </label>
+                  <label className="field operator-grid__full">
+                    <span>Indexer manifest command</span>
+                    <textarea
+                      readOnly
+                      rows={3}
+                      value={
+                        registryForIndexer && indexerStartBlockHint.trim().length > 0
+                          ? `bash contracts/script/update-indexer-subgraph.sh --registry ${registryForIndexer} --start-block ${indexerStartBlockHint.trim()}`
+                          : "Set Tranche Registry + start block to generate command."
+                      }
+                    />
+                  </label>
+                </div>
+                <p className="muted">
+                  If ChangeFactory or ChangeRegistry is executed onchain, update the registry
+                  address/start block and redeploy the indexer manifest.
+                </p>
               </>
             ) : null}
 
@@ -816,6 +1077,45 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                     onChange={(event) => setRateModel(event.target.value)}
                     placeholder="0x..."
                   />
+                </label>
+              </div>
+            ) : null}
+
+            {activeModule === "accountant" ? (
+              <div className="operator-grid">
+                <label className="field">
+                  <span>Vault</span>
+                  <input value={selectedVault?.vaultAddress ?? ""} readOnly />
+                </label>
+                <label className="field">
+                  <span>Asset</span>
+                  <input value={selectedVault?.assetAddress ?? ""} readOnly />
+                </label>
+                <label className="field operator-grid__full">
+                  <span>Accountant</span>
+                  <input
+                    value={rateUpdateAccountant}
+                    onChange={(event) => setRateUpdateAccountant(event.target.value)}
+                    placeholder="0x..."
+                  />
+                </label>
+                <label className="field">
+                  <span>Min update threshold (bps)</span>
+                  <input
+                    value={rateUpdateMinBps}
+                    onChange={(event) => setRateUpdateMinBps(event.target.value)}
+                    inputMode="numeric"
+                  />
+                </label>
+                <label className="field">
+                  <span>Allow pause update</span>
+                  <select
+                    value={rateUpdateAllowPause ? "true" : "false"}
+                    onChange={(event) => setRateUpdateAllowPause(event.target.value === "true")}
+                  >
+                    <option value="false">false</option>
+                    <option value="true">true</option>
+                  </select>
                 </label>
               </div>
             ) : null}
@@ -903,8 +1203,25 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
               </div>
             ) : null}
 
+            {activeModule === "accountant" ? (
+              <div className="card-actions">
+                <button
+                  className="button"
+                  type="button"
+                  onClick={() => void runAccountantUpdateRate()}
+                  disabled={busyAction !== null}
+                >
+                  {busyAction === "accountant:update-rate"
+                    ? "Updating..."
+                    : "Update exchange rate"}
+                </button>
+                <span className="chip">script/UpdateExchangeRate.s.sol</span>
+              </div>
+            ) : null}
+
             {activeModule !== "overview" &&
             activeModule !== "vault_profile" &&
+            activeModule !== "accountant" &&
             activeModule !== "history" ? (
               <div className="card-actions">
                 <button
@@ -1011,6 +1328,10 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
             <div className="operator-step-list">
               {activeOperation.steps.map((step) => {
                 const isBusy = busyAction === `${activeOperation.operation.operationId}:${step.stepIndex}`;
+                const isServerDeployStep =
+                  activeOperation.operation.jobType === "DEPLOY_VAULT" &&
+                  step.kind === "OFFCHAIN" &&
+                  step.label === "Execute deployment transaction";
                 return (
                   <article className="operator-step" key={step.stepId}>
                     <div className="operator-step__head">
@@ -1042,6 +1363,8 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                       >
                         {isBusy
                           ? "Executing..."
+                          : isServerDeployStep
+                            ? "Deploy & sync"
                           : step.kind === "ONCHAIN" && EXECUTION_MODE === "send_transaction"
                             ? "Sign & send"
                             : "Sign & record"}

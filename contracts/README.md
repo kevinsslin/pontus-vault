@@ -144,6 +144,9 @@ pnpm --filter @pti/contracts build
 pnpm --filter @pti/contracts test
 pnpm --filter @pti/contracts test:fork
 pnpm --filter @pti/contracts test:e2e
+pnpm --filter @pti/contracts env:doctor:infra
+pnpm --filter @pti/contracts env:doctor:vault
+pnpm --filter @pti/contracts env:doctor:keeper
 pnpm --filter @pti/contracts keeper:update-rate
 pnpm --filter @pti/contracts deploy
 pnpm --filter @pti/contracts deploy:infra
@@ -156,14 +159,13 @@ pnpm --filter @pti/contracts deploy:vault
 - Script-specific (`DeployInfra.s.sol`):
   required `PRIVATE_KEY`, optional `OWNER`
 - Script-specific (`DeployTrancheVault.s.sol`):
-  required `PRIVATE_KEY`, `TRANCHE_FACTORY`, `ASSET`, `STRATEGIST`, `MANAGER_ADMIN`
-  optional `OWNER`, `OPERATOR`, `GUARDIAN`, `BALANCER_VAULT`, token/accountant params, `MAX_RATE_AGE`
+  required `PRIVATE_KEY`, `TRANCHE_FACTORY`, `ASSET`
+  optional `OWNER`, `OPERATOR`, `GUARDIAN`, `STRATEGIST`, `MANAGER_ADMIN`, `BALANCER_VAULT`, token/accountant params, `MAX_RATE_AGE`
+  defaults: `OPERATOR=OWNER`, `GUARDIAN=OWNER`, `STRATEGIST=OPERATOR`, `MANAGER_ADMIN=OWNER`
+  note: `.env.example` pre-fills current Atlantic infra proxies (`TRANCHE_FACTORY`, `TRANCHE_REGISTRY`) from the latest successful `deploy:infra` run.
 - Script-specific (`UpdateExchangeRate.s.sol`):
   required `PRIVATE_KEY`, `VAULT`, `ACCOUNTANT`, `ASSET`
   optional `MIN_UPDATE_BPS`, `ALLOW_PAUSE_UPDATE`
-- Fork manager test optional overrides:
-  `OPENFI_MANAGER_POOL`, `OPENFI_MANAGER_FORK_AMOUNT`,
-  `ASSETO_MANAGER_PRODUCT`, `ASSETO_MANAGER_ASSET`, `ASSETO_MANAGER_FORK_AMOUNT`
 
 **Deploy + Verify (Blockscout)**
 - `deploy` / `deploy:infra` / `deploy:vault` all run `forge script ... --broadcast --verify` by default.
@@ -178,6 +180,27 @@ source .env.example
 pnpm deploy:infra
 pnpm deploy:vault
 ```
+
+**Latest Successful `deploy:infra` Record (Pharos Atlantic)**
+- Date: 2026-02-08
+- Chain: `688689`
+- Owner: `0x0D2FDDee5b84540A9766c025ad26dCaFb9FeF380`
+- Verification result: all 6 contracts verified successfully.
+
+| Contract | Address | Block |
+|---|---|---:|
+| TrancheControllerImpl | [`0x40873215773169F1D8adF8d03EB8f355e90ED2d8`](https://atlantic.pharosscan.xyz/address/0x40873215773169F1D8adF8d03EB8f355e90ED2d8) | `13042511` |
+| TrancheTokenImpl | [`0x4b2D7C56A211506f89238Cff7e0d96771603bEF5`](https://atlantic.pharosscan.xyz/address/0x4b2D7C56A211506f89238Cff7e0d96771603bEF5) | `13042511` |
+| TrancheRegistryImpl | [`0xeab73FD82e5406858e287e33D825c3B2c83a146D`](https://atlantic.pharosscan.xyz/address/0xeab73FD82e5406858e287e33D825c3B2c83a146D) | `13042511` |
+| TrancheRegistryProxy | [`0x341A376b59c86A26324229cd467A5E3b930792C6`](https://atlantic.pharosscan.xyz/address/0x341A376b59c86A26324229cd467A5E3b930792C6) | `13042511` |
+| TrancheFactoryImpl | [`0x69F7Ca00E83828a8362865E5877E75b9b657fb77`](https://atlantic.pharosscan.xyz/address/0x69F7Ca00E83828a8362865E5877E75b9b657fb77) | `13042511` |
+| TrancheFactoryProxy | [`0x7fBaFFA7fba0C6b141cf06B01e1ba1f6FB2350F8`](https://atlantic.pharosscan.xyz/address/0x7fBaFFA7fba0C6b141cf06B01e1ba1f6FB2350F8) | `13042511` |
+
+Representative deployment tx:
+- [`0x8d0f4cc5b5ce24f32155969d090608007c4dfbe10b6433a7be1745a09764121b`](https://atlantic.pharosscan.xyz/tx/0x8d0f4cc5b5ce24f32155969d090608007c4dfbe10b6433a7be1745a09764121b)
+
+Post-deploy wiring transaction:
+- `registry.setFactory(factoryProxy)` tx: [`0x8cfd53a67fc45ad635043ff6682a776ce4cf238e925c7c0a17c11443496c6a50`](https://atlantic.pharosscan.xyz/tx/0x8cfd53a67fc45ad635043ff6682a776ce4cf238e925c7c0a17c11443496c6a50) (block `13042512`)
 
 **Execution Mode Guide**
 - Manual (local runner):
