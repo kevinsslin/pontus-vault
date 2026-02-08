@@ -16,12 +16,15 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Vault
+        - RegistryConfig
       abis:
         - name: TrancheRegistry
           file: ./abis/TrancheRegistry.json
       eventHandlers:
         - event: TrancheVaultCreated(indexed bytes32,indexed address,address,address,indexed address,address,address,address,address)
           handler: handleTrancheVaultCreated
+        - event: FactoryUpdated(indexed address,indexed address)
+          handler: handleFactoryUpdated
       file: ./src/registry.ts
 
 templates:
@@ -66,6 +69,10 @@ templates:
           handler: handleMaxSeniorRatioUpdated
         - event: MaxRateAgeUpdated(uint256,uint256)
           handler: handleMaxRateAgeUpdated
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
         - event: Paused(address)
           handler: handlePaused
         - event: Unpaused(address)

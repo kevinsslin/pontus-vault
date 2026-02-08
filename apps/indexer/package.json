@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "abi:sync": "node ./scripts/sync-abis.mjs",
     "codegen": "graph codegen",
-    "build": "graph build",
+    "build": "pnpm run codegen && graph build",
     "deploy": "goldsky subgraph deploy ${GOLDSKY_SUBGRAPH_NAME:-pharos-vault/0.0.0} --path ."
   },
   "devDependencies": {

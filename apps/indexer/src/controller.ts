@@ -8,6 +8,8 @@ import {
   MaxSeniorRatioUpdated,
   Paused,
   RateModelUpdated,
+  RoleGranted,
+  RoleRevoked,
   SeniorDeposited,
   SeniorRateUpdated,
   SeniorRedeemed,
@@ -918,6 +920,74 @@ export function handleMaxRateAgeUpdated(event: MaxRateAgeUpdated): void {
     event.transaction.hash,
     event.logIndex,
     "MAX_RATE_AGE_UPDATED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
+  );
+}
+
+export function handleRoleGranted(event: RoleGranted): void {
+  const vault = loadVault(event.address.toHexString());
+  if (vault == null) return;
+
+  const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
+  const entry = createEvent(id, "ROLE_GRANTED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
+  entry.role = event.params.role;
+  entry.actor = event.params.account;
+  entry.sender = event.params.sender;
+  entry.save();
+
+  persistVaultState(
+    vault,
+    event.address,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    "ROLE_GRANTED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
+  );
+}
+
+export function handleRoleRevoked(event: RoleRevoked): void {
+  const vault = loadVault(event.address.toHexString());
+  if (vault == null) return;
+
+  const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
+  const entry = createEvent(id, "ROLE_REVOKED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
+  entry.role = event.params.role;
+  entry.actor = event.params.account;
+  entry.sender = event.params.sender;
+  entry.save();
+
+  persistVaultState(
+    vault,
+    event.address,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    "ROLE_REVOKED",
     ZERO,
     ZERO,
     ZERO,
