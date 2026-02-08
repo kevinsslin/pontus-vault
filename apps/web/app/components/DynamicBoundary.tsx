@@ -13,10 +13,9 @@ import {
   parseNetworkChainId,
   PHAROS_CHAIN_ID,
   PHAROS_EVM_NETWORK,
-  PHAROS_WALLET_CONNECT_CHAIN,
 } from "../../lib/constants/network";
 
-type AppProvidersProps = {
+type DynamicBoundaryProps = {
   children: ReactNode;
 };
 
@@ -33,16 +32,10 @@ function DynamicAutoNetworkSwitch() {
     const walletKey = `${primaryWallet.id}:${primaryWallet.address}`;
 
     const switchToPharos = async () => {
-      if (attemptedWalletSwitches.has(walletKey)) {
-        return;
-      }
+      if (attemptedWalletSwitches.has(walletKey)) return;
 
       const currentNetwork = parseNetworkChainId(await primaryWallet.getNetwork());
-      if (cancelled) return;
-
-      if (currentNetwork === PHAROS_CHAIN_ID) {
-        return;
-      }
+      if (cancelled || currentNetwork === PHAROS_CHAIN_ID) return;
 
       attemptedWalletSwitches.add(walletKey);
 
@@ -58,9 +51,7 @@ function DynamicAutoNetworkSwitch() {
             ? Number((error as { code?: unknown }).code)
             : null;
 
-        if (code !== 4902) {
-          return;
-        }
+        if (code !== 4902) return;
       }
 
       const added = await addPharosNetworkToInjectedWallet();
@@ -72,7 +63,7 @@ function DynamicAutoNetworkSwitch() {
           network: PHAROS_CHAIN_ID,
         });
       } catch {
-        // Ignore; user might reject network switch in wallet UI.
+        // User can reject the wallet prompt.
       }
     };
 
@@ -86,7 +77,7 @@ function DynamicAutoNetworkSwitch() {
   return null;
 }
 
-export default function AppProviders({ children }: AppProvidersProps) {
+export default function DynamicBoundary({ children }: DynamicBoundaryProps) {
   if (!HAS_DYNAMIC_CONFIG) {
     return <>{children}</>;
   }
@@ -96,11 +87,10 @@ export default function AppProviders({ children }: AppProvidersProps) {
       settings={{
         environmentId: DYNAMIC_ENVIRONMENT_ID,
         networkValidationMode: "always",
+        walletConnectors: [EthereumWalletConnectors],
         overrides: {
           evmNetworks: () => [PHAROS_EVM_NETWORK],
         },
-        walletConnectPreferredChains: [PHAROS_WALLET_CONNECT_CHAIN],
-        walletConnectors: [EthereumWalletConnectors],
       }}
     >
       <DynamicAutoNetworkSwitch />

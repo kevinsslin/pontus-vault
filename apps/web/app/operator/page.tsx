@@ -1,12 +1,12 @@
 import { getVaults } from "../../lib/data/vaults";
-import OperatorConsole from "../components/OperatorConsole";
+import OperatorConsoleShell from "../components/OperatorConsoleShell";
 
 export default async function OperatorPage() {
   const vaults = await getVaults();
 
   return (
     <main className="page">
-      <OperatorConsole vaults={vaults} />
+      <OperatorConsoleShell vaults={vaults} />
     </main>
   );
 }
