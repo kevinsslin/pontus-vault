@@ -1,17 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import { DynamicWidget, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 const DYNAMIC_ENVIRONMENT_ID = process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID ?? "";
-
-const DynamicWidget = dynamic(
-  () =>
-    import("@dynamic-labs/sdk-react-core").then((module) => ({
-      default: module.DynamicWidget,
-    })),
-  { ssr: false }
-);
 
 function DynamicWalletButton() {
   const { primaryWallet, setShowAuthFlow } = useDynamicContext();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { PHAROS_ATLANTIC } from "@pti/shared";
 import {
   DynamicContextProvider,
@@ -17,6 +17,7 @@ type AppProvidersProps = {
 const DYNAMIC_ENVIRONMENT_ID = process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID ?? "";
 const PHAROS_CHAIN_ID = PHAROS_ATLANTIC.chainId;
 const PHAROS_CHAIN_ID_HEX = `0x${PHAROS_CHAIN_ID.toString(16)}`;
+const attemptedWalletSwitches = new Set<string>();
 const PHAROS_EVM_NETWORK = {
   blockExplorerUrls: [PHAROS_ATLANTIC.explorerUrl],
   chainId: PHAROS_CHAIN_ID,
@@ -96,31 +97,26 @@ async function addPharosNetworkToInjectedWallet(): Promise<boolean> {
 function DynamicAutoNetworkSwitch() {
   const { primaryWallet } = useDynamicContext();
   const switchNetwork = useSwitchNetwork();
-  const attemptedWalletRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!primaryWallet) {
-      attemptedWalletRef.current = null;
-      return;
-    }
+    if (!primaryWallet) return;
 
     let cancelled = false;
     const walletKey = `${primaryWallet.id}:${primaryWallet.address}`;
 
     const switchToPharos = async () => {
+      if (attemptedWalletSwitches.has(walletKey)) {
+        return;
+      }
+
       const currentNetwork = parseNetworkChainId(await primaryWallet.getNetwork());
       if (cancelled) return;
 
       if (currentNetwork === PHAROS_CHAIN_ID) {
-        attemptedWalletRef.current = null;
         return;
       }
 
-      if (attemptedWalletRef.current === walletKey) {
-        return;
-      }
-
-      attemptedWalletRef.current = walletKey;
+      attemptedWalletSwitches.add(walletKey);
 
       try {
         await switchNetwork({
