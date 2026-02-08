@@ -25,16 +25,16 @@ contract OpenFiForkTest is BaseForkTest {
         assertTrue(ok, "withdraw failed");
 
         uint256 balanceAfter = IERC20(_asset).balanceOf(address(this));
-        assertGe(balanceAfter, _amount - TestConstants.FORK_BALANCE_DUST_TOLERANCE);
+        assertGe(balanceAfter, _amount - TestDefaults.FORK_BALANCE_DUST_TOLERANCE);
     }
 
     function test_open_fi_supply_withdraw_roundtrip() external {
-        if (!_createForkOrSkip(TestDefaults.LOG_SKIP_FORK)) return;
+        _createFork();
 
         assertEq(OpenFiCallBuilder.supplySelector(), IOpenFiPool.supply.selector);
         assertEq(OpenFiCallBuilder.withdrawSelector(), IOpenFiPool.withdraw.selector);
 
-        _runRoundtrip(TestConstants.PHAROS_ATLANTIC_USDC, TestConstants.OPENFI_FORK_ROUNDTRIP);
-        _runRoundtrip(TestConstants.PHAROS_ATLANTIC_USDT, TestConstants.OPENFI_FORK_ROUNDTRIP);
+        _runRoundtrip(TestConstants.PHAROS_ATLANTIC_USDC, TestDefaults.OPENFI_FORK_ROUNDTRIP);
+        _runRoundtrip(TestConstants.PHAROS_ATLANTIC_USDT, TestDefaults.OPENFI_FORK_ROUNDTRIP);
     }
 }

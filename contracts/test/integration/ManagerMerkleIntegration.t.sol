@@ -14,6 +14,7 @@ import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
 import {MockAssetoProduct} from "../mocks/MockAssetoProduct.sol";
 import {MockManagedOpenFiPool} from "../mocks/MockManagedOpenFiPool.sol";
 import {TestConstants} from "../utils/Constants.sol";
+import {TestDefaults} from "../utils/Defaults.sol";
 
 import {IntegrationTest} from "./IntegrationTest.sol";
 
@@ -41,9 +42,9 @@ contract ManagerMerkleIntegrationTest is IntegrationTest {
         managerAdmin = makeAddr("managerAdmin");
 
         _wireControllerToBoringVault(TestConstants.ZERO_ADDRESS);
-        _seedBalances(TestConstants.DEFAULT_INITIAL_BALANCE);
-        _depositJunior(bob, TestConstants.DEFAULT_JUNIOR_DEPOSIT);
-        _depositSenior(alice, TestConstants.DEFAULT_SENIOR_DEPOSIT);
+        _seedBalances(TestDefaults.DEFAULT_INITIAL_BALANCE);
+        _depositJunior(bob, TestDefaults.DEFAULT_JUNIOR_DEPOSIT);
+        _depositSenior(alice, TestDefaults.DEFAULT_SENIOR_DEPOSIT);
 
         openFiPool = new MockManagedOpenFiPool(IERC20(address(asset)));
         assetoProduct = new MockAssetoProduct(IERC20(address(asset)));
@@ -56,8 +57,8 @@ contract ManagerMerkleIntegrationTest is IntegrationTest {
     }
 
     function test_manage_vault_with_merkle_verification_runs_open_fi_and_asseto_flows() public {
-        uint256 openFiAmount = TestConstants.MANAGER_TEST_OPENFI_AMOUNT;
-        uint256 assetoAmount = TestConstants.MANAGER_TEST_ASSETO_AMOUNT;
+        uint256 openFiAmount = TestDefaults.MANAGER_TEST_OPENFI_AMOUNT;
+        uint256 assetoAmount = TestDefaults.MANAGER_TEST_ASSETO_AMOUNT;
         uint256 vaultAssetsBefore = IERC20(address(asset)).balanceOf(address(boringVault));
 
         uint256 callCount = 6;
@@ -131,39 +132,39 @@ contract ManagerMerkleIntegrationTest is IntegrationTest {
 
     function _configureManagerRoles() internal {
         rolesAuthority.setRoleCapability(
-            TestConstants.MANAGER_ROLE, address(boringVault), BORING_VAULT_MANAGE_SINGLE_SELECTOR, true
+            TestDefaults.MANAGER_ROLE, address(boringVault), BORING_VAULT_MANAGE_SINGLE_SELECTOR, true
         );
         rolesAuthority.setRoleCapability(
-            TestConstants.MANAGER_ROLE, address(boringVault), BORING_VAULT_MANAGE_BATCH_SELECTOR, true
+            TestDefaults.MANAGER_ROLE, address(boringVault), BORING_VAULT_MANAGE_BATCH_SELECTOR, true
         );
         rolesAuthority.setRoleCapability(
-            TestConstants.STRATEGIST_ROLE,
+            TestDefaults.STRATEGIST_ROLE,
             address(manager),
             ManagerWithMerkleVerification.manageVaultWithMerkleVerification.selector,
             true
         );
         rolesAuthority.setRoleCapability(
-            TestConstants.MANAGER_INTERNAL_ROLE,
+            TestDefaults.MANAGER_INTERNAL_ROLE,
             address(manager),
             ManagerWithMerkleVerification.manageVaultWithMerkleVerification.selector,
             true
         );
         rolesAuthority.setRoleCapability(
-            TestConstants.MANAGER_ADMIN_ROLE,
+            TestDefaults.MANAGER_ADMIN_ROLE,
             address(manager),
             ManagerWithMerkleVerification.setManageRoot.selector,
             true
         );
         rolesAuthority.setRoleCapability(
-            TestConstants.MANAGER_ADMIN_ROLE, address(manager), ManagerWithMerkleVerification.pause.selector, true
+            TestDefaults.MANAGER_ADMIN_ROLE, address(manager), ManagerWithMerkleVerification.pause.selector, true
         );
         rolesAuthority.setRoleCapability(
-            TestConstants.MANAGER_ADMIN_ROLE, address(manager), ManagerWithMerkleVerification.unpause.selector, true
+            TestDefaults.MANAGER_ADMIN_ROLE, address(manager), ManagerWithMerkleVerification.unpause.selector, true
         );
 
-        rolesAuthority.setUserRole(address(manager), TestConstants.MANAGER_ROLE, true);
-        rolesAuthority.setUserRole(address(manager), TestConstants.MANAGER_INTERNAL_ROLE, true);
-        rolesAuthority.setUserRole(strategist, TestConstants.STRATEGIST_ROLE, true);
-        rolesAuthority.setUserRole(managerAdmin, TestConstants.MANAGER_ADMIN_ROLE, true);
+        rolesAuthority.setUserRole(address(manager), TestDefaults.MANAGER_ROLE, true);
+        rolesAuthority.setUserRole(address(manager), TestDefaults.MANAGER_INTERNAL_ROLE, true);
+        rolesAuthority.setUserRole(strategist, TestDefaults.STRATEGIST_ROLE, true);
+        rolesAuthority.setUserRole(managerAdmin, TestDefaults.MANAGER_ADMIN_ROLE, true);
     }
 }

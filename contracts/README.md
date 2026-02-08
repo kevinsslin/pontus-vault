@@ -16,6 +16,7 @@ This workspace holds the BoringVault stack integration and tranche wrapper contr
 - `script/DeployTrancheVault.s.sol`: per-vault deploy (BoringVault set + manager + decoder + tranche vault creation)
 - `script/Deploy.s.sol`: backward-compatible alias to `DeployInfra.s.sol`
 - `script/BaseScript.sol`: shared script env helpers
+- `script/UpdateExchangeRate.s.sol`: updater tick for accountant exchange rate
 - `test/unit`: isolated logic tests
 - `test/integration`: full self-deployed BoringVault assembly tests
 - `test/fork`: Atlantic fork tests
@@ -134,6 +135,8 @@ pnpm --filter @pti/contracts deps
 pnpm --filter @pti/contracts build
 pnpm --filter @pti/contracts test
 pnpm --filter @pti/contracts test:fork
+pnpm --filter @pti/contracts test:e2e
+pnpm --filter @pti/contracts keeper:update-rate
 pnpm --filter @pti/contracts deploy
 pnpm --filter @pti/contracts deploy:infra
 pnpm --filter @pti/contracts deploy:vault
@@ -146,9 +149,12 @@ pnpm --filter @pti/contracts deploy:vault
   required `PRIVATE_KEY`, optional `OWNER`
 - Script-specific (`DeployTrancheVault.s.sol`):
   required `PRIVATE_KEY`, `TRANCHE_FACTORY`, `ASSET`, `STRATEGIST`, `MANAGER_ADMIN`
-  optional `OWNER`, `OPERATOR`, `GUARDIAN`, `BALANCER_VAULT`, token/accountant params
+  optional `OWNER`, `OPERATOR`, `GUARDIAN`, `BALANCER_VAULT`, token/accountant params, `MAX_RATE_AGE`
+- Script-specific (`UpdateExchangeRate.s.sol`):
+  required `PRIVATE_KEY`, `VAULT`, `ACCOUNTANT`, `ASSET`
+  optional `MIN_UPDATE_BPS`, `ALLOW_PAUSE_UPDATE`
 - Fork manager test optional overrides:
-  `OPENFI_MANAGER_POOL`, `OPENFI_MANAGER_FORK_AMOUNT`, `RUN_ASSETO_MANAGER_FORK`,
+  `OPENFI_MANAGER_POOL`, `OPENFI_MANAGER_FORK_AMOUNT`,
   `ASSETO_MANAGER_PRODUCT`, `ASSETO_MANAGER_ASSET`, `ASSETO_MANAGER_FORK_AMOUNT`
 
 **Deploy + Verify (Blockscout)**
@@ -166,19 +172,23 @@ pnpm deploy:vault
 ```
 
 **Test Notes**
-- `test/utils/Constants.sol`: shared numeric values for test amounts/rates/bounds.
-- `test/utils/Defaults.sol`: shared default labels/symbols/config strings.
+- `test/utils/Constants.sol`: objective test constants only (time anchors, unit scales, zero address, immutable fork addresses).
+- `test/utils/Defaults.sol`: scenario defaults and fixture values (amounts, rates, role IDs, tolerances, fuzz bounds, labels/symbols).
 - `test/BaseTest.sol`: shared actor/rule/core-tranche setup used by all test layers.
+- `TrancheController` supports deposit staleness guard via `maxRateAge`; when enabled, stale accountant rates block new deposits.
+- `test/e2e/`: end-to-end lifecycle scenarios (fork-backed).
 - `test/integration/IntegrationTest.sol`: shared BoringVault deployment setup (BoringVault + `TellerWithMultiAssetSupport` + accountant + authority) for integration suites.
 - Integration tests deploy the full BoringVault dependency set (vault + teller + accountant + authority) and wire tranche contracts against that deployment.
 - Unit/invariant tests use local test doubles (`MockTeller`, `MockAccountant`) only for isolated controller math and invariant exploration.
 - Fork tests target Pharos Atlantic OpenFi `supply/withdraw` roundtrip via `OpenFiCallBuilder`.
-- Fork tests also include manager+merkle flow coverage for OpenFi, with optional Asseto manager write-path coverage behind env flags.
-- Set `PHAROS_ATLANTIC_RPC_URL` to execute live fork behavior; tests skip the fork path when unset.
+- Fork tests also include manager+merkle flow coverage for OpenFi and Asseto write-path interactions.
+- Set `PHAROS_ATLANTIC_RPC_URL`; fork tests require it and fail fast when unset.
 - Fork tests are pinned to block `12950000` for deterministic behavior.
 - Recommended stable flow: run `pnpm test:fork` to fork directly from RPC at the pinned block.
+- For lifecycle-only E2E validation, run `pnpm test:e2e`.
 - Quick run:
 ```bash
 cd contracts
 pnpm test:fork
+pnpm test:e2e
 ```

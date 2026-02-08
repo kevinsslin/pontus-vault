@@ -88,7 +88,8 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
         assertEq(address(controller.asset()), address(asset));
         assertEq(address(controller.seniorToken()), info.seniorToken);
         assertEq(address(controller.juniorToken()), info.juniorToken);
-        assertEq(controller.maxSeniorRatioBps(), TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS);
+        assertEq(controller.maxSeniorRatioBps(), TestDefaults.DEFAULT_MAX_SENIOR_RATIO_BPS);
+        assertEq(controller.maxRateAge(), TestDefaults.DEFAULT_MAX_RATE_AGE);
     }
 
     function test_create_tranche_vault_reverts_for_non_owner() public {
@@ -109,9 +110,10 @@ contract FactoryRegistryIntegrationTest is IntegrationTest {
             operator: operator,
             guardian: guardian,
             tokenDecimals: TestConstants.USDC_DECIMALS,
-            seniorRatePerSecondWad: TestConstants.DEFAULT_SENIOR_RATE_PER_SECOND_WAD,
+            seniorRatePerSecondWad: TestDefaults.DEFAULT_SENIOR_RATE_PER_SECOND_WAD,
             rateModel: TestConstants.ZERO_ADDRESS,
-            maxSeniorRatioBps: TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS,
+            maxSeniorRatioBps: TestDefaults.DEFAULT_MAX_SENIOR_RATIO_BPS,
+            maxRateAge: TestDefaults.DEFAULT_MAX_RATE_AGE,
             seniorName: TestDefaults.SENIOR_TOKEN_NAME,
             seniorSymbol: TestDefaults.SENIOR_TOKEN_SYMBOL,
             juniorName: TestDefaults.JUNIOR_TOKEN_NAME,

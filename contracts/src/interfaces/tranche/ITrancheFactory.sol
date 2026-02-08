@@ -45,6 +45,8 @@ interface ITrancheFactory {
         address rateModel;
         /// @notice Max senior debt ratio in basis points.
         uint256 maxSeniorRatioBps;
+        /// @notice Max allowed age in seconds for accountant exchange rate.
+        uint256 maxRateAge;
         /// @notice Senior tranche token name.
         string seniorName;
         /// @notice Senior tranche token symbol.

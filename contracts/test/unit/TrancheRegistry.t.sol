@@ -131,14 +131,14 @@ contract TrancheRegistryTest is BaseTest {
 
     function _sampleTrancheVault() internal pure returns (ITrancheRegistry.TrancheVaultInfo memory) {
         return ITrancheRegistry.TrancheVaultInfo({
-            controller: TestConstants.SAMPLE_CONTROLLER,
-            seniorToken: TestConstants.SAMPLE_SENIOR_TOKEN,
-            juniorToken: TestConstants.SAMPLE_JUNIOR_TOKEN,
-            vault: TestConstants.SAMPLE_VAULT,
-            teller: TestConstants.SAMPLE_TELLER,
-            accountant: TestConstants.SAMPLE_ACCOUNTANT,
-            manager: TestConstants.SAMPLE_MANAGER,
-            asset: TestConstants.SAMPLE_ASSET,
+            controller: TestDefaults.SAMPLE_CONTROLLER,
+            seniorToken: TestDefaults.SAMPLE_SENIOR_TOKEN,
+            juniorToken: TestDefaults.SAMPLE_JUNIOR_TOKEN,
+            vault: TestDefaults.SAMPLE_VAULT,
+            teller: TestDefaults.SAMPLE_TELLER,
+            accountant: TestDefaults.SAMPLE_ACCOUNTANT,
+            manager: TestDefaults.SAMPLE_MANAGER,
+            asset: TestDefaults.SAMPLE_ASSET,
             paramsHash: TestDefaults.SAMPLE_PARAMS_HASH
         });
     }

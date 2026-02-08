@@ -68,7 +68,7 @@ contract TrancheFactoryTest is BaseTest {
     function test_set_registry_reverts_for_non_owner() public {
         vm.prank(outsider);
         vm.expectRevert(abi.encodeWithSelector(OwnableUpgradeable.OwnableUnauthorizedAccount.selector, outsider));
-        factory.setRegistry(TestConstants.CONFIG_VAULT);
+        factory.setRegistry(TestDefaults.CONFIG_VAULT);
     }
 
     function test_set_registry_reverts_on_zero_address() public {
@@ -138,17 +138,18 @@ contract TrancheFactoryTest is BaseTest {
 
     function _defaultConfig() internal pure returns (ITrancheFactory.TrancheVaultConfig memory) {
         return ITrancheFactory.TrancheVaultConfig({
-            asset: TestConstants.CONFIG_ASSET,
-            vault: TestConstants.CONFIG_VAULT,
-            teller: TestConstants.CONFIG_TELLER,
-            accountant: TestConstants.CONFIG_ACCOUNTANT,
-            manager: TestConstants.CONFIG_MANAGER,
-            operator: TestConstants.CONFIG_OPERATOR,
-            guardian: TestConstants.CONFIG_GUARDIAN,
+            asset: TestDefaults.CONFIG_ASSET,
+            vault: TestDefaults.CONFIG_VAULT,
+            teller: TestDefaults.CONFIG_TELLER,
+            accountant: TestDefaults.CONFIG_ACCOUNTANT,
+            manager: TestDefaults.CONFIG_MANAGER,
+            operator: TestDefaults.CONFIG_OPERATOR,
+            guardian: TestDefaults.CONFIG_GUARDIAN,
             tokenDecimals: TestConstants.USDC_DECIMALS,
-            seniorRatePerSecondWad: TestConstants.DEFAULT_SENIOR_RATE_PER_SECOND_WAD,
+            seniorRatePerSecondWad: TestDefaults.DEFAULT_SENIOR_RATE_PER_SECOND_WAD,
             rateModel: TestConstants.ZERO_ADDRESS,
-            maxSeniorRatioBps: TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS,
+            maxSeniorRatioBps: TestDefaults.DEFAULT_MAX_SENIOR_RATIO_BPS,
+            maxRateAge: TestDefaults.DEFAULT_MAX_RATE_AGE,
             seniorName: TestDefaults.SENIOR_TOKEN_NAME,
             seniorSymbol: TestDefaults.SENIOR_TOKEN_SYMBOL,
             juniorName: TestDefaults.JUNIOR_TOKEN_NAME,

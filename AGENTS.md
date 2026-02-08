@@ -4,7 +4,7 @@
 Keep this repo consistent and maintainable: clear structure, pinned tooling, and minimal surprises.
 
 ## Layout
-- `apps/` deployable apps and services (`apps/web`, `apps/indexer`).
+- `apps/` deployable apps and services (`apps/web`, `apps/indexer`, `apps/keeper`).
 - `packages/` shared code (`packages/shared`).
 - `contracts/` Foundry workspace (BoringVault + tranche wrapper).
 - `supabase/` schema, migrations, seeds (metadata only).
@@ -54,6 +54,12 @@ Keep this repo consistent and maintainable: clear structure, pinned tooling, and
 - Per-vault deployment scripts must deploy and wire a real manager contract (not metadata-only manager addresses).
 - Manager integrations using `ManagerWithMerkleVerification` must keep leaf hashing/proof generation deterministic with explicit decoder/sanitizer contracts and documented packed-address formats.
 - When onboarding a new yield protocol for manager-controlled rebalance, add all three together: protocol interface + call builder + decoder/sanitizer implementation (and tests).
+- Test value taxonomy:
+  use `contracts/test/utils/Constants.sol` only for objective facts and stable primitives (time constants, unit scales, zero address, immutable chain addresses, protocol-level fixed selectors/codes).
+- Test value taxonomy:
+  use `contracts/test/utils/Defaults.sol` for scenario defaults and policy values (deposit sizes, role IDs, ratio/rate assumptions, tolerances, fuzz bounds, fixture addresses/names).
+- Test value taxonomy:
+  if a value can reasonably change across test scenarios, treat it as `TestDefaults`, not `TestConstants`.
 
 ## Workflow
 Follow `plan.md` for execution rules and checklist handling.

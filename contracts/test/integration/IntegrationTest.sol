@@ -37,41 +37,41 @@ abstract contract IntegrationTest is BaseTest {
             address(this),
             address(boringVault),
             address(this),
-            uint96(TestConstants.ACCOUNTANT_PEGGED_SHARE_PRICE),
+            uint96(TestDefaults.ACCOUNTANT_PEGGED_SHARE_PRICE),
             address(asset),
-            uint16(TestConstants.ACCOUNTANT_UPPER_BOUND_BPS),
-            uint16(TestConstants.ACCOUNTANT_LOWER_BOUND_BPS),
-            TestConstants.ACCOUNTANT_MIN_UPDATE_DELAY_SECONDS,
-            TestConstants.ACCOUNTANT_PLATFORM_FEE,
-            TestConstants.ACCOUNTANT_PERFORMANCE_FEE
+            uint16(TestDefaults.ACCOUNTANT_UPPER_BOUND_BPS),
+            uint16(TestDefaults.ACCOUNTANT_LOWER_BOUND_BPS),
+            TestDefaults.ACCOUNTANT_MIN_UPDATE_DELAY_SECONDS,
+            TestDefaults.ACCOUNTANT_PLATFORM_FEE,
+            TestDefaults.ACCOUNTANT_PERFORMANCE_FEE
         );
 
         weth = new WETH();
         boringVaultTeller = new TellerWithMultiAssetSupport(
             address(this), address(boringVault), address(boringVaultAccountant), address(weth)
         );
-        boringVaultTeller.updateAssetData(ERC20(address(asset)), true, true, TestConstants.TELLER_CREDIT_LIMIT);
+        boringVaultTeller.updateAssetData(ERC20(address(asset)), true, true, TestDefaults.TELLER_CREDIT_LIMIT);
 
         rolesAuthority = new RolesAuthority(address(this), Authority(TestConstants.ZERO_ADDRESS));
         boringVault.setAuthority(rolesAuthority);
         boringVaultTeller.setAuthority(rolesAuthority);
 
         rolesAuthority.setRoleCapability(
-            TestConstants.MINTER_ROLE, address(boringVault), BoringVault.enter.selector, true
+            TestDefaults.MINTER_ROLE, address(boringVault), BoringVault.enter.selector, true
         );
         rolesAuthority.setRoleCapability(
-            TestConstants.BURNER_ROLE, address(boringVault), BoringVault.exit.selector, true
+            TestDefaults.BURNER_ROLE, address(boringVault), BoringVault.exit.selector, true
         );
-        rolesAuthority.setUserRole(address(boringVaultTeller), TestConstants.MINTER_ROLE, true);
-        rolesAuthority.setUserRole(address(boringVaultTeller), TestConstants.BURNER_ROLE, true);
+        rolesAuthority.setUserRole(address(boringVaultTeller), TestDefaults.MINTER_ROLE, true);
+        rolesAuthority.setUserRole(address(boringVaultTeller), TestDefaults.BURNER_ROLE, true);
         rolesAuthority.setRoleCapability(
-            TestConstants.TELLER_CALLER_ROLE,
+            TestDefaults.TELLER_CALLER_ROLE,
             address(boringVaultTeller),
             TellerWithMultiAssetSupport.deposit.selector,
             true
         );
         rolesAuthority.setRoleCapability(
-            TestConstants.TELLER_CALLER_ROLE,
+            TestDefaults.TELLER_CALLER_ROLE,
             address(boringVaultTeller),
             TellerWithMultiAssetSupport.bulkWithdraw.selector,
             true
@@ -80,6 +80,6 @@ abstract contract IntegrationTest is BaseTest {
 
     function _wireControllerToBoringVault(address rateModel) internal {
         _initController(address(boringVault), address(boringVaultTeller), rateModel, address(boringVaultAccountant));
-        rolesAuthority.setUserRole(address(controller), TestConstants.TELLER_CALLER_ROLE, true);
+        rolesAuthority.setUserRole(address(controller), TestDefaults.TELLER_CALLER_ROLE, true);
     }
 }

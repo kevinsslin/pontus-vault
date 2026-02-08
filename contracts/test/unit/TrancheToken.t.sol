@@ -57,63 +57,63 @@ contract TrancheTokenTest is BaseTest {
     function test_mint_reverts_for_non_controller() public {
         vm.prank(holder);
         vm.expectRevert(ITrancheToken.NotController.selector);
-        token.mint(holder, TestConstants.ONE_UNIT);
+        token.mint(holder, TestDefaults.ONE_UNIT);
     }
 
     function test_mint_transfer_and_transfer_from() public {
         vm.prank(controllerAddr);
-        token.mint(holder, TestConstants.TOKEN_MINT_AMOUNT);
+        token.mint(holder, TestDefaults.TOKEN_MINT_AMOUNT);
 
         vm.prank(holder);
-        token.transfer(spender, TestConstants.TOKEN_TRANSFER_AMOUNT);
-        assertEq(token.balanceOf(holder), TestConstants.TOKEN_MINT_AMOUNT - TestConstants.TOKEN_TRANSFER_AMOUNT);
-        assertEq(token.balanceOf(spender), TestConstants.TOKEN_TRANSFER_AMOUNT);
+        token.transfer(spender, TestDefaults.TOKEN_TRANSFER_AMOUNT);
+        assertEq(token.balanceOf(holder), TestDefaults.TOKEN_MINT_AMOUNT - TestDefaults.TOKEN_TRANSFER_AMOUNT);
+        assertEq(token.balanceOf(spender), TestDefaults.TOKEN_TRANSFER_AMOUNT);
 
         vm.prank(holder);
-        token.approve(spender, TestConstants.TOKEN_APPROVE_AMOUNT);
+        token.approve(spender, TestDefaults.TOKEN_APPROVE_AMOUNT);
 
         vm.prank(spender);
-        token.transferFrom(holder, spender, TestConstants.TOKEN_APPROVE_AMOUNT);
+        token.transferFrom(holder, spender, TestDefaults.TOKEN_APPROVE_AMOUNT);
         assertEq(
             token.balanceOf(holder),
-            TestConstants.TOKEN_MINT_AMOUNT - TestConstants.TOKEN_TRANSFER_AMOUNT - TestConstants.TOKEN_APPROVE_AMOUNT
+            TestDefaults.TOKEN_MINT_AMOUNT - TestDefaults.TOKEN_TRANSFER_AMOUNT - TestDefaults.TOKEN_APPROVE_AMOUNT
         );
-        assertEq(token.balanceOf(spender), TestConstants.TOKEN_TRANSFER_AMOUNT + TestConstants.TOKEN_APPROVE_AMOUNT);
+        assertEq(token.balanceOf(spender), TestDefaults.TOKEN_TRANSFER_AMOUNT + TestDefaults.TOKEN_APPROVE_AMOUNT);
     }
 
     function test_burn_from_reverts_without_controller_allowance() public {
         vm.prank(controllerAddr);
-        token.mint(holder, TestConstants.TOKEN_MINT_AMOUNT);
+        token.mint(holder, TestDefaults.TOKEN_MINT_AMOUNT);
 
         vm.prank(controllerAddr);
         vm.expectRevert(ITrancheToken.InsufficientAllowance.selector);
-        token.burnFrom(holder, TestConstants.ONE_UNIT);
+        token.burnFrom(holder, TestDefaults.ONE_UNIT);
     }
 
     function test_burn_from_reverts_for_non_controller() public {
         vm.prank(controllerAddr);
-        token.mint(holder, TestConstants.TOKEN_MINT_AMOUNT);
+        token.mint(holder, TestDefaults.TOKEN_MINT_AMOUNT);
 
         vm.prank(holder);
-        token.approve(spender, TestConstants.TOKEN_MINT_AMOUNT);
+        token.approve(spender, TestDefaults.TOKEN_MINT_AMOUNT);
 
         vm.prank(spender);
         vm.expectRevert(ITrancheToken.NotController.selector);
-        token.burnFrom(holder, TestConstants.ONE_UNIT);
+        token.burnFrom(holder, TestDefaults.ONE_UNIT);
     }
 
     function test_burn_from_success() public {
         vm.prank(controllerAddr);
-        token.mint(holder, TestConstants.TOKEN_MINT_AMOUNT);
+        token.mint(holder, TestDefaults.TOKEN_MINT_AMOUNT);
 
         vm.prank(holder);
-        token.approve(controllerAddr, TestConstants.TOKEN_BURN_APPROVAL);
+        token.approve(controllerAddr, TestDefaults.TOKEN_BURN_APPROVAL);
 
         vm.prank(controllerAddr);
-        token.burnFrom(holder, TestConstants.TOKEN_BURN_AMOUNT);
+        token.burnFrom(holder, TestDefaults.TOKEN_BURN_AMOUNT);
 
-        assertEq(token.totalSupply(), TestConstants.TOKEN_POST_BURN_SUPPLY);
-        assertEq(token.balanceOf(holder), TestConstants.TOKEN_POST_BURN_SUPPLY);
-        assertEq(token.allowance(holder, controllerAddr), TestConstants.TOKEN_POST_BURN_ALLOWANCE);
+        assertEq(token.totalSupply(), TestDefaults.TOKEN_POST_BURN_SUPPLY);
+        assertEq(token.balanceOf(holder), TestDefaults.TOKEN_POST_BURN_SUPPLY);
+        assertEq(token.allowance(holder, controllerAddr), TestDefaults.TOKEN_POST_BURN_ALLOWANCE);
     }
 }

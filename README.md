@@ -13,6 +13,7 @@ Pontus Vault is tranche vault infrastructure on Pharos. It packages yield strate
 - Frontend: Next.js (App Router)
 - Contracts: Foundry + BoringVault
 - Indexer: Goldsky
+- Keeper: Node.js worker (scheduled accountant exchange-rate updates)
 - DB: Supabase
 - Backend: Next.js API routes (thin BFF)
 - Monorepo: pnpm + Turbo
@@ -20,6 +21,7 @@ Pontus Vault is tranche vault infrastructure on Pharos. It packages yield strate
 **Repo Structure**
 - `apps/web`: Next.js app (wallet connect, UI, thin API routes)
 - `apps/indexer`: Goldsky subgraph (deployable indexer service)
+- `apps/keeper`: scheduled worker for `updateExchangeRate` execution
 - `contracts`: Foundry workspace (BoringVault stack + tranche wrapper)
 - `packages/shared`: shared types/constants
 - `supabase`: schema, migrations, seeds
@@ -44,10 +46,13 @@ pnpm dev
 pnpm build
 pnpm test
 pnpm lint
+pnpm keeper:start
+pnpm keeper:once
 pnpm --filter @pti/contracts deps
 pnpm --filter @pti/contracts test:fork
 pnpm --filter @pti/contracts deploy:infra
 pnpm --filter @pti/contracts deploy:vault
+pnpm --filter @pti/contracts keeper:update-rate
 ```
 
 **BoringVault Dependency**
@@ -66,9 +71,12 @@ forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 -
   - `POST/GET /api/operator/operations`
   - `GET /api/operator/operations/:operationId`
   - `PATCH /api/operator/operations/:operationId/steps/:stepIndex`
+  - `PATCH /api/operator/vaults/:vaultId` (vault profile metadata: name/summary/risk/status/order/tags)
 - Operator persistence tables are `operator_operations` and `operator_operation_steps` in Supabase.
 - `NEXT_PUBLIC_OPERATOR_TX_MODE=send_transaction` enables direct wallet tx broadcast on onchain steps; default behavior is `sign_only`.
+- `OPERATOR_ADMIN_ADDRESSES` can lock operator write actions to a comma-separated wallet allowlist; in `demo` mode an empty allowlist is allowed.
 - Contracts test layers include unit, integration (self-deployed BoringVault stack), fork (OpenFi on Atlantic), and invariant suites.
+- Tranche deposits can be guarded by accountant rate staleness (`maxRateAge`), so production should run the keeper worker continuously.
 - `CapSafetyRateModel` consumes `IRefRateProvider` only. To use a real external protocol rate, deploy an adapter that implements `IRefRateProvider` and normalizes output to `per-second WAD`.
 - Reference implementation: `OpenFiRayRateAdapter` + `IOpenFiRateSource` for `ray/year -> per-second WAD` normalization.
 - If you add a new workspace, update `pnpm-workspace.yaml` and root scripts.

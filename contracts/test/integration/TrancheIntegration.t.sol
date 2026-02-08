@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
+import {ITrancheController} from "../../src/interfaces/tranche/ITrancheController.sol";
+
 import {TestConstants} from "../utils/Constants.sol";
+import {TestDefaults} from "../utils/Defaults.sol";
 
 import {IntegrationTest} from "./IntegrationTest.sol";
 
@@ -9,14 +12,14 @@ contract TrancheIntegrationTest is IntegrationTest {
     function setUp() public override {
         IntegrationTest.setUp();
         _wireControllerToBoringVault(TestConstants.ZERO_ADDRESS);
-        _seedBalances(TestConstants.DEFAULT_INITIAL_BALANCE);
+        _seedBalances(TestDefaults.DEFAULT_INITIAL_BALANCE);
     }
 
     function test_deposit_redeem_roundtrip_via_boring_vault_stack() public {
-        _depositJunior(alice, TestConstants.DEFAULT_JUNIOR_DEPOSIT);
-        _depositSenior(bob, TestConstants.DEFAULT_SENIOR_DEPOSIT);
+        _depositJunior(alice, TestDefaults.DEFAULT_JUNIOR_DEPOSIT);
+        _depositSenior(bob, TestDefaults.DEFAULT_SENIOR_DEPOSIT);
 
-        assertEq(boringVault.balanceOf(address(controller)), TestConstants.DEFAULT_TOTAL_BORING_SHARES);
+        assertEq(boringVault.balanceOf(address(controller)), TestDefaults.DEFAULT_TOTAL_BORING_SHARES);
 
         uint256 seniorShares = seniorToken.balanceOf(bob);
         uint256 bobBalanceBefore = asset.balanceOf(bob);
@@ -26,8 +29,27 @@ contract TrancheIntegrationTest is IntegrationTest {
         controller.redeemSenior(seniorShares, bob);
         vm.stopPrank();
 
-        assertEq(asset.balanceOf(bob), bobBalanceBefore + TestConstants.DEFAULT_SENIOR_DEPOSIT);
-        assertEq(boringVault.balanceOf(address(controller)), TestConstants.DEFAULT_JUNIOR_REMAINING_SHARES);
+        assertEq(asset.balanceOf(bob), bobBalanceBefore + TestDefaults.DEFAULT_SENIOR_DEPOSIT);
+        assertEq(boringVault.balanceOf(address(controller)), TestDefaults.DEFAULT_JUNIOR_REMAINING_SHARES);
+    }
+
+    function test_deposits_revert_when_exchange_rate_is_stale() public {
+        vm.prank(operator);
+        controller.setMaxRateAge(1);
+
+        vm.warp(block.timestamp + 2);
+
+        vm.startPrank(alice);
+        asset.approve(address(controller), TestDefaults.SMALL_DEPOSIT);
+        vm.expectRevert(ITrancheController.StaleExchangeRate.selector);
+        controller.depositJunior(TestDefaults.SMALL_DEPOSIT, alice);
+        vm.stopPrank();
+
+        vm.startPrank(bob);
+        asset.approve(address(controller), TestDefaults.SMALL_DEPOSIT);
+        vm.expectRevert(ITrancheController.StaleExchangeRate.selector);
+        controller.depositSenior(TestDefaults.SMALL_DEPOSIT, bob);
+        vm.stopPrank();
     }
 
     // deposit helpers come from BaseTest

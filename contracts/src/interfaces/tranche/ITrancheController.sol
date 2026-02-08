@@ -24,6 +24,8 @@ interface ITrancheController {
     error InvalidBps();
     /// @notice Emitted when post-deposit senior ratio exceeds configured cap.
     error MaxSeniorRatioExceeded();
+    /// @notice Emitted when accountant exchange rate is stale for the configured policy.
+    error StaleExchangeRate();
 
     /// @notice Initialization parameters for a controller instance.
     struct InitParams {
@@ -49,6 +51,8 @@ interface ITrancheController {
         address rateModel;
         /// @notice Maximum allowed senior debt ratio in bps.
         uint256 maxSeniorRatioBps;
+        /// @notice Maximum allowed age in seconds for accountant exchange rate.
+        uint256 maxRateAge;
     }
 
     /// @notice Emitted after debt accrual.
@@ -71,6 +75,10 @@ interface ITrancheController {
     /// @param oldRatioBps Previous cap in bps.
     /// @param newRatioBps New cap in bps.
     event MaxSeniorRatioUpdated(uint256 oldRatioBps, uint256 newRatioBps);
+    /// @notice Emitted when staleness guard for accountant exchange rate is updated.
+    /// @param oldMaxRateAge Previous max rate age in seconds.
+    /// @param newMaxRateAge New max rate age in seconds.
+    event MaxRateAgeUpdated(uint256 oldMaxRateAge, uint256 newMaxRateAge);
     /// @notice Emitted on senior deposit.
     /// @param caller Caller address.
     /// @param receiver Receiver of minted shares.
@@ -134,6 +142,9 @@ interface ITrancheController {
     /// @notice Returns configured maximum senior ratio cap in bps.
     /// @return _maxSeniorRatioBps Ratio cap.
     function maxSeniorRatioBps() external view returns (uint256);
+    /// @notice Returns configured max allowed accountant rate age in seconds.
+    /// @return _maxRateAge Maximum age before deposits are blocked.
+    function maxRateAge() external view returns (uint256);
     /// @notice Returns vault share token address.
     /// @return _vault BoringVault address.
     function vault() external view returns (address);
@@ -160,6 +171,9 @@ interface ITrancheController {
     /// @notice Updates maximum senior ratio cap.
     /// @param _newRatioBps New ratio cap in basis points.
     function setMaxSeniorRatioBps(uint256 _newRatioBps) external;
+    /// @notice Updates maximum allowed accountant rate age in seconds.
+    /// @param _newMaxRateAge New max age before deposits are blocked.
+    function setMaxRateAge(uint256 _newMaxRateAge) external;
 
     /// @notice Accrues senior debt from elapsed time and active rate.
     function accrue() external;

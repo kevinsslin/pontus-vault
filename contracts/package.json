@@ -6,9 +6,11 @@
     "deps": "./script/install-deps.sh",
     "build": "forge build",
     "test": "forge test",
-    "test:fork": "forge test --match-path 'test/fork/*.t.sol' -vv",
+    "test:fork": "forge test --match-path 'test/fork/*.t.sol' -vv && forge test --match-path 'test/e2e/*.t.sol' -vv",
+    "test:e2e": "forge test --match-path 'test/e2e/*.t.sol' -vv",
     "lint": "forge fmt --check",
     "fmt": "forge fmt",
+    "keeper:update-rate": "forge script script/UpdateExchangeRate.s.sol:UpdateExchangeRate --broadcast --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688",
     "deploy": "forge script script/DeployInfra.s.sol --broadcast --verify --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688 --verifier blockscout --verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract",
     "deploy:infra": "forge script script/DeployInfra.s.sol --broadcast --verify --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688 --verifier blockscout --verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract",
     "deploy:vault": "forge script script/DeployTrancheVault.s.sol --broadcast --verify --rpc-url \"$PHAROS_ATLANTIC_RPC_URL\" --chain-id 688688 --verifier blockscout --verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract"

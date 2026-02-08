@@ -10,6 +10,7 @@ import {TrancheController} from "../../src/tranche/TrancheController.sol";
 
 import {MockTeller} from "../mocks/MockTeller.sol";
 import {TestConstants} from "../utils/Constants.sol";
+import {TestDefaults} from "../utils/Defaults.sol";
 
 import {BaseTest} from "../BaseTest.sol";
 
@@ -34,24 +35,24 @@ contract TrancheControllerTest is BaseTest {
         teller = new MockTeller(IERC20(address(asset)), mockAccountant);
         rateModel = new MockRateModel();
         _initController(address(teller), address(teller), TestConstants.ZERO_ADDRESS, address(mockAccountant));
-        _seedBalances(TestConstants.DEFAULT_INITIAL_BALANCE);
+        _seedBalances(TestDefaults.DEFAULT_INITIAL_BALANCE);
     }
 
     function _seedHealthyPool(address seniorUser, address juniorUser) internal {
-        _depositJunior(juniorUser, TestConstants.DEFAULT_JUNIOR_DEPOSIT);
-        _depositSenior(seniorUser, TestConstants.DEFAULT_SENIOR_DEPOSIT);
+        _depositJunior(juniorUser, TestDefaults.DEFAULT_JUNIOR_DEPOSIT);
+        _depositSenior(seniorUser, TestDefaults.DEFAULT_SENIOR_DEPOSIT);
     }
 
     function _seedUnderwaterPool(address seniorUser, address juniorUser) internal {
         _seedHealthyPool(seniorUser, juniorUser);
-        mockAccountant.setRate(IERC20(address(asset)), TestConstants.ACCOUNTANT_BEAR_RATE);
+        mockAccountant.setRate(IERC20(address(asset)), TestDefaults.ACCOUNTANT_BEAR_RATE);
     }
 
     // preview + valuation rules
     function test_preview_redeem_senior_junior_absorbs_losses() public {
         _seedHealthyPool(alice, bob);
 
-        mockAccountant.setRate(IERC20(address(asset)), TestConstants.ACCOUNTANT_BULL_RATE);
+        mockAccountant.setRate(IERC20(address(asset)), TestDefaults.ACCOUNTANT_BULL_RATE);
 
         uint256 seniorShares = seniorToken.balanceOf(alice);
         uint256 juniorShares = juniorToken.balanceOf(bob);
@@ -59,11 +60,11 @@ contract TrancheControllerTest is BaseTest {
         uint256 seniorAssets = controller.previewRedeemSenior(seniorShares);
         uint256 juniorAssets = controller.previewRedeemJunior(juniorShares);
 
-        assertEq(seniorAssets, TestConstants.DEFAULT_SENIOR_DEPOSIT);
+        assertEq(seniorAssets, TestDefaults.DEFAULT_SENIOR_DEPOSIT);
         assertEq(
             juniorAssets,
-            TestConstants.DEFAULT_JUNIOR_DEPOSIT
-                + (TestConstants.DEFAULT_SENIOR_DEPOSIT / TestConstants.SENIOR_UPSIDE_DIVISOR)
+            TestDefaults.DEFAULT_JUNIOR_DEPOSIT
+                + (TestDefaults.DEFAULT_SENIOR_DEPOSIT / TestDefaults.SENIOR_UPSIDE_DIVISOR)
         );
     }
 
@@ -77,7 +78,7 @@ contract TrancheControllerTest is BaseTest {
         uint256 juniorAssets = controller.previewRedeemJunior(juniorShares);
 
         assertEq(juniorAssets, 0);
-        assertEq(seniorAssets, TestConstants.UNDERWATER_SENIOR_ASSETS);
+        assertEq(seniorAssets, TestDefaults.UNDERWATER_SENIOR_ASSETS);
     }
 
     // depositSenior rules
@@ -85,9 +86,9 @@ contract TrancheControllerTest is BaseTest {
         _seedHealthyPool(bob, alice);
 
         vm.startPrank(bob);
-        asset.approve(address(controller), TestConstants.ONE_UNIT);
+        asset.approve(address(controller), TestDefaults.ONE_UNIT);
         vm.expectRevert(ITrancheController.MaxSeniorRatioExceeded.selector);
-        controller.depositSenior(TestConstants.ONE_UNIT, bob);
+        controller.depositSenior(TestDefaults.ONE_UNIT, bob);
         vm.stopPrank();
     }
 
@@ -96,15 +97,15 @@ contract TrancheControllerTest is BaseTest {
         _seedUnderwaterPool(alice, bob);
 
         vm.startPrank(bob);
-        asset.approve(address(controller), TestConstants.SMALL_DEPOSIT);
+        asset.approve(address(controller), TestDefaults.SMALL_DEPOSIT);
         vm.expectRevert(ITrancheController.UnderwaterJunior.selector);
-        controller.depositJunior(TestConstants.SMALL_DEPOSIT, bob);
+        controller.depositJunior(TestDefaults.SMALL_DEPOSIT, bob);
         vm.stopPrank();
     }
 
     function test_zero_amount_reverts_across_mutating_actions() public {
         vm.startPrank(alice);
-        asset.approve(address(controller), TestConstants.ONE_UNIT);
+        asset.approve(address(controller), TestDefaults.ONE_UNIT);
         vm.expectRevert(ITrancheController.ZeroAmount.selector);
         controller.depositSenior(0, alice);
         vm.expectRevert(ITrancheController.ZeroAmount.selector);
@@ -112,13 +113,13 @@ contract TrancheControllerTest is BaseTest {
         vm.stopPrank();
 
         vm.startPrank(alice);
-        seniorToken.approve(address(controller), TestConstants.ONE_UNIT);
+        seniorToken.approve(address(controller), TestDefaults.ONE_UNIT);
         vm.expectRevert(ITrancheController.ZeroAmount.selector);
         controller.redeemSenior(0, alice);
         vm.stopPrank();
 
         vm.startPrank(alice);
-        juniorToken.approve(address(controller), TestConstants.ONE_UNIT);
+        juniorToken.approve(address(controller), TestDefaults.ONE_UNIT);
         vm.expectRevert(ITrancheController.ZeroAmount.selector);
         controller.redeemJunior(0, alice);
         vm.stopPrank();
@@ -126,27 +127,27 @@ contract TrancheControllerTest is BaseTest {
 
     // pause rules
     function test_pause_blocks_deposits_and_redeems() public {
-        _depositJunior(bob, TestConstants.SMALL_JUNIOR_DEPOSIT);
-        _depositSenior(alice, TestConstants.SMALL_DEPOSIT * TestConstants.SMALL_SENIOR_MULTIPLIER);
+        _depositJunior(bob, TestDefaults.SMALL_JUNIOR_DEPOSIT);
+        _depositSenior(alice, TestDefaults.SMALL_DEPOSIT * TestDefaults.SMALL_SENIOR_MULTIPLIER);
 
         vm.prank(guardian);
         controller.pause();
 
         vm.startPrank(alice);
-        asset.approve(address(controller), TestConstants.SMALL_DEPOSIT);
+        asset.approve(address(controller), TestDefaults.SMALL_DEPOSIT);
         vm.expectRevert(Pausable.EnforcedPause.selector);
-        controller.depositSenior(TestConstants.SMALL_DEPOSIT, alice);
+        controller.depositSenior(TestDefaults.SMALL_DEPOSIT, alice);
         vm.stopPrank();
 
         vm.startPrank(alice);
-        seniorToken.approve(address(controller), TestConstants.SMALL_SHARES);
+        seniorToken.approve(address(controller), TestDefaults.SMALL_SHARES);
         vm.expectRevert(Pausable.EnforcedPause.selector);
-        controller.redeemSenior(TestConstants.SMALL_SHARES, alice);
+        controller.redeemSenior(TestDefaults.SMALL_SHARES, alice);
         vm.stopPrank();
 
         vm.prank(guardian);
         controller.unpause();
-        _depositSenior(alice, TestConstants.SMALL_DEPOSIT);
+        _depositSenior(alice, TestDefaults.SMALL_DEPOSIT);
     }
 
     // access control rules
@@ -166,18 +167,18 @@ contract TrancheControllerTest is BaseTest {
                 IAccessControl.AccessControlUnauthorizedAccount.selector, bob, controller.OPERATOR_ROLE()
             )
         );
-        controller.setSeniorRatePerSecondWad(TestConstants.ROLE_TEST_RATE);
+        controller.setSeniorRatePerSecondWad(TestDefaults.ROLE_TEST_RATE);
         vm.stopPrank();
     }
 
     function test_operator_config_updates_and_guards() public {
         vm.prank(operator);
-        controller.setMaxSeniorRatioBps(TestConstants.UPDATED_MAX_SENIOR_RATIO_BPS);
-        assertEq(controller.maxSeniorRatioBps(), TestConstants.UPDATED_MAX_SENIOR_RATIO_BPS);
+        controller.setMaxSeniorRatioBps(TestDefaults.UPDATED_MAX_SENIOR_RATIO_BPS);
+        assertEq(controller.maxSeniorRatioBps(), TestDefaults.UPDATED_MAX_SENIOR_RATIO_BPS);
 
         vm.prank(operator);
         vm.expectRevert(ITrancheController.InvalidBps.selector);
-        controller.setMaxSeniorRatioBps(TestConstants.INVALID_BPS);
+        controller.setMaxSeniorRatioBps(TestDefaults.INVALID_BPS);
 
         vm.prank(operator);
         vm.expectRevert(ITrancheController.ZeroAddress.selector);
@@ -186,26 +187,30 @@ contract TrancheControllerTest is BaseTest {
         vm.prank(operator);
         controller.setTeller(address(teller));
         assertEq(address(controller.teller()), address(teller));
+
+        vm.prank(operator);
+        controller.setMaxRateAge(TestDefaults.UPDATED_MAX_RATE_AGE);
+        assertEq(controller.maxRateAge(), TestDefaults.UPDATED_MAX_RATE_AGE);
     }
 
     function test_accrue_uses_rate_model_when_configured() public {
         _seedHealthyPool(alice, bob);
-        assertEq(controller.seniorDebt(), TestConstants.DEFAULT_SENIOR_DEPOSIT);
+        assertEq(controller.seniorDebt(), TestDefaults.DEFAULT_SENIOR_DEPOSIT);
 
-        rateModel.setRatePerSecondWad(TestConstants.ACCRUAL_TEST_RATE);
+        rateModel.setRatePerSecondWad(TestDefaults.ACCRUAL_TEST_RATE);
         vm.prank(operator);
         controller.setRateModel(address(rateModel));
 
-        vm.warp(block.timestamp + TestConstants.ACCRUAL_WARP_SECONDS);
+        vm.warp(block.timestamp + TestDefaults.ACCRUAL_WARP_SECONDS);
         controller.accrue();
 
-        assertGt(controller.seniorDebt(), TestConstants.DEFAULT_SENIOR_DEPOSIT);
+        assertGt(controller.seniorDebt(), TestDefaults.DEFAULT_SENIOR_DEPOSIT);
     }
 
     function test_redeem_senior_decreases_debt_and_returns_assets() public {
         _seedHealthyPool(alice, bob);
 
-        uint256 sharesIn = seniorToken.balanceOf(alice) / TestConstants.HALF_POSITION;
+        uint256 sharesIn = seniorToken.balanceOf(alice) / TestDefaults.HALF_POSITION;
         uint256 expectedAssets = controller.previewRedeemSenior(sharesIn);
         uint256 debtBefore = controller.seniorDebt();
         uint256 balBefore = asset.balanceOf(alice);
@@ -222,9 +227,9 @@ contract TrancheControllerTest is BaseTest {
 
     function test_redeem_junior_returns_assets_when_healthy() public {
         _seedHealthyPool(alice, bob);
-        mockAccountant.setRate(IERC20(address(asset)), TestConstants.ACCOUNTANT_BULL_RATE);
+        mockAccountant.setRate(IERC20(address(asset)), TestDefaults.ACCOUNTANT_BULL_RATE);
 
-        uint256 sharesIn = juniorToken.balanceOf(bob) / TestConstants.HALF_POSITION;
+        uint256 sharesIn = juniorToken.balanceOf(bob) / TestDefaults.HALF_POSITION;
         uint256 expectedAssets = controller.previewRedeemJunior(sharesIn);
         uint256 balBefore = asset.balanceOf(bob);
 
@@ -242,12 +247,10 @@ contract TrancheControllerTest is BaseTest {
         uint96 seniorSeed,
         uint96 additionalSeed
     ) public {
-        uint256 juniorAssets = bound(
-            uint256(juniorSeed), TestConstants.FUZZ_MIN_ASSETS, TestConstants.FUZZ_MAX_JUNIOR_A
-        );
-        uint256 maxSenior = juniorAssets * TestConstants.SENIOR_CAP_NUMERATOR;
-        if (maxSenior > TestConstants.FUZZ_MAX_SENIOR) maxSenior = TestConstants.FUZZ_MAX_SENIOR;
-        uint256 seniorAssets = bound(uint256(seniorSeed), TestConstants.FUZZ_MIN_ASSETS, maxSenior);
+        uint256 juniorAssets = bound(uint256(juniorSeed), TestDefaults.FUZZ_MIN_ASSETS, TestDefaults.FUZZ_MAX_JUNIOR_A);
+        uint256 maxSenior = juniorAssets * TestDefaults.SENIOR_CAP_NUMERATOR;
+        if (maxSenior > TestDefaults.FUZZ_MAX_SENIOR) maxSenior = TestDefaults.FUZZ_MAX_SENIOR;
+        uint256 seniorAssets = bound(uint256(seniorSeed), TestDefaults.FUZZ_MIN_ASSETS, maxSenior);
         _depositJunior(bob, juniorAssets);
         _depositSenior(alice, seniorAssets);
 
@@ -257,16 +260,16 @@ contract TrancheControllerTest is BaseTest {
         if (s0 == 0) return;
 
         uint256 maxAdditional = 0;
-        if (TestConstants.SENIOR_CAP_NUMERATOR * v0 > TestConstants.SENIOR_CAP_DENOMINATOR * d0) {
-            maxAdditional = TestConstants.SENIOR_CAP_NUMERATOR * v0 - TestConstants.SENIOR_CAP_DENOMINATOR * d0;
+        if (TestDefaults.SENIOR_CAP_NUMERATOR * v0 > TestDefaults.SENIOR_CAP_DENOMINATOR * d0) {
+            maxAdditional = TestDefaults.SENIOR_CAP_NUMERATOR * v0 - TestDefaults.SENIOR_CAP_DENOMINATOR * d0;
         }
         if (maxAdditional == 0) return;
 
-        uint256 remaining = TestConstants.DEFAULT_INITIAL_BALANCE - seniorAssets;
+        uint256 remaining = TestDefaults.DEFAULT_INITIAL_BALANCE - seniorAssets;
         if (remaining == 0) return;
         uint256 limit = maxAdditional < remaining ? maxAdditional : remaining;
-        if (limit < TestConstants.ONE_UNIT) return;
-        uint256 additional = bound(uint256(additionalSeed), TestConstants.ONE_UNIT, limit);
+        if (limit < TestDefaults.ONE_UNIT) return;
+        uint256 additional = bound(uint256(additionalSeed), TestDefaults.ONE_UNIT, limit);
 
         uint256 priceBefore = (d0 * TestConstants.ONE_WAD) / s0;
         _depositSenior(alice, additional);
@@ -277,7 +280,7 @@ contract TrancheControllerTest is BaseTest {
         uint256 seniorValue1 = v1 < d1 ? v1 : d1;
         uint256 priceAfter = (seniorValue1 * TestConstants.ONE_WAD) / s1;
 
-        assertApproxEqAbs(priceBefore, priceAfter, TestConstants.PRICE_ASSERT_DELTA);
+        assertApproxEqAbs(priceBefore, priceAfter, TestDefaults.PRICE_ASSERT_DELTA);
     }
 
     function test_fuzz_junior_price_no_jump_on_junior_deposit(
@@ -285,12 +288,10 @@ contract TrancheControllerTest is BaseTest {
         uint96 seniorSeed,
         uint96 additionalSeed
     ) public {
-        uint256 juniorAssets = bound(
-            uint256(juniorSeed), TestConstants.FUZZ_MIN_ASSETS, TestConstants.FUZZ_MAX_JUNIOR_B
-        );
-        uint256 maxSenior = juniorAssets * TestConstants.SENIOR_CAP_NUMERATOR;
-        if (maxSenior > TestConstants.FUZZ_MAX_SENIOR) maxSenior = TestConstants.FUZZ_MAX_SENIOR;
-        uint256 seniorAssets = bound(uint256(seniorSeed), TestConstants.FUZZ_MIN_ASSETS, maxSenior);
+        uint256 juniorAssets = bound(uint256(juniorSeed), TestDefaults.FUZZ_MIN_ASSETS, TestDefaults.FUZZ_MAX_JUNIOR_B);
+        uint256 maxSenior = juniorAssets * TestDefaults.SENIOR_CAP_NUMERATOR;
+        if (maxSenior > TestDefaults.FUZZ_MAX_SENIOR) maxSenior = TestDefaults.FUZZ_MAX_SENIOR;
+        uint256 seniorAssets = bound(uint256(seniorSeed), TestDefaults.FUZZ_MIN_ASSETS, maxSenior);
         _depositJunior(bob, juniorAssets);
         _depositSenior(alice, seniorAssets);
 
@@ -304,9 +305,9 @@ contract TrancheControllerTest is BaseTest {
         uint256 juniorValue0 = v0 - d0;
         uint256 priceBefore = (juniorValue0 * TestConstants.ONE_WAD) / j0;
 
-        uint256 remaining = TestConstants.DEFAULT_INITIAL_BALANCE - juniorAssets;
+        uint256 remaining = TestDefaults.DEFAULT_INITIAL_BALANCE - juniorAssets;
         if (remaining == 0) return;
-        uint256 additional = bound(uint256(additionalSeed), TestConstants.ONE_UNIT, remaining);
+        uint256 additional = bound(uint256(additionalSeed), TestDefaults.ONE_UNIT, remaining);
 
         _depositJunior(bob, additional);
 
@@ -316,7 +317,7 @@ contract TrancheControllerTest is BaseTest {
         uint256 juniorValue1 = v1 > d1 ? (v1 - d1) : 0;
         uint256 priceAfter = (juniorValue1 * TestConstants.ONE_WAD) / j1;
 
-        assertApproxEqAbs(priceBefore, priceAfter, TestConstants.PRICE_ASSERT_DELTA);
+        assertApproxEqAbs(priceBefore, priceAfter, TestDefaults.PRICE_ASSERT_DELTA);
     }
 
     // deposit helpers come from BaseTest

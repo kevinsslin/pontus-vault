@@ -5,6 +5,7 @@ import {IOpenFiPool} from "../../src/interfaces/openfi/IOpenFiPool.sol";
 import {OpenFiCallBuilder} from "../../src/libraries/OpenFiCallBuilder.sol";
 
 import {TestConstants} from "../utils/Constants.sol";
+import {TestDefaults} from "../utils/Defaults.sol";
 
 import {BaseTest} from "../BaseTest.sol";
 
@@ -77,7 +78,7 @@ contract OpenFiCallBuilderTest is BaseTest {
     function test_supply_calldata_executes_with_expected_arguments() public {
         address asset = makeAddr("asset");
         address onBehalfOf = makeAddr("onBehalfOf");
-        uint256 amount = TestConstants.OPENFI_SUPPLY_AMOUNT;
+        uint256 amount = TestDefaults.OPENFI_SUPPLY_AMOUNT;
 
         (bool ok,) = address(pool).call(OpenFiCallBuilder.supplyCalldata(asset, amount, onBehalfOf));
         assertTrue(ok);
@@ -90,7 +91,7 @@ contract OpenFiCallBuilderTest is BaseTest {
     function test_withdraw_calldata_executes_with_expected_arguments() public {
         address asset = makeAddr("asset");
         address to = makeAddr("to");
-        uint256 amount = TestConstants.OPENFI_WITHDRAW_AMOUNT;
+        uint256 amount = TestDefaults.OPENFI_WITHDRAW_AMOUNT;
 
         (bool ok,) = address(pool).call(OpenFiCallBuilder.withdrawCalldata(asset, amount, to));
         assertTrue(ok);

@@ -5,6 +5,7 @@ import {IAssetoProduct} from "../../src/interfaces/asseto/IAssetoProduct.sol";
 import {AssetoCallBuilder} from "../../src/libraries/AssetoCallBuilder.sol";
 
 import {TestConstants} from "../utils/Constants.sol";
+import {TestDefaults} from "../utils/Defaults.sol";
 
 import {BaseTest} from "../BaseTest.sol";
 
@@ -64,7 +65,7 @@ contract AssetoCallBuilderTest is BaseTest {
 
     function test_subscribe_calldata_executes_with_expected_arguments() public {
         address account = makeAddr("assetoAccount");
-        uint256 amount = TestConstants.OPENFI_SUPPLY_AMOUNT;
+        uint256 amount = TestDefaults.OPENFI_SUPPLY_AMOUNT;
 
         (bool ok,) = address(product).call(AssetoCallBuilder.subscribeCalldata(account, amount));
         assertTrue(ok);
@@ -74,7 +75,7 @@ contract AssetoCallBuilderTest is BaseTest {
 
     function test_redemption_calldata_executes_with_expected_arguments() public {
         address account = makeAddr("assetoAccount");
-        uint256 amount = TestConstants.OPENFI_WITHDRAW_AMOUNT;
+        uint256 amount = TestDefaults.OPENFI_WITHDRAW_AMOUNT;
 
         (bool ok,) = address(product).call(AssetoCallBuilder.redemptionCalldata(account, amount));
         assertTrue(ok);

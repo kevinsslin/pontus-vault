@@ -1,0 +1,10 @@
+{
+  "name": "@pti/keeper",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/rate-updater.mjs",
+    "start:once": "KEEPER_RUN_ONCE=true node src/rate-updater.mjs"
+  }
+}

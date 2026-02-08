@@ -52,6 +52,8 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
     /// @inheritdoc ITrancheController
     uint256 public maxSeniorRatioBps;
     /// @inheritdoc ITrancheController
+    uint256 public maxRateAge;
+    /// @inheritdoc ITrancheController
     address public vault;
     /// @inheritdoc ITrancheController
     uint256 public oneShare;
@@ -114,6 +116,12 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         maxSeniorRatioBps = _newRatioBps;
     }
 
+    /// @inheritdoc ITrancheController
+    function setMaxRateAge(uint256 _newMaxRateAge) external override onlyRole(OPERATOR_ROLE) {
+        emit MaxRateAgeUpdated(maxRateAge, _newMaxRateAge);
+        maxRateAge = _newMaxRateAge;
+    }
+
     /*//////////////////////////////////////////////////////////////
                              USER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
@@ -127,6 +135,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         returns (uint256 _sharesOut)
     {
         if (_assetsIn == 0) revert ZeroAmount();
+        _enforceFreshExchangeRate();
 
         accrue();
 
@@ -162,6 +171,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         returns (uint256 _sharesOut)
     {
         if (_assetsIn == 0) revert ZeroAmount();
+        _enforceFreshExchangeRate();
 
         accrue();
 
@@ -368,6 +378,7 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         seniorRatePerSecondWad = _params.seniorRatePerSecondWad;
         rateModel = _params.rateModel;
         maxSeniorRatioBps = _params.maxSeniorRatioBps;
+        maxRateAge = _params.maxRateAge;
     }
 
     /// @notice Grants admin/operator/guardian roles.
@@ -427,6 +438,26 @@ contract TrancheController is ITrancheController, AccessControl, Initializable, 
         uint256 D1 = _d0 + _assetsIn;
         uint256 ratioBps = Math.mulDiv(D1, Constants.BPS, V1);
         if (ratioBps > maxSeniorRatioBps) revert MaxSeniorRatioExceeded();
+    }
+
+    /// @notice Reverts when accountant exchange rate has exceeded staleness policy.
+    /// @dev When `maxRateAge` is zero, the staleness guard is disabled.
+    function _enforceFreshExchangeRate() internal view {
+        uint256 configuredMaxRateAge = maxRateAge;
+        if (configuredMaxRateAge == 0) return;
+        (bool ok, bytes memory data) = address(accountant).staticcall(abi.encodeWithSignature("accountantState()"));
+        if (!ok || data.length < 0x120) revert StaleExchangeRate();
+
+        uint256 lastUpdateTimestamp;
+        assembly ("memory-safe") {
+            // accountantState tuple layout:
+            // index 7 -> lastUpdateTimestamp at 0x20 + 7*0x20 = 0x100
+            lastUpdateTimestamp := mload(add(data, 0x100))
+        }
+
+        if (block.timestamp > lastUpdateTimestamp + configuredMaxRateAge) {
+            revert StaleExchangeRate();
+        }
     }
 
     /// @notice Converts target assets into required vault shares with round-up.

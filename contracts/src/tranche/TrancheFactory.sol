@@ -122,7 +122,8 @@ contract TrancheFactory is ITrancheFactory, Initializable, OwnableUpgradeable, U
                     juniorToken: juniorToken,
                     seniorRatePerSecondWad: _config.seniorRatePerSecondWad,
                     rateModel: _config.rateModel,
-                    maxSeniorRatioBps: _config.maxSeniorRatioBps
+                    maxSeniorRatioBps: _config.maxSeniorRatioBps,
+                    maxRateAge: _config.maxRateAge
                 })
             );
 

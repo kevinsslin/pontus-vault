@@ -46,6 +46,7 @@ contract DeployTrancheVault is BaseScript {
         address factoryAddress;
         uint256 seniorRatePerSecondWad;
         uint256 maxSeniorRatioBps;
+        uint256 maxRateAge;
         string seniorName;
         string seniorSymbol;
         string juniorName;
@@ -119,6 +120,7 @@ contract DeployTrancheVault is BaseScript {
                 seniorRatePerSecondWad: cfg.seniorRatePerSecondWad,
                 rateModel: address(0),
                 maxSeniorRatioBps: cfg.maxSeniorRatioBps,
+                maxRateAge: cfg.maxRateAge,
                 seniorName: cfg.seniorName,
                 seniorSymbol: cfg.seniorSymbol,
                 juniorName: cfg.juniorName,
@@ -172,6 +174,7 @@ contract DeployTrancheVault is BaseScript {
 
         cfg.seniorRatePerSecondWad = _envUint("SENIOR_RATE_PER_SECOND_WAD", 0);
         cfg.maxSeniorRatioBps = _envUint("MAX_SENIOR_RATIO_BPS", 8_000);
+        cfg.maxRateAge = _envUint("MAX_RATE_AGE", 3_600);
         cfg.seniorName = _envString("SENIOR_TOKEN_NAME", "Pontus Vault Senior");
         cfg.seniorSymbol = _envString("SENIOR_TOKEN_SYMBOL", "ptS");
         cfg.juniorName = _envString("JUNIOR_TOKEN_NAME", "Pontus Vault Junior");

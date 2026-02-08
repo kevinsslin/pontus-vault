@@ -19,6 +19,7 @@ abstract contract BaseTest is Test {
     struct RuleSet {
         uint256 maxSeniorRatioBps;
         uint256 seniorRatePerSecondWad;
+        uint256 maxRateAge;
     }
 
     RuleSet internal rules;
@@ -50,8 +51,9 @@ abstract contract BaseTest is Test {
 
     function _initRules() internal {
         rules = RuleSet({
-            maxSeniorRatioBps: TestConstants.DEFAULT_MAX_SENIOR_RATIO_BPS,
-            seniorRatePerSecondWad: TestConstants.DEFAULT_SENIOR_RATE_PER_SECOND_WAD
+            maxSeniorRatioBps: TestDefaults.DEFAULT_MAX_SENIOR_RATIO_BPS,
+            seniorRatePerSecondWad: TestDefaults.DEFAULT_SENIOR_RATE_PER_SECOND_WAD,
+            maxRateAge: TestDefaults.DEFAULT_MAX_RATE_AGE
         });
     }
 
@@ -75,7 +77,7 @@ abstract contract BaseTest is Test {
             address(controller)
         );
 
-        mockAccountant.setRate(IERC20(address(asset)), TestConstants.ACCOUNTANT_PAR_RATE);
+        mockAccountant.setRate(IERC20(address(asset)), TestDefaults.ACCOUNTANT_PAR_RATE);
     }
 
     function _initController(address vault, address teller, address rateModel, address accountantAddress) internal {
@@ -91,7 +93,8 @@ abstract contract BaseTest is Test {
                 juniorToken: address(juniorToken),
                 seniorRatePerSecondWad: rules.seniorRatePerSecondWad,
                 rateModel: rateModel,
-                maxSeniorRatioBps: rules.maxSeniorRatioBps
+                maxSeniorRatioBps: rules.maxSeniorRatioBps,
+                maxRateAge: rules.maxRateAge
             })
         );
     }
