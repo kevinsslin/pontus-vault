@@ -10,7 +10,12 @@ export type LiveDataRuntimeConfig = {
 };
 
 export function resolveDataSource(): DataSource {
-  const value = process.env.NEXT_PUBLIC_DATA_SOURCE ?? process.env.DATA_SOURCE ?? DEFAULT_DATA_SOURCE;
+  // This module is server-only. Prefer server-side config to avoid accidental overrides
+  // from NEXT_PUBLIC_* vars that might be set for the browser bundle.
+  const value =
+    process.env.DATA_SOURCE ??
+    process.env.NEXT_PUBLIC_DATA_SOURCE ??
+    DEFAULT_DATA_SOURCE;
   return value === "live" ? "live" : "demo";
 }
 

@@ -38,6 +38,11 @@ const EXECUTION_MODE =
     ? "send_transaction"
     : "sign_only";
 
+const DEFAULT_ASSET_ADDRESSES: Record<string, string> = {
+  USDC: "0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8",
+  USDT: "0xE7E84B8B4f39C507499c40B4ac199B050e2882d5",
+};
+
 const MODULES: Array<{ id: OperatorModule; label: string; helper: string }> = [
   {
     id: "overview",
@@ -211,6 +216,14 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [infraInfo, setInfraInfo] = useState<OperatorInfraResponse | null>(null);
   const [indexerStartBlockHint, setIndexerStartBlockHint] = useState("");
+  const [showDraftVaultForm, setShowDraftVaultForm] = useState(false);
+  const [draftVaultName, setDraftVaultName] = useState("");
+  const [draftVaultRoute, setDraftVaultRoute] = useState("");
+  const [draftVaultStatus, setDraftVaultStatus] = useState<VaultStatus>("COMING_SOON");
+  const [draftVaultAssetSymbol, setDraftVaultAssetSymbol] = useState("USDC");
+  const [draftVaultAssetAddress, setDraftVaultAssetAddress] = useState(
+    DEFAULT_ASSET_ADDRESSES.USDC
+  );
 
   const selectedVault = useMemo(
     () => vaultRecords.find((vault) => vault.vaultId === selectedVaultId) ?? null,
@@ -329,6 +342,14 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   useEffect(() => {
     setDeploymentOwner(walletAddress || "");
   }, [walletAddress, selectedVaultId]);
+
+  useEffect(() => {
+    const key = draftVaultAssetSymbol.trim().toUpperCase();
+    const preset = DEFAULT_ASSET_ADDRESSES[key];
+    if (preset) {
+      setDraftVaultAssetAddress(preset);
+    }
+  }, [draftVaultAssetSymbol]);
 
   useEffect(() => {
     if (!activeOperation) return;
@@ -548,6 +569,79 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Update exchange rate failed.");
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  async function createDraftVault() {
+    if (!walletAddress) {
+      setErrorMessage("Connect an operator wallet first.");
+      return;
+    }
+
+    const name = draftVaultName.trim();
+    const route = draftVaultRoute.trim();
+    const assetSymbol = draftVaultAssetSymbol.trim();
+    const assetAddress = draftVaultAssetAddress.trim();
+
+    if (!name) {
+      setErrorMessage("Vault name is required.");
+      return;
+    }
+    if (!route) {
+      setErrorMessage("Route key is required.");
+      return;
+    }
+    if (!assetSymbol) {
+      setErrorMessage("Asset symbol is required.");
+      return;
+    }
+    if (!isAddressLike(assetAddress)) {
+      setErrorMessage("Asset address is invalid.");
+      return;
+    }
+
+    setBusyAction("draft:create");
+    setErrorMessage(null);
+    setInfoMessage(null);
+
+    try {
+      const response = await fetch("/api/operator/vaults", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          requestedBy: walletAddress,
+          chain: selectedVault?.chain ?? "pharos-atlantic",
+          name,
+          route,
+          assetSymbol,
+          assetAddress,
+          status: draftVaultStatus,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Failed to create vault.");
+      }
+
+      const vaultRecord = payload.vault as VaultRecord | undefined;
+      if (!vaultRecord) {
+        throw new Error("Create vault response is missing vault record.");
+      }
+
+      setVaultRecords((previous) => [...previous, vaultRecord]);
+      setSelectedVaultId(vaultRecord.vaultId);
+      setActiveModule("vault_profile");
+      setShowDraftVaultForm(false);
+      setDraftVaultName("");
+      setDraftVaultRoute("");
+      setDraftVaultStatus("COMING_SOON");
+      setDraftVaultAssetSymbol("USDC");
+      setDraftVaultAssetAddress(DEFAULT_ASSET_ADDRESSES.USDC);
+      setInfoMessage("Draft vault created. Update metadata and deploy via Vault Factory.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Create vault failed.");
     } finally {
       setBusyAction(null);
     }
@@ -845,6 +939,8 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     infraInfo?.trancheRegistry ?? selectedVault?.uiConfig.trancheRegistry ?? "";
   const factoryForIndexer =
     infraInfo?.trancheFactory ?? selectedVault?.uiConfig.trancheFactory ?? "";
+  const prepareActionLabel =
+    activeJobType === "DEPLOY_VAULT" ? "Prepare deployment" : "Prepare operation";
 
   return (
     <>
@@ -887,13 +983,89 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                 value={selectedVaultId}
                 onChange={(event) => setSelectedVaultId(event.target.value)}
               >
-                {vaultRecords.map((vault) => (
-                  <option key={vault.vaultId} value={vault.vaultId}>
-                    {vault.name}
-                  </option>
-                ))}
+                {vaultRecords.length === 0 ? (
+                  <option value="">No vaults yet</option>
+                ) : (
+                  vaultRecords.map((vault) => (
+                    <option key={vault.vaultId} value={vault.vaultId}>
+                      {vault.name}
+                    </option>
+                  ))
+                )}
               </select>
             </label>
+
+            <div className="card-actions">
+              <button
+                className="button button--ghost"
+                type="button"
+                onClick={() => setShowDraftVaultForm((prev) => !prev)}
+                disabled={busyAction !== null}
+              >
+                {showDraftVaultForm ? "Cancel draft" : "New vault draft"}
+              </button>
+              <span className="chip">Create a new vault entry before deploying</span>
+            </div>
+
+            {showDraftVaultForm ? (
+              <>
+                <div className="operator-grid">
+                  <label className="field operator-grid__full">
+                    <span>Vault name</span>
+                    <input
+                      value={draftVaultName}
+                      onChange={(event) => setDraftVaultName(event.target.value)}
+                      placeholder="Pontus Vault USDT Cash+ S1"
+                    />
+                  </label>
+                  <label className="field operator-grid__full">
+                    <span>Route key</span>
+                    <input
+                      value={draftVaultRoute}
+                      onChange={(event) => setDraftVaultRoute(event.target.value)}
+                      placeholder="asseto-cash-plus"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Initial status</span>
+                    <select
+                      value={draftVaultStatus}
+                      onChange={(event) => setDraftVaultStatus(event.target.value as VaultStatus)}
+                    >
+                      <option value="LIVE">LIVE</option>
+                      <option value="COMING_SOON">COMING_SOON</option>
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>Asset symbol</span>
+                    <input
+                      value={draftVaultAssetSymbol}
+                      onChange={(event) => setDraftVaultAssetSymbol(event.target.value)}
+                      placeholder="USDT"
+                    />
+                  </label>
+                  <label className="field operator-grid__full">
+                    <span>Asset address</span>
+                    <input
+                      value={draftVaultAssetAddress}
+                      onChange={(event) => setDraftVaultAssetAddress(event.target.value)}
+                      placeholder="0x..."
+                    />
+                  </label>
+                </div>
+                <div className="card-actions">
+                  <button
+                    className="button"
+                    type="button"
+                    onClick={() => void createDraftVault()}
+                    disabled={busyAction !== null}
+                  >
+                    {busyAction === "draft:create" ? "Creating..." : "Create draft"}
+                  </button>
+                  <span className="chip">Writes to Supabase in live mode</span>
+                </div>
+              </>
+            ) : null}
 
             {activeModule === "vault_profile" ? (
               <div className="operator-grid">
@@ -1230,7 +1402,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                   onClick={() => void createOperation()}
                   disabled={busyAction !== null}
                 >
-                  {busyAction === "create" ? "Preparing..." : "Prepare operation"}
+                  {busyAction === "create" ? "Preparing..." : prepareActionLabel}
                 </button>
                 {activeJobType ? <span className="chip">Job: {activeJobType}</span> : null}
               </div>

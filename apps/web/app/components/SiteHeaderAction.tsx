@@ -21,7 +21,12 @@ export default function SiteHeaderAction({ dataSource }: SiteHeaderActionProps) 
   const showWalletConnect = isAppRoute(pathname);
 
   if (showWalletConnect) {
-    return <WalletConnectButton />;
+    return (
+      <>
+        <span className="pill">{DATA_SOURCE_LABEL[dataSource]}</span>
+        <WalletConnectButton />
+      </>
+    );
   }
 
   return <span className="pill">{DATA_SOURCE_LABEL[dataSource]}</span>;
