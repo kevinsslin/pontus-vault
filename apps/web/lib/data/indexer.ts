@@ -9,7 +9,18 @@ const INDEXER_QUERY = `
       id
       controller
       vaultId
+      paramsHash
+      asset
+      teller
+      manager
+      rateModel
+      paused
+      maxSeniorRatioBps
+      maxRateAge
+      seniorRatePerSecondWad
       tvl
+      seniorApyBps
+      juniorApyBps
       seniorPrice
       juniorPrice
       seniorDebt
@@ -18,8 +29,10 @@ const INDEXER_QUERY = `
       updatedAt
       dailySnapshots(first: 2, orderBy: periodStart, orderDirection: desc) {
         periodStart
+        closeTvl
         closeSeniorPrice
         closeJuniorPrice
+        txCount
       }
     }
   }

@@ -34,6 +34,15 @@ export const IndexerVaultSchema = z.object({
   id: z.string(),
   controller: z.string().nullable().optional(),
   vaultId: z.string().nullable().optional(),
+  paramsHash: z.string().nullable().optional(),
+  asset: z.string().nullable().optional(),
+  teller: z.string().nullable().optional(),
+  manager: z.string().nullable().optional(),
+  rateModel: z.string().nullable().optional(),
+  paused: z.boolean().optional(),
+  maxSeniorRatioBps: z.string().nullable().optional(),
+  maxRateAge: z.string().nullable().optional(),
+  seniorRatePerSecondWad: z.string().nullable().optional(),
   tvl: z.string().nullable().optional(),
   seniorApyBps: z.string().nullable().optional(),
   juniorApyBps: z.string().nullable().optional(),
@@ -47,8 +56,10 @@ export const IndexerVaultSchema = z.object({
     .array(
       z.object({
         periodStart: z.string().nullable().optional(),
+        closeTvl: z.string().nullable().optional(),
         closeSeniorPrice: z.string().nullable().optional(),
         closeJuniorPrice: z.string().nullable().optional(),
+        txCount: z.number().int().optional(),
       })
     )
     .optional(),
@@ -138,6 +149,36 @@ export const VaultsApiResponseSchema = z.object({
   vaults: z.array(VaultRecordSchema),
 });
 export type VaultsApiResponse = z.infer<typeof VaultsApiResponseSchema>;
+
+export const OperatorEditableVaultUiConfigSchema = z.object({
+  status: VaultStatusSchema.optional(),
+  displayOrder: z.number().int().min(0).max(10_000).optional(),
+  risk: z.string().max(80).optional(),
+  routeLabel: z.string().max(80).optional(),
+  summary: z.string().max(320).optional(),
+  tags: z.array(z.string().max(40)).max(16).optional(),
+  banner: z.string().max(320).optional(),
+});
+export type OperatorEditableVaultUiConfig = z.infer<
+  typeof OperatorEditableVaultUiConfigSchema
+>;
+
+export const OperatorUpdateVaultRequestSchema = z.object({
+  requestedBy: z.string().min(1).max(120),
+  name: z.string().max(140).optional(),
+  route: z.string().max(120).optional(),
+  uiConfig: OperatorEditableVaultUiConfigSchema.optional(),
+});
+export type OperatorUpdateVaultRequest = z.infer<
+  typeof OperatorUpdateVaultRequestSchema
+>;
+
+export const OperatorUpdateVaultResponseSchema = z.object({
+  vault: VaultRecordSchema,
+});
+export type OperatorUpdateVaultResponse = z.infer<
+  typeof OperatorUpdateVaultResponseSchema
+>;
 
 const VaultUiConfigPartialSchema = VaultUiConfigSchema.partial().extend({
   status: VaultStatusSchema.optional(),

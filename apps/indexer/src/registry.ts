@@ -1,10 +1,11 @@
-import { BigInt } from "@graphprotocol/graph-ts";
+import { Address, BigInt } from "@graphprotocol/graph-ts";
 
 import { TrancheVaultCreated } from "../generated/TrancheRegistry/TrancheRegistry";
 import { Vault } from "../generated/schema";
 import { TrancheController as TrancheControllerTemplate } from "../generated/templates";
 
 const ZERO = BigInt.fromI32(0);
+const ZERO_ADDRESS = Address.fromString("0x0000000000000000000000000000000000000000");
 
 export function handleTrancheVaultCreated(event: TrancheVaultCreated): void {
   const id = event.params.controller.toHexString();
@@ -15,7 +16,7 @@ export function handleTrancheVaultCreated(event: TrancheVaultCreated): void {
     vault = new Vault(id);
   }
 
-  vault.vaultId = BigInt.fromUnsignedBytes(event.params.paramsHash);
+  vault.vaultId = event.params.paramsHash;
   vault.controller = event.params.controller;
   vault.seniorToken = event.params.seniorToken;
   vault.juniorToken = event.params.juniorToken;
@@ -25,6 +26,11 @@ export function handleTrancheVaultCreated(event: TrancheVaultCreated): void {
   vault.manager = event.params.manager;
   vault.asset = event.params.asset;
   vault.paramsHash = event.params.paramsHash;
+  vault.rateModel = ZERO_ADDRESS;
+  vault.seniorRatePerSecondWad = ZERO;
+  vault.maxSeniorRatioBps = ZERO;
+  vault.maxRateAge = ZERO;
+  vault.paused = false;
 
   if (isNew) {
     vault.createdAt = event.block.timestamp;
@@ -36,6 +42,8 @@ export function handleTrancheVaultCreated(event: TrancheVaultCreated): void {
     vault.seniorDebt = ZERO;
     vault.seniorSupply = ZERO;
     vault.juniorSupply = ZERO;
+    vault.seniorApyBps = null;
+    vault.juniorApyBps = null;
   }
 
   vault.updatedAt = event.block.timestamp;

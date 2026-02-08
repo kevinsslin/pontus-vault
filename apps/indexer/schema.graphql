@@ -1,6 +1,6 @@
 type Vault @entity(immutable: false) {
   id: ID!
-  vaultId: BigInt!
+  vaultId: Bytes!
   controller: Bytes!
   seniorToken: Bytes!
   juniorToken: Bytes!
@@ -8,8 +8,13 @@ type Vault @entity(immutable: false) {
   teller: Bytes!
   accountant: Bytes!
   manager: Bytes!
+  rateModel: Bytes!
   asset: Bytes!
   paramsHash: Bytes!
+  seniorRatePerSecondWad: BigInt!
+  maxSeniorRatioBps: BigInt!
+  maxRateAge: BigInt!
+  paused: Boolean!
   createdAt: BigInt!
   createdAtBlock: BigInt!
   createdTx: Bytes!
@@ -20,6 +25,8 @@ type Vault @entity(immutable: false) {
   seniorDebt: BigInt!
   seniorSupply: BigInt!
   juniorSupply: BigInt!
+  seniorApyBps: BigInt
+  juniorApyBps: BigInt
   updatedAt: BigInt!
   snapshots: [TrancheSnapshot!]! @derivedFrom(field: "vault")
   hourlySnapshots: [VaultHourlySnapshot!]! @derivedFrom(field: "vault")
@@ -57,6 +64,11 @@ type TrancheEvent @entity(immutable: true) {
   shares: BigInt
   seniorDebt: BigInt
   dt: BigInt
+  actor: Bytes
+  oldAddress: Bytes
+  newAddress: Bytes
+  oldValue: BigInt
+  newValue: BigInt
 }
 
 type VaultHourlySnapshot @entity(immutable: false) {

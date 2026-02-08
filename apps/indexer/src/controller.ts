@@ -4,9 +4,16 @@ import {
   Accrued,
   JuniorDeposited,
   JuniorRedeemed,
+  MaxRateAgeUpdated,
+  MaxSeniorRatioUpdated,
+  Paused,
+  RateModelUpdated,
   SeniorDeposited,
+  SeniorRateUpdated,
   SeniorRedeemed,
+  TellerUpdated,
   TrancheController as TrancheControllerContract,
+  Unpaused,
 } from "../generated/templates/TrancheController/TrancheController";
 import { ERC20 } from "../generated/templates/TrancheController/ERC20";
 import {
@@ -19,21 +26,23 @@ import {
 
 const ZERO = BigInt.fromI32(0);
 const WAD = BigInt.fromString("1000000000000000000");
-const SECONDS_PER_HOUR = BigInt.fromI32(3600);
-const SECONDS_PER_DAY = BigInt.fromI32(86400);
+const BPS = BigInt.fromI32(10_000);
+const SECONDS_PER_HOUR = BigInt.fromI32(3_600);
+const SECONDS_PER_DAY = BigInt.fromI32(86_400);
+const SECONDS_PER_YEAR = BigInt.fromI32(31_536_000);
 
 function loadVault(id: string): Vault | null {
   return Vault.load(id);
+}
+
+function eventId(hash: string, logIndex: string): string {
+  return hash + "-" + logIndex;
 }
 
 function createEvent(id: string, eventType: string): TrancheEvent {
   const entry = new TrancheEvent(id);
   entry.type = eventType;
   return entry;
-}
-
-function eventId(hash: string, logIndex: string): string {
-  return hash + "-" + logIndex;
 }
 
 function applyCommonEventFields(
@@ -64,7 +73,7 @@ function maxBigInt(a: BigInt, b: BigInt): BigInt {
 }
 
 function saturatingSub(a: BigInt, b: BigInt): BigInt {
-  if (a.lt(b) || a.equals(b)) {
+  if (a.le(b)) {
     return ZERO;
   }
   return a.minus(b);
@@ -93,6 +102,7 @@ function refreshDerivedPrices(vault: Vault): void {
 
 function refreshOnchainState(vault: Vault, controllerAddress: Address): void {
   const controller = TrancheControllerContract.bind(controllerAddress);
+
   const tvlResult = controller.try_previewV();
   if (!tvlResult.reverted) {
     vault.tvl = tvlResult.value;
@@ -101,6 +111,36 @@ function refreshOnchainState(vault: Vault, controllerAddress: Address): void {
   const debtResult = controller.try_seniorDebt();
   if (!debtResult.reverted) {
     vault.seniorDebt = debtResult.value;
+  }
+
+  const seniorRateResult = controller.try_seniorRatePerSecondWad();
+  if (!seniorRateResult.reverted) {
+    vault.seniorRatePerSecondWad = seniorRateResult.value;
+  }
+
+  const maxRatioResult = controller.try_maxSeniorRatioBps();
+  if (!maxRatioResult.reverted) {
+    vault.maxSeniorRatioBps = maxRatioResult.value;
+  }
+
+  const maxRateAgeResult = controller.try_maxRateAge();
+  if (!maxRateAgeResult.reverted) {
+    vault.maxRateAge = maxRateAgeResult.value;
+  }
+
+  const rateModelResult = controller.try_rateModel();
+  if (!rateModelResult.reverted) {
+    vault.rateModel = rateModelResult.value;
+  }
+
+  const tellerResult = controller.try_teller();
+  if (!tellerResult.reverted) {
+    vault.teller = tellerResult.value;
+  }
+
+  const pausedResult = controller.try_paused();
+  if (!pausedResult.reverted) {
+    vault.paused = pausedResult.value;
   }
 
   const seniorToken = ERC20.bind(Address.fromBytes(vault.seniorToken));
@@ -125,8 +165,8 @@ function writeSnapshot(
   eventType: string
 ): string {
   const id = eventId(txHash.toHexString(), logIndex.toString());
-
   const snapshot = new TrancheSnapshot(id);
+
   snapshot.vault = vault.id;
   snapshot.blockNumber = blockNumber;
   snapshot.timestamp = timestamp;
@@ -277,10 +317,7 @@ function updateHourlySnapshot(
   snapshot.eventCount = snapshot.eventCount + 1;
 
   let hasDeposit = false;
-  if (!seniorDepositAssets.equals(ZERO)) {
-    hasDeposit = true;
-  }
-  if (!juniorDepositAssets.equals(ZERO)) {
+  if (!seniorDepositAssets.equals(ZERO) || !juniorDepositAssets.equals(ZERO)) {
     hasDeposit = true;
   }
   if (hasDeposit) {
@@ -288,10 +325,7 @@ function updateHourlySnapshot(
   }
 
   let hasRedeem = false;
-  if (!seniorRedeemAssets.equals(ZERO)) {
-    hasRedeem = true;
-  }
-  if (!juniorRedeemAssets.equals(ZERO)) {
+  if (!seniorRedeemAssets.equals(ZERO) || !juniorRedeemAssets.equals(ZERO)) {
     hasRedeem = true;
   }
   if (hasRedeem) {
@@ -337,7 +371,7 @@ function updateDailySnapshot(
   seniorRedeemAssets: BigInt,
   juniorRedeemAssets: BigInt,
   isAccrual: boolean
-): void {
+): BigInt {
   const start = bucketStart(timestamp, SECONDS_PER_DAY);
   const id = dailySnapshotId(vault.id, start);
   let snapshot = VaultDailySnapshot.load(id);
@@ -354,10 +388,7 @@ function updateDailySnapshot(
   snapshot.eventCount = snapshot.eventCount + 1;
 
   let hasDeposit = false;
-  if (!seniorDepositAssets.equals(ZERO)) {
-    hasDeposit = true;
-  }
-  if (!juniorDepositAssets.equals(ZERO)) {
+  if (!seniorDepositAssets.equals(ZERO) || !juniorDepositAssets.equals(ZERO)) {
     hasDeposit = true;
   }
   if (hasDeposit) {
@@ -365,10 +396,7 @@ function updateDailySnapshot(
   }
 
   let hasRedeem = false;
-  if (!seniorRedeemAssets.equals(ZERO)) {
-    hasRedeem = true;
-  }
-  if (!juniorRedeemAssets.equals(ZERO)) {
+  if (!seniorRedeemAssets.equals(ZERO) || !juniorRedeemAssets.equals(ZERO)) {
     hasRedeem = true;
   }
   if (hasRedeem) {
@@ -403,6 +431,50 @@ function updateDailySnapshot(
   snapshot.underwater = vault.tvl.lt(vault.seniorDebt);
   snapshot.updatedAt = timestamp;
   snapshot.save();
+
+  return start;
+}
+
+function annualizedApyBps(
+  currentPrice: BigInt,
+  previousPrice: BigInt,
+  dt: BigInt
+): BigInt | null {
+  if (!previousPrice.gt(ZERO) || !dt.gt(ZERO)) {
+    return null;
+  }
+  const delta = currentPrice.minus(previousPrice);
+  return delta
+    .times(BPS)
+    .times(SECONDS_PER_YEAR)
+    .div(previousPrice)
+    .div(dt);
+}
+
+function refreshDerivedApy(vault: Vault, currentDailyStart: BigInt): void {
+  const previousDailyStart = currentDailyStart.minus(SECONDS_PER_DAY);
+  const currentSnapshot = VaultDailySnapshot.load(
+    dailySnapshotId(vault.id, currentDailyStart)
+  );
+  const previousSnapshot = VaultDailySnapshot.load(
+    dailySnapshotId(vault.id, previousDailyStart)
+  );
+
+  if (currentSnapshot == null || previousSnapshot == null) {
+    return;
+  }
+
+  const dt = currentSnapshot.periodStart.minus(previousSnapshot.periodStart);
+  vault.seniorApyBps = annualizedApyBps(
+    currentSnapshot.closeSeniorPrice,
+    previousSnapshot.closeSeniorPrice,
+    dt
+  );
+  vault.juniorApyBps = annualizedApyBps(
+    currentSnapshot.closeJuniorPrice,
+    previousSnapshot.closeJuniorPrice,
+    dt
+  );
 }
 
 function updateRollups(
@@ -426,7 +498,7 @@ function updateRollups(
     isAccrual
   );
 
-  updateDailySnapshot(
+  const dailyStart = updateDailySnapshot(
     vault,
     timestamp,
     txHash,
@@ -436,6 +508,48 @@ function updateRollups(
     juniorRedeemAssets,
     isAccrual
   );
+  refreshDerivedApy(vault, dailyStart);
+}
+
+function persistVaultState(
+  vault: Vault,
+  controllerAddress: Address,
+  blockNumber: BigInt,
+  timestamp: BigInt,
+  txHash: Bytes,
+  logIndex: BigInt,
+  eventType: string,
+  seniorDepositAssets: BigInt,
+  juniorDepositAssets: BigInt,
+  seniorRedeemAssets: BigInt,
+  juniorRedeemAssets: BigInt,
+  isAccrual: boolean
+): void {
+  refreshOnchainState(vault, controllerAddress);
+  refreshDerivedPrices(vault);
+
+  vault.lastSnapshot = writeSnapshot(
+    vault,
+    blockNumber,
+    timestamp,
+    txHash,
+    logIndex,
+    eventType
+  );
+
+  updateRollups(
+    vault,
+    timestamp,
+    txHash,
+    seniorDepositAssets,
+    juniorDepositAssets,
+    seniorRedeemAssets,
+    juniorRedeemAssets,
+    isAccrual
+  );
+
+  vault.updatedAt = timestamp;
+  vault.save();
 }
 
 export function handleSeniorDeposited(event: SeniorDeposited): void {
@@ -444,31 +558,38 @@ export function handleSeniorDeposited(event: SeniorDeposited): void {
 
   const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
   const entry = createEvent(id, "SENIOR_DEPOSIT");
-  applyCommonEventFields(entry, vault.id, event.block.number, event.block.timestamp, event.transaction.hash);
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
   entry.caller = event.params.caller;
   entry.receiver = event.params.receiver;
   entry.assets = event.params.assets;
   entry.shares = event.params.shares;
+  entry.actor = event.transaction.from;
   entry.save();
 
   vault.tvl = vault.tvl.plus(event.params.assets);
   vault.seniorDebt = vault.seniorDebt.plus(event.params.assets);
   vault.seniorSupply = vault.seniorSupply.plus(event.params.shares);
-  refreshOnchainState(vault, event.address);
-  refreshDerivedPrices(vault);
 
-  vault.lastSnapshot = writeSnapshot(
+  persistVaultState(
     vault,
+    event.address,
     event.block.number,
     event.block.timestamp,
     event.transaction.hash,
     event.logIndex,
-    "SENIOR_DEPOSIT"
+    "SENIOR_DEPOSIT",
+    event.params.assets,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
   );
-
-  updateRollups(vault, event.block.timestamp, event.transaction.hash, event.params.assets, ZERO, ZERO, ZERO, false);
-  vault.updatedAt = event.block.timestamp;
-  vault.save();
 }
 
 export function handleJuniorDeposited(event: JuniorDeposited): void {
@@ -477,30 +598,37 @@ export function handleJuniorDeposited(event: JuniorDeposited): void {
 
   const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
   const entry = createEvent(id, "JUNIOR_DEPOSIT");
-  applyCommonEventFields(entry, vault.id, event.block.number, event.block.timestamp, event.transaction.hash);
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
   entry.caller = event.params.caller;
   entry.receiver = event.params.receiver;
   entry.assets = event.params.assets;
   entry.shares = event.params.shares;
+  entry.actor = event.transaction.from;
   entry.save();
 
   vault.tvl = vault.tvl.plus(event.params.assets);
   vault.juniorSupply = vault.juniorSupply.plus(event.params.shares);
-  refreshOnchainState(vault, event.address);
-  refreshDerivedPrices(vault);
 
-  vault.lastSnapshot = writeSnapshot(
+  persistVaultState(
     vault,
+    event.address,
     event.block.number,
     event.block.timestamp,
     event.transaction.hash,
     event.logIndex,
-    "JUNIOR_DEPOSIT"
+    "JUNIOR_DEPOSIT",
+    ZERO,
+    event.params.assets,
+    ZERO,
+    ZERO,
+    false
   );
-
-  updateRollups(vault, event.block.timestamp, event.transaction.hash, ZERO, event.params.assets, ZERO, ZERO, false);
-  vault.updatedAt = event.block.timestamp;
-  vault.save();
 }
 
 export function handleSeniorRedeemed(event: SeniorRedeemed): void {
@@ -509,31 +637,38 @@ export function handleSeniorRedeemed(event: SeniorRedeemed): void {
 
   const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
   const entry = createEvent(id, "SENIOR_REDEEM");
-  applyCommonEventFields(entry, vault.id, event.block.number, event.block.timestamp, event.transaction.hash);
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
   entry.caller = event.params.caller;
   entry.receiver = event.params.receiver;
   entry.assets = event.params.assets;
   entry.shares = event.params.shares;
+  entry.actor = event.transaction.from;
   entry.save();
 
   vault.tvl = saturatingSub(vault.tvl, event.params.assets);
   vault.seniorDebt = saturatingSub(vault.seniorDebt, event.params.assets);
   vault.seniorSupply = saturatingSub(vault.seniorSupply, event.params.shares);
-  refreshOnchainState(vault, event.address);
-  refreshDerivedPrices(vault);
 
-  vault.lastSnapshot = writeSnapshot(
+  persistVaultState(
     vault,
+    event.address,
     event.block.number,
     event.block.timestamp,
     event.transaction.hash,
     event.logIndex,
-    "SENIOR_REDEEM"
+    "SENIOR_REDEEM",
+    ZERO,
+    ZERO,
+    event.params.assets,
+    ZERO,
+    false
   );
-
-  updateRollups(vault, event.block.timestamp, event.transaction.hash, ZERO, ZERO, event.params.assets, ZERO, false);
-  vault.updatedAt = event.block.timestamp;
-  vault.save();
 }
 
 export function handleJuniorRedeemed(event: JuniorRedeemed): void {
@@ -542,30 +677,37 @@ export function handleJuniorRedeemed(event: JuniorRedeemed): void {
 
   const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
   const entry = createEvent(id, "JUNIOR_REDEEM");
-  applyCommonEventFields(entry, vault.id, event.block.number, event.block.timestamp, event.transaction.hash);
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
   entry.caller = event.params.caller;
   entry.receiver = event.params.receiver;
   entry.assets = event.params.assets;
   entry.shares = event.params.shares;
+  entry.actor = event.transaction.from;
   entry.save();
 
   vault.tvl = saturatingSub(vault.tvl, event.params.assets);
   vault.juniorSupply = saturatingSub(vault.juniorSupply, event.params.shares);
-  refreshOnchainState(vault, event.address);
-  refreshDerivedPrices(vault);
 
-  vault.lastSnapshot = writeSnapshot(
+  persistVaultState(
     vault,
+    event.address,
     event.block.number,
     event.block.timestamp,
     event.transaction.hash,
     event.logIndex,
-    "JUNIOR_REDEEM"
+    "JUNIOR_REDEEM",
+    ZERO,
+    ZERO,
+    ZERO,
+    event.params.assets,
+    false
   );
-
-  updateRollups(vault, event.block.timestamp, event.transaction.hash, ZERO, ZERO, ZERO, event.params.assets, false);
-  vault.updatedAt = event.block.timestamp;
-  vault.save();
 }
 
 export function handleAccrued(event: Accrued): void {
@@ -573,25 +715,281 @@ export function handleAccrued(event: Accrued): void {
   if (vault == null) return;
 
   const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
-  const entry = createEvent(id, "ACCRUE");
-  applyCommonEventFields(entry, vault.id, event.block.number, event.block.timestamp, event.transaction.hash);
+  const entry = createEvent(id, "ACCRUED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
   entry.seniorDebt = event.params.newSeniorDebt;
   entry.dt = event.params.dt;
+  entry.actor = event.transaction.from;
   entry.save();
 
   vault.seniorDebt = event.params.newSeniorDebt;
-  refreshDerivedPrices(vault);
 
-  vault.lastSnapshot = writeSnapshot(
+  persistVaultState(
     vault,
+    event.address,
     event.block.number,
     event.block.timestamp,
     event.transaction.hash,
     event.logIndex,
-    "ACCRUE"
+    "ACCRUED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    true
   );
+}
 
-  updateRollups(vault, event.block.timestamp, event.transaction.hash, ZERO, ZERO, ZERO, ZERO, true);
-  vault.updatedAt = event.block.timestamp;
-  vault.save();
+export function handleSeniorRateUpdated(event: SeniorRateUpdated): void {
+  const vault = loadVault(event.address.toHexString());
+  if (vault == null) return;
+
+  const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
+  const entry = createEvent(id, "SENIOR_RATE_UPDATED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
+  entry.oldValue = event.params.oldRate;
+  entry.newValue = event.params.newRate;
+  entry.actor = event.transaction.from;
+  entry.save();
+
+  vault.seniorRatePerSecondWad = event.params.newRate;
+
+  persistVaultState(
+    vault,
+    event.address,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    "SENIOR_RATE_UPDATED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
+  );
+}
+
+export function handleRateModelUpdated(event: RateModelUpdated): void {
+  const vault = loadVault(event.address.toHexString());
+  if (vault == null) return;
+
+  const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
+  const entry = createEvent(id, "RATE_MODEL_UPDATED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
+  entry.oldAddress = event.params.oldModel;
+  entry.newAddress = event.params.newModel;
+  entry.actor = event.transaction.from;
+  entry.save();
+
+  vault.rateModel = event.params.newModel;
+
+  persistVaultState(
+    vault,
+    event.address,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    "RATE_MODEL_UPDATED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
+  );
+}
+
+export function handleTellerUpdated(event: TellerUpdated): void {
+  const vault = loadVault(event.address.toHexString());
+  if (vault == null) return;
+
+  const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
+  const entry = createEvent(id, "TELLER_UPDATED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
+  entry.oldAddress = event.params.oldTeller;
+  entry.newAddress = event.params.newTeller;
+  entry.actor = event.transaction.from;
+  entry.save();
+
+  vault.teller = event.params.newTeller;
+
+  persistVaultState(
+    vault,
+    event.address,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    "TELLER_UPDATED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
+  );
+}
+
+export function handleMaxSeniorRatioUpdated(event: MaxSeniorRatioUpdated): void {
+  const vault = loadVault(event.address.toHexString());
+  if (vault == null) return;
+
+  const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
+  const entry = createEvent(id, "MAX_SENIOR_RATIO_UPDATED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
+  entry.oldValue = event.params.oldRatioBps;
+  entry.newValue = event.params.newRatioBps;
+  entry.actor = event.transaction.from;
+  entry.save();
+
+  vault.maxSeniorRatioBps = event.params.newRatioBps;
+
+  persistVaultState(
+    vault,
+    event.address,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    "MAX_SENIOR_RATIO_UPDATED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
+  );
+}
+
+export function handleMaxRateAgeUpdated(event: MaxRateAgeUpdated): void {
+  const vault = loadVault(event.address.toHexString());
+  if (vault == null) return;
+
+  const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
+  const entry = createEvent(id, "MAX_RATE_AGE_UPDATED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
+  entry.oldValue = event.params.oldMaxRateAge;
+  entry.newValue = event.params.newMaxRateAge;
+  entry.actor = event.transaction.from;
+  entry.save();
+
+  vault.maxRateAge = event.params.newMaxRateAge;
+
+  persistVaultState(
+    vault,
+    event.address,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    "MAX_RATE_AGE_UPDATED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
+  );
+}
+
+export function handlePaused(event: Paused): void {
+  const vault = loadVault(event.address.toHexString());
+  if (vault == null) return;
+
+  const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
+  const entry = createEvent(id, "PAUSED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
+  entry.actor = event.params.account;
+  entry.save();
+
+  vault.paused = true;
+
+  persistVaultState(
+    vault,
+    event.address,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    "PAUSED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
+  );
+}
+
+export function handleUnpaused(event: Unpaused): void {
+  const vault = loadVault(event.address.toHexString());
+  if (vault == null) return;
+
+  const id = eventId(event.transaction.hash.toHexString(), event.logIndex.toString());
+  const entry = createEvent(id, "UNPAUSED");
+  applyCommonEventFields(
+    entry,
+    vault.id,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash
+  );
+  entry.actor = event.params.account;
+  entry.save();
+
+  vault.paused = false;
+
+  persistVaultState(
+    vault,
+    event.address,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    "UNPAUSED",
+    ZERO,
+    ZERO,
+    ZERO,
+    ZERO,
+    false
+  );
 }

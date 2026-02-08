@@ -20,6 +20,7 @@ export GOLDSKY_SUBGRAPH_NAME="pontus-vault/0.1.0"
 **Responsibilities**
 - Vault discovery (registry events)
 - Activity feed (deposit/redeem/accrue)
+- Controller config/audit events (rate model, teller, caps, pause state)
 - Event-level tranche snapshots (`TrancheSnapshot`)
 - Hourly and daily rollups (`VaultHourlySnapshot`, `VaultDailySnapshot`) with flow counters, latest state, and OHLC-style TVL/price fields for charting
 - Distinct transaction counts per time bucket (`txCount`) alongside total event counts (`eventCount`)
@@ -36,7 +37,11 @@ query VaultSnapshots($controller: String!) {
   vault(id: $controller) {
     id
     vaultId
+    paramsHash
+    paused
     tvl
+    seniorApyBps
+    juniorApyBps
     seniorPrice
     juniorPrice
     hourlySnapshots(first: 24, orderBy: periodStart, orderDirection: desc) {
@@ -58,6 +63,8 @@ query VaultSnapshots($controller: String!) {
       txCount
       depositCount
       redeemCount
+      closeSeniorPrice
+      closeJuniorPrice
       openTvl
       highTvl
       lowTvl

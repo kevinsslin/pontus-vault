@@ -22,6 +22,19 @@ function isReadyAddress(value: string | null | undefined): value is string {
   return !!value && value !== ZERO_ADDRESS;
 }
 
+function asPositiveInteger(value: unknown, fallback: number): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(0, Math.floor(parsed));
+}
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => String(item).trim())
+    .filter((item) => item.length > 0);
+}
+
 function toHexPaddedWord(input: bigint): string {
   return input.toString(16).padStart(64, "0");
 }
@@ -41,7 +54,10 @@ function buildConfigureSteps(
 ): StepBlueprint[] {
   const controller = vault.controllerAddress;
   const options = request.options ?? {};
-  const maxSeniorRatioBps = Number(options.maxSeniorRatioBps ?? 8000);
+  const maxSeniorRatioBps = Math.min(
+    10_000,
+    asPositiveInteger(options.maxSeniorRatioBps, 8000)
+  );
   const seniorRatePerSecondWad = BigInt(
     String(options.seniorRatePerSecondWad ?? "0")
   );
@@ -105,15 +121,24 @@ function buildDeploySteps(
   vault: VaultRecord,
   request: OperatorCreateOperationRequest
 ): StepBlueprint[] {
+  const options = request.options ?? {};
+  const supportedRoutes = asStringArray(options.supportedRoutes);
+  const deploymentNote =
+    typeof options.note === "string" ? options.note.trim() : "";
+
   return [
     {
       kind: "OFFCHAIN",
       label: "Sign deployment intent",
       description:
-        "Sign deployment intent with Operator wallet to approve the deployment plan and parameters.",
+        "Sign deployment intent with Operator wallet to approve capability routes, role boundaries, and deployment parameters.",
       metadata: {
         vaultId: vault.vaultId,
-        params: request.options ?? {},
+        managerMode: options.managerMode ?? "allowlist",
+        supportedRoutes,
+        assetSymbol: options.assetSymbol ?? vault.assetSymbol,
+        note: deploymentNote || null,
+        params: options,
       },
     },
     {
@@ -123,12 +148,31 @@ function buildDeploySteps(
         "Run per-vault deployment via script/backend executor and attach resulting transaction hash for audit.",
       metadata: {
         command: "forge script script/DeployTrancheVault.s.sol --broadcast",
+        script: String(options.deployScript ?? "DeployTrancheVault.s.sol"),
+      },
+    },
+    {
+      kind: "OFFCHAIN",
+      label: "Register deployment outputs",
+      description:
+        "Record deployed addresses and params hash in metadata/indexer references for operator replay.",
+      metadata: {
+        requires: ["controller", "seniorToken", "juniorToken", "paramsHash"],
       },
     },
   ];
 }
 
-function buildPublishSteps(vault: VaultRecord): StepBlueprint[] {
+function buildPublishSteps(
+  vault: VaultRecord,
+  request: OperatorCreateOperationRequest
+): StepBlueprint[] {
+  const options = request.options ?? {};
+  const targetStatus =
+    String(options.targetStatus ?? "LIVE").toUpperCase() === "COMING_SOON"
+      ? "COMING_SOON"
+      : "LIVE";
+
   return [
     {
       kind: "OFFCHAIN",
@@ -137,7 +181,20 @@ function buildPublishSteps(vault: VaultRecord): StepBlueprint[] {
         "Move vault status to LIVE in metadata (DRAFT/READY -> LIVE) after final operator review.",
       metadata: {
         vaultId: vault.vaultId,
-        targetStatus: "LIVE",
+        targetStatus,
+        note:
+          typeof options.note === "string" && options.note.trim().length > 0
+            ? options.note.trim()
+            : null,
+      },
+    },
+    {
+      kind: "OFFCHAIN",
+      label: "Sync discovery cache",
+      description:
+        "Confirm listing update is visible in /discover and indexer-derived APIs.",
+      metadata: {
+        endpoint: "/api/vaults",
       },
     },
   ];
@@ -147,6 +204,34 @@ function buildRebalanceSteps(
   vault: VaultRecord,
   request: OperatorCreateOperationRequest
 ): StepBlueprint[] {
+  const options = request.options ?? {};
+  const route = String(options.route ?? vault.route);
+  const intent =
+    String(options.intent ?? "deploy-capital") === "raise-cash"
+      ? "raise-cash"
+      : "deploy-capital";
+  const notionalUsd = asPositiveInteger(options.notionalUsd, 0);
+  const minCashBufferBps = Math.min(
+    10_000,
+    asPositiveInteger(options.minCashBufferBps, 0)
+  );
+
+  if (!isReadyAddress(vault.managerAddress)) {
+    return [
+      {
+        kind: "OFFCHAIN",
+        label: "Manager address unavailable",
+        description:
+          "Manager is not configured on this vault record yet. Complete deployment/wiring before running rebalance.",
+        metadata: {
+          vaultId: vault.vaultId,
+          route,
+          intent,
+        },
+      },
+    ];
+  }
+
   return [
     {
       kind: "OFFCHAIN",
@@ -155,7 +240,10 @@ function buildRebalanceSteps(
         "Sign manager route, limits, and calldata bundle before execution.",
       metadata: {
         manager: vault.managerAddress,
-        route: request.options?.route ?? vault.route,
+        route,
+        intent,
+        notionalUsd,
+        minCashBufferBps,
       },
     },
     {
@@ -165,6 +253,17 @@ function buildRebalanceSteps(
         "Execute allowlisted manager route and record transaction hash.",
       metadata: {
         manager: vault.managerAddress,
+        route,
+        intent,
+      },
+    },
+    {
+      kind: "OFFCHAIN",
+      label: "Validate redemption readiness",
+      description:
+        "Run preview checks after rebalance and verify cash buffer against redemption policy.",
+      metadata: {
+        minCashBufferBps,
       },
     },
   ];
@@ -192,7 +291,7 @@ export function buildOperationSteps(
       : request.jobType === "CONFIGURE_VAULT"
       ? buildConfigureSteps(vault, request)
       : request.jobType === "PUBLISH_VAULT"
-      ? buildPublishSteps(vault)
+      ? buildPublishSteps(vault, request)
       : buildRebalanceSteps(vault, request);
 
   return blueprints.map((step) => ({

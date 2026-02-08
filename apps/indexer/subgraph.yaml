@@ -56,4 +56,18 @@ templates:
           handler: handleJuniorRedeemed
         - event: Accrued(uint256,uint256)
           handler: handleAccrued
+        - event: SeniorRateUpdated(uint256,uint256)
+          handler: handleSeniorRateUpdated
+        - event: RateModelUpdated(indexed address,indexed address)
+          handler: handleRateModelUpdated
+        - event: TellerUpdated(indexed address,indexed address)
+          handler: handleTellerUpdated
+        - event: MaxSeniorRatioUpdated(uint256,uint256)
+          handler: handleMaxSeniorRatioUpdated
+        - event: MaxRateAgeUpdated(uint256,uint256)
+          handler: handleMaxRateAgeUpdated
+        - event: Paused(address)
+          handler: handlePaused
+        - event: Unpaused(address)
+          handler: handleUnpaused
       file: ./src/controller.ts
