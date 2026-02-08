@@ -7,9 +7,9 @@ dataSources:
     name: TrancheRegistry
     network: pharos-atlantic
     source:
-      address: "0x0000000000000000000000000000000000000000"
+      address: "0x341A376b59c86A26324229cd467A5E3b930792C6"
       abi: TrancheRegistry
-      startBlock: 0
+      startBlock: 13042511
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

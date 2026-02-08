@@ -1,13 +1,13 @@
 {
   "name": "@pti/indexer",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "abi:sync": "node ./scripts/sync-abis.mjs",
     "codegen": "graph codegen",
     "build": "pnpm run codegen && graph build",
-    "deploy": "goldsky subgraph deploy ${GOLDSKY_SUBGRAPH_NAME:-pharos-vault/0.0.0} --path ."
+    "deploy": "goldsky subgraph deploy ${GOLDSKY_SUBGRAPH_NAME:-pontus-vault/$(node -p \"require('./package.json').version\")} --path ."
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "0.98.1",

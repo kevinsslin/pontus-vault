@@ -13,10 +13,12 @@ pnpm --filter @pti/indexer build
 pnpm --filter @pti/indexer deploy
 ```
 
-Set `GOLDSKY_SUBGRAPH_NAME` before deploy when needed:
+Deploy uses subgraph name `pontus-vault/<version>` where `<version>` is this package’s `version` in `package.json`. To release a new indexer version, bump and deploy:
 ```bash
-export GOLDSKY_SUBGRAPH_NAME="pontus-vault/0.1.0"
+pnpm --filter @pti/indexer version patch   # or minor / major
+pnpm --filter @pti/indexer deploy
 ```
+Override with `GOLDSKY_SUBGRAPH_NAME` if needed (e.g. `pontus-vault/0.2.0`).
 
 **Responsibilities**
 - Vault discovery (registry events)
