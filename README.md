@@ -2,6 +2,50 @@
 
 Pontus Vault is tranche vault infrastructure on Pharos. It packages yield strategies into tiered vault structures that are easy to understand, integrate, and distribute.
 
+## Architecture
+
+```mermaid
+flowchart TB
+  subgraph client["Client"]
+    User["User"]
+    Dynamic["Dynamic Wallet<br/>(connect, sign tx)"]
+    User <--> Dynamic
+  end
+
+  subgraph next["Next.js (App + API)"]
+    Web["App Router<br/>(discover, portfolio, vaults)"]
+    API["API routes<br/>(operator, deploy, infra)"]
+    Web --> API
+  end
+
+  subgraph data["Data & Indexing"]
+    Supabase["Supabase<br/>(vault_registry, operator_operations)"]
+    Indexer["Goldsky Subgraph<br/>(events, snapshots, TVL)"]
+  end
+
+  subgraph worker["Worker"]
+    Keeper["Keeper<br/>(deploy-executor, rate-updater)"]
+  end
+
+  subgraph chain["Pharos Atlantic - Contracts"]
+    Infra["TrancheRegistry, TrancheFactory<br/>(UUPS proxies)"]
+    Tranche["TrancheController<br/>SeniorToken / JuniorToken, RateModels"]
+    BV["BoringVault stack<br/>Vault, Teller, Accountant, Manager, RolesAuthority"]
+    Adapters["Adapters & decoders<br/>OpenFi, Asseto, MerkleLib"]
+    Infra --> Tranche
+    Tranche --> BV
+    BV --> Adapters
+  end
+
+  Dynamic -->|sign| Web
+  Web -->|read/write| Supabase
+  Web -->|GraphQL| Indexer
+  API -->|POST /deploy, update-rate| Keeper
+  API -->|read| Supabase
+  Keeper -->|forge script broadcast| chain
+  Indexer -->|index events| chain
+```
+
 **Overview**
 - Tiered risk/return vault sleeves backed by the same strategy pool
 - A consistent vault interface for pricing, performance, and redemptions
