@@ -1,0 +1,26 @@
+# Keep image smaller; contracts/lib is created in Docker via install-deps.sh
+node_modules/
+.pnpm/
+.pnp.*
+.git/
+apps/web/.next/
+apps/web/out/
+apps/web/.vercel/
+.env
+.env.*
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/lib/
+dist/
+coverage/
+apps/indexer/build/
+apps/indexer/generated/
+.turbo/
+.DS_Store
+plan/
+plan.md
+docs/
+logs/
+hooks/
+supabase/.temp/

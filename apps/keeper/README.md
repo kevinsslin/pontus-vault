@@ -69,3 +69,15 @@ This worker exposes an HTTP endpoint so web/operator UI can trigger contract dep
 ```bash
 pnpm --filter @pti/keeper start:deploy-executor
 ```
+
+### Deploy on Railway
+
+Use **this folder’s Dockerfile** (`apps/keeper/Dockerfile`). The build context must be the **repo root** (so `contracts/`, `packages/`, and root `package.json` are available). The repo root’s **`.dockerignore`** applies to that context.
+
+1. New Project → Deploy from GitHub → select this repo.
+2. **Root Directory**: leave empty (context = repo root).
+3. **Settings → Build**: set **Dockerfile path** to `apps/keeper/Dockerfile`.
+4. **Start Command**: leave empty (the Dockerfile sets `CMD`).
+5. **Variables**: set `PHAROS_ATLANTIC_RPC_URL`, `DEPLOYER_PRIVATE_KEY`, `TRANCHE_FACTORY`. Optionally `CONTRACTS_WORKSPACE_DIR=/app/contracts`, `DEPLOY_EXECUTOR_TOKEN`, and role addresses. See **`.env.example`** in this folder.
+
+The app listens on `PORT` or `DEPLOY_EXECUTOR_PORT` (default 8787); Railway injects `PORT` automatically.
