@@ -77,6 +77,7 @@ forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 -
 - `OPERATOR_ADMIN_ADDRESSES` can lock operator write actions to a comma-separated wallet allowlist; in `demo` mode an empty allowlist is allowed.
 - Contracts test layers include unit, integration (self-deployed BoringVault stack), fork (OpenFi on Atlantic), and invariant suites.
 - Tranche deposits can be guarded by accountant rate staleness (`maxRateAge`), so production should run the keeper worker continuously.
+- Hybrid withdraw with tranche `QueueAdapter` is tracked as a future roadmap item in `contracts/README.md` (deferred in the current release).
 - `CapSafetyRateModel` consumes `IRefRateProvider` only. To use a real external protocol rate, deploy an adapter that implements `IRefRateProvider` and normalizes output to `per-second WAD`.
 - Reference implementation: `OpenFiRayRateAdapter` + `IOpenFiRateSource` for `ray/year -> per-second WAD` normalization.
 - If you add a new workspace, update `pnpm-workspace.yaml` and root scripts.

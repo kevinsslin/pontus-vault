@@ -114,6 +114,14 @@ No deploy scripts are run automatically from CI; use the scripts locally when yo
 - Root/proof generation remains an offchain concern; `src/libraries/ManagerMerkleLib.sol` mirrors the onchain leaf/hash format for deterministic backend generation.
 - Backend/operator should version each root and keep proof generation in lockstep with decoder packed-address formats.
 
+**Future Roadmap: Hybrid Withdraw + QueueAdapter**
+- Current tranche redeem flow is synchronous (`TrancheController.redeemSenior` / `redeemJunior` -> teller `bulkWithdraw`) and does not auto-route to a queue path.
+- Roadmap item: add a tranche-aware `QueueAdapter` so users can keep interacting with `TrancheController` while redemptions are routed deterministically between instant and queued settlement.
+- Routing policy will be explicit and onchain-configurable (for example: idle liquidity thresholds, rate freshness, per-request instant cap, and guarded-mode queue fallback).
+- Queue infrastructure is expected to be deployed per vault (and per supported withdraw asset pair when needed), with addresses and policy versions recorded in registry state/events.
+- Backend services will remain responsible for queue settlement operations (batch execution, strategy unwind orchestration, and optional solver coordination).
+- This roadmap is intentionally deferred for now; no tranche `QueueAdapter` implementation is included in the current release.
+
 **Fork Reliability**
 - Error `block is not available` means the upstream RPC cannot serve one or more historical state queries for the forked block.
 - This is usually an RPC archival/sync limitation, not a contract bug.
