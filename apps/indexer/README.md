@@ -10,13 +10,13 @@ This folder holds the Goldsky subgraph for Pontus Vault.
 pnpm --filter @pti/indexer abi:sync
 pnpm --filter @pti/indexer codegen
 pnpm --filter @pti/indexer build
-pnpm --filter @pti/indexer deploy
+pnpm --filter @pti/indexer run deploy
 ```
 
 Deploy uses subgraph name `pontus-vault/<version>` where `<version>` is this package’s `version` in `package.json`. To release a new indexer version, bump and deploy:
 ```bash
 pnpm --filter @pti/indexer version patch   # or minor / major
-pnpm --filter @pti/indexer deploy
+pnpm --filter @pti/indexer run deploy
 ```
 Override with `GOLDSKY_SUBGRAPH_NAME` if needed (e.g. `pontus-vault/0.2.0`).
 

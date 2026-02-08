@@ -5,7 +5,7 @@ schema:
 dataSources:
   - kind: ethereum
     name: TrancheRegistry
-    network: pharos-atlantic
+    network: pharos-atlantic-testnet
     source:
       address: "0x341A376b59c86A26324229cd467A5E3b930792C6"
       abi: TrancheRegistry
@@ -30,7 +30,7 @@ dataSources:
 templates:
   - kind: ethereum
     name: TrancheController
-    network: pharos-atlantic
+    network: pharos-atlantic-testnet
     source:
       abi: TrancheController
     mapping:

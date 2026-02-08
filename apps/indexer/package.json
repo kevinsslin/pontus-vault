@@ -7,7 +7,7 @@
     "abi:sync": "node ./scripts/sync-abis.mjs",
     "codegen": "graph codegen",
     "build": "pnpm run codegen && graph build",
-    "deploy": "goldsky subgraph deploy ${GOLDSKY_SUBGRAPH_NAME:-pontus-vault/$(node -p \"require('./package.json').version\")} --path ."
+    "deploy": "node ./scripts/deploy.mjs"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "0.98.1",
