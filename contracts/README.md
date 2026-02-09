@@ -1,233 +1,57 @@
 # Contracts (Foundry)
 
-This workspace holds the BoringVault stack integration and tranche wrapper contracts.
+This workspace contains the Pontus Vault onchain stack: tranche infra plus a BoringVault-based vault assembly.
 
-**Structure**
+## Structure
+
 - `src/tranche/`: tranche controller/factory/registry/token contracts
-- `src/rate-models/`: tranche rate model implementations
-- `src/decoders/`: manager decoder/sanitizer implementations
-- `src/libraries/`: constants + external protocol calldata builders + merkle helper
-- `src/interfaces/tranche/`: tranche controller/factory/registry/token interfaces
-- `src/interfaces/rates/`: shared + model-specific rate interfaces
-- `src/interfaces/openfi/`: OpenFi-facing interfaces
-- `src/interfaces/asseto/`: Asseto-facing interfaces
-- `src/interfaces/decoders/`: decoder format interfaces
-- `script/DeployInfra.s.sol`: one-time infra deploy (UUPS `TrancheRegistry` + `TrancheFactory` proxies + implementations)
-- `script/DeployTrancheVault.s.sol`: per-vault deploy (BoringVault set + manager + decoder + tranche vault creation)
-- `script/Deploy.s.sol`: backward-compatible alias to `DeployInfra.s.sol`
-- `script/BaseScript.sol`: shared script env helpers
-- `script/UpdateExchangeRate.s.sol`: updater tick for accountant exchange rate
-- `test/unit`: isolated logic tests
-- `test/integration`: full self-deployed BoringVault assembly tests
-- `test/fork`: Atlantic fork tests
-- `test/invariant`: property-based tests
+- `src/rate-models/`: tranche rate models
+- `src/decoders/`: manager decoder/sanitizers (allowlist safety)
+- `src/libraries/`: protocol calldata builders + constants + Merkle helpers
+- `src/interfaces/**`: external protocol + Pontus interfaces
+- `script/DeployInfra.s.sol`: one-time infra deploy (UUPS `TrancheRegistry` + `TrancheFactory`)
+- `script/DeployTrancheVault.s.sol`: per-vault deploy (BoringVault set + tranche vault creation)
+- `script/UpdateExchangeRate.s.sol`: accountant rate update tick
+- `test/unit`, `test/integration`, `test/fork`, `test/invariant`
 
-**Upgradeability**
-- `TrancheRegistry` and `TrancheFactory` are deployed behind UUPS proxies.
-- Both contracts use ERC-7201 namespaced storage (`@custom:storage-location`) instead of storage gaps.
+## Upgradeability
 
-**BoringVault Dependency**
+- `TrancheRegistry` and `TrancheFactory` are UUPS proxies.
+- Storage uses ERC-7201 namespaced storage (`@custom:storage-location`) instead of storage gaps.
+
+## Dependencies (BoringVault)
+
+Pinned commit:
+- `Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528`
+
+Install (recommended):
+```bash
+pnpm --filter @pti/contracts deps
+```
+
+Manual install:
 ```bash
 forge install Se7en-Seas/boring-vault@0e23e7fd3a9a7735bd3fea61dd33c1700e75c528 --no-git
 ```
-This repo vendors the pinned commit in `contracts/lib/boring-vault`; keep it in place for local builds.
-`script/install-deps.sh` applies a minimal, deterministic teller import patch because Foundry cannot safely remap BoringVault's `src/...` imports in this workspace.
 
-**Upstream Baseline**
-- Upstream repository: `https://github.com/Se7en-Seas/boring-vault`
-- Pontus contract stack is built on top of commit:
-  `0e23e7fd3a9a7735bd3fea61dd33c1700e75c528`
-- Local vendored path:
-  `contracts/lib/boring-vault`
+`script/install-deps.sh` applies a minimal deterministic patch for teller imports because Foundry cannot safely remap BoringVault `src/...` imports in this workspace.
 
-**Contract Architecture**
-```mermaid
-flowchart TB
-  user["User"]
+## Commands
 
-  subgraph pontus["Pontus Contracts"]
-    factory["TrancheFactory UUPS Proxy"]
-    registry["TrancheRegistry UUPS Proxy"]
-    controller["TrancheController"]
-    senior["Senior TrancheToken"]
-    junior["Junior TrancheToken"]
-    fixedRate["FixedRateModel"]
-    capRate["CapSafetyRateModel"]
-  end
-
-  subgraph boring["BoringVault Stack"]
-    roles["RolesAuthority"]
-    vault["BoringVault"]
-    teller["TellerWithMultiAssetSupport"]
-    accountant["AccountantWithRateProviders"]
-    manager["ManagerWithMerkleVerification"]
-  end
-
-  subgraph adapters["Adapters and Decoders"]
-    openFiRate["OpenFiRayRateAdapter"]
-    openFiDecoder["OpenFiDecoderAndSanitizer"]
-    assetoDecoder["AssetoDecoderAndSanitizer"]
-    merkleLib["ManagerMerkleLib"]
-  end
-
-  subgraph external["External Protocols"]
-    openFi["OpenFi"]
-    asseto["Asseto"]
-  end
-
-  user -->|deposit and redeem| controller
-  controller -->|mint and burn| senior
-  controller -->|mint and burn| junior
-  controller -->|deposit and withdraw| teller
-  teller -->|enter and exit| vault
-
-  factory -->|create tranche vault| controller
-  factory -->|register vault| registry
-  registry -->|lookup by paramsHash| controller
-
-  fixedRate -->|rate read| controller
-  capRate -->|rate read| controller
-  openFiRate -->|ref rate provider| capRate
-  openFiRate -->|read external rate| openFi
-
-  roles -->|authorize| vault
-  roles -->|authorize| teller
-  roles -->|authorize| manager
-  manager -->|manage with merkle proof| vault
-  manager -.-> openFiDecoder
-  manager -.-> assetoDecoder
-  openFiDecoder --> openFi
-  assetoDecoder --> asseto
-  merkleLib -.-> manager
-```
-
-**BoringVault Deployment Helpers (Reference Only)**
-- `contracts/lib/boring-vault/script/ArchitectureDeployments/DeployArcticArchitecture.sol`: baseline wiring for BoringVault + accountant + manager/roles.
-- `contracts/lib/boring-vault/script/DeployTeller.s.sol`: teller deployment flow to adapt for Pharos/Atlantic assets.
-- `contracts/lib/boring-vault/script/DeployDecoderAndSanitizer.s.sol`: decoder/allowlist scaffolding (use for OpenFi selectors).
-
-No deploy scripts are run automatically from CI; use the scripts locally when you are ready to broadcast.
-
-**Manager/Merkle Flow**
-- Each tranche vault deployment now standardizes manager deployment (`ManagerWithMerkleVerification`) and authority wiring.
-- `DeployTrancheVault.s.sol` deploys protocol-specific decoders (`OpenFiDecoderAndSanitizer` and `AssetoDecoderAndSanitizer`) for that vault and grants strategist/admin capabilities.
-- Root/proof generation remains an offchain concern; `src/libraries/ManagerMerkleLib.sol` mirrors the onchain leaf/hash format for deterministic backend generation.
-- Backend/operator should version each root and keep proof generation in lockstep with decoder packed-address formats.
-
-**Future Roadmap: Hybrid Withdraw + QueueAdapter**
-- Current tranche redeem flow is synchronous (`TrancheController.redeemSenior` / `redeemJunior` -> teller `bulkWithdraw`) and does not auto-route to a queue path.
-- Roadmap item: add a tranche-aware `QueueAdapter` so users can keep interacting with `TrancheController` while redemptions are routed deterministically between instant and queued settlement.
-- Routing policy will be explicit and onchain-configurable (for example: idle liquidity thresholds, rate freshness, per-request instant cap, and guarded-mode queue fallback).
-- Queue infrastructure is expected to be deployed per vault (and per supported withdraw asset pair when needed), with addresses and policy versions recorded in registry state/events.
-- Backend services will remain responsible for queue settlement operations (batch execution, strategy unwind orchestration, and optional solver coordination).
-- This roadmap is intentionally deferred for now; no tranche `QueueAdapter` implementation is included in the current release.
-
-**Fork Reliability**
-- Error `block is not available` means the upstream RPC cannot serve one or more historical state queries for the forked block.
-- This is usually an RPC archival/sync limitation, not a contract bug.
-- Deterministic fork tests are pinned to block `12950000` in `test/fork/BaseForkTest.sol`.
-- Fork tests create RPC forks directly from `PHAROS_ATLANTIC_RPC_URL` with that fixed block.
-
-**Commands**
 ```bash
-./script/install-deps.sh
-forge build
-forge test
-forge coverage --report summary
-forge fmt
-```
-
-Use pnpm helpers from the repo root if preferred:
-```bash
-pnpm --filter @pti/contracts deps
 pnpm --filter @pti/contracts build
 pnpm --filter @pti/contracts test
 pnpm --filter @pti/contracts test:fork
-pnpm --filter @pti/contracts test:e2e
-pnpm --filter @pti/contracts env:doctor:infra
-pnpm --filter @pti/contracts env:doctor:vault
-pnpm --filter @pti/contracts env:doctor:keeper
-pnpm --filter @pti/contracts keeper:update-rate
-pnpm --filter @pti/contracts deploy
-pnpm --filter @pti/contracts deploy:infra
-pnpm --filter @pti/contracts deploy:vault
+pnpm --filter @pti/contracts lint
 ```
 
-**Environment**
-- Shared for all contract workflows:
-  `PHAROS_ATLANTIC_RPC_URL`
-- Script-specific (`DeployInfra.s.sol`):
-  required `PRIVATE_KEY`, optional `OWNER`
-- Script-specific (`DeployTrancheVault.s.sol`):
-  required `PRIVATE_KEY`, `TRANCHE_FACTORY`, `ASSET`
-  optional `OWNER`, `OPERATOR`, `GUARDIAN`, `STRATEGIST`, `MANAGER_ADMIN`, `BALANCER_VAULT`, token/accountant params, `MAX_RATE_AGE`
-  defaults: `OPERATOR=OWNER`, `GUARDIAN=OWNER`, `STRATEGIST=OPERATOR`, `MANAGER_ADMIN=OWNER`
-  note: `.env.example` pre-fills current Atlantic infra proxies (`TRANCHE_FACTORY`, `TRANCHE_REGISTRY`) from the latest successful `deploy:infra` run.
-- Script-specific (`UpdateExchangeRate.s.sol`):
-  required `PRIVATE_KEY`, `VAULT`, `ACCOUNTANT`, `ASSET`
-  optional `MIN_UPDATE_BPS`, `ALLOW_PAUSE_UPDATE`
+## Environment
 
-**Deploy + Verify (Blockscout)**
-- `deploy` / `deploy:infra` / `deploy:vault` all run `forge script ... --broadcast --verify` by default.
-- Chain ID and verifier endpoint are pinned in `contracts/package.json`:
-  - `--chain-id 688689`
-  - `--verifier blockscout`
-  - `--verifier-url https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract`
-- Example:
-```bash
-cd contracts
-source .env.example
-pnpm deploy:infra
-pnpm deploy:vault
-```
+See `contracts/.env.example`. The most common vars are:
+- `PHAROS_ATLANTIC_RPC_URL` (fork tests + deploy scripts)
+- `PRIVATE_KEY` (deploy scripts)
+- `TRANCHE_FACTORY` / `TRANCHE_REGISTRY` (per-vault deploy and wiring)
 
-**Latest Successful `deploy:infra` Record (Pharos Atlantic)**
-- Date: 2026-02-08
-- Chain: `688689`
-- Owner: `0x0D2FDDee5b84540A9766c025ad26dCaFb9FeF380`
-- Verification result: all 6 contracts verified successfully.
+## Deployments
 
-| Contract | Address | Block |
-|---|---|---:|
-| TrancheControllerImpl | [`0x40873215773169F1D8adF8d03EB8f355e90ED2d8`](https://atlantic.pharosscan.xyz/address/0x40873215773169F1D8adF8d03EB8f355e90ED2d8) | `13042511` |
-| TrancheTokenImpl | [`0x4b2D7C56A211506f89238Cff7e0d96771603bEF5`](https://atlantic.pharosscan.xyz/address/0x4b2D7C56A211506f89238Cff7e0d96771603bEF5) | `13042511` |
-| TrancheRegistryImpl | [`0xeab73FD82e5406858e287e33D825c3B2c83a146D`](https://atlantic.pharosscan.xyz/address/0xeab73FD82e5406858e287e33D825c3B2c83a146D) | `13042511` |
-| TrancheRegistryProxy | [`0x341A376b59c86A26324229cd467A5E3b930792C6`](https://atlantic.pharosscan.xyz/address/0x341A376b59c86A26324229cd467A5E3b930792C6) | `13042511` |
-| TrancheFactoryImpl | [`0x69F7Ca00E83828a8362865E5877E75b9b657fb77`](https://atlantic.pharosscan.xyz/address/0x69F7Ca00E83828a8362865E5877E75b9b657fb77) | `13042511` |
-| TrancheFactoryProxy | [`0x7fBaFFA7fba0C6b141cf06B01e1ba1f6FB2350F8`](https://atlantic.pharosscan.xyz/address/0x7fBaFFA7fba0C6b141cf06B01e1ba1f6FB2350F8) | `13042511` |
-
-Representative deployment tx:
-- [`0x8d0f4cc5b5ce24f32155969d090608007c4dfbe10b6433a7be1745a09764121b`](https://atlantic.pharosscan.xyz/tx/0x8d0f4cc5b5ce24f32155969d090608007c4dfbe10b6433a7be1745a09764121b)
-
-Post-deploy wiring transaction:
-- `registry.setFactory(factoryProxy)` tx: [`0x8cfd53a67fc45ad635043ff6682a776ce4cf238e925c7c0a17c11443496c6a50`](https://atlantic.pharosscan.xyz/tx/0x8cfd53a67fc45ad635043ff6682a776ce4cf238e925c7c0a17c11443496c6a50) (block `13042512`)
-
-**Execution Mode Guide**
-- Manual (local runner):
-  use when bootstrapping infrastructure, running one-off emergency actions, or validating scripts before automation.
-- Server-side (API/worker runner):
-  use for repeatable operations such as periodic `updateExchangeRate`, scheduled rebalance jobs, and operator workflow persistence.
-- Recommended production split:
-  manual for initial deploy and break-glass actions, server-side for recurring tasks with audited logs and idempotency controls.
-
-**Test Notes**
-- `test/utils/Constants.sol`: objective test constants only (time anchors, unit scales, zero address, immutable fork addresses).
-- `test/utils/Defaults.sol`: scenario defaults and fixture values (amounts, rates, role IDs, tolerances, fuzz bounds, labels/symbols).
-- `test/BaseTest.sol`: shared actor/rule/core-tranche setup used by all test layers.
-- `TrancheController` supports deposit staleness guard via `maxRateAge`; when enabled, stale accountant rates block new deposits.
-- `test/e2e/`: end-to-end lifecycle scenarios (fork-backed).
-- `test/integration/IntegrationTest.sol`: shared BoringVault deployment setup (BoringVault + `TellerWithMultiAssetSupport` + accountant + authority) for integration suites.
-- Integration tests deploy the full BoringVault dependency set (vault + teller + accountant + authority) and wire tranche contracts against that deployment.
-- Unit/invariant tests use local test doubles (`MockTeller`, `MockAccountant`) only for isolated controller math and invariant exploration.
-- Fork tests target Pharos Atlantic OpenFi `supply/withdraw` roundtrip via `OpenFiCallBuilder`.
-- Fork tests also include manager+merkle flow coverage for OpenFi and Asseto write-path interactions.
-- Set `PHAROS_ATLANTIC_RPC_URL`; fork tests require it and fail fast when unset.
-- Fork tests are pinned to block `12950000` for deterministic behavior.
-- Recommended stable flow: run `pnpm test:fork` to fork directly from RPC at the pinned block.
-- For lifecycle-only E2E validation, run `pnpm test:e2e`.
-- Quick run:
-```bash
-cd contracts
-pnpm test:fork
-pnpm test:e2e
-```
+Current Pharos Atlantic deployments and verification status are listed in the root `README.md`.
