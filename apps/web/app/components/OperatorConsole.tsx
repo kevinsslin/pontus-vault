@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   OperatorCreateOperationRequest,
@@ -16,6 +15,7 @@ import type {
   VaultStatus,
 } from "@pti/shared";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import TokenBadge from "./TokenBadge";
 
 type OperatorConsoleProps = {
   vaults: VaultRecord[];
@@ -47,24 +47,20 @@ const DEFAULT_ASSET_ADDRESSES: Record<string, string> = {
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const PHAROS_CHAIN_LABEL = "Pharos Atlantic";
 const PHAROS_CHAIN_KEY = "pharos-atlantic";
-const PHAROS_CHAIN_ICON = "/partners/pharos.png";
 
 const ASSET_OPTIONS: Array<{
   symbol: string;
   address: string;
-  tokenIcon: string;
   label: string;
 }> = [
   {
     symbol: "USDC",
     address: DEFAULT_ASSET_ADDRESSES.USDC,
-    tokenIcon: "/tokens/usdc.svg",
     label: "USDC",
   },
   {
     symbol: "USDT",
     address: DEFAULT_ASSET_ADDRESSES.USDT,
-    tokenIcon: "/tokens/usdt.svg",
     label: "USDT",
   },
 ];
@@ -1159,43 +1155,29 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                     </select>
                   </label>
                   <label className="field operator-grid__full">
-                    <span>Asset</span>
-                    <div className="asset-picker">
-                      {ASSET_OPTIONS.map((asset) => {
-                        const selected = asset.symbol === draftVaultAssetSymbol;
-                        return (
-                          <button
-                            key={asset.symbol}
-                            type="button"
-                            className={`asset-picker__option ${selected ? "asset-picker__option--active" : ""}`}
-                            onClick={() => {
-                              setDraftVaultAssetSymbol(asset.symbol);
-                              setDraftVaultAssetAddress(asset.address);
-                            }}
-                          >
-                            <span className="asset-picker__icons">
-                              <Image
-                                src={asset.tokenIcon}
-                                alt={asset.label}
-                                width={20}
-                                height={20}
-                              />
-                              <Image
-                                src={PHAROS_CHAIN_ICON}
-                                alt={PHAROS_CHAIN_LABEL}
-                                width={20}
-                                height={20}
-                              />
-                            </span>
-                            <span className="asset-picker__label">
-                              {asset.label} · {PHAROS_CHAIN_LABEL}
-                            </span>
-                          </button>
-                        );
-                      })}
+                    <span>Accepted asset</span>
+                    <div className="asset-select">
+                      <TokenBadge symbol={draftVaultAssetSymbol} />
+                      <select
+                        value={draftVaultAssetSymbol}
+                        onChange={(event) => {
+                          const symbol = event.target.value;
+                          const selected = ASSET_OPTIONS.find((asset) => asset.symbol === symbol);
+                          if (!selected) return;
+                          setDraftVaultAssetSymbol(selected.symbol);
+                          setDraftVaultAssetAddress(selected.address);
+                        }}
+                      >
+                        {ASSET_OPTIONS.map((asset) => (
+                          <option key={asset.symbol} value={asset.symbol}>
+                            {asset.label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <p className="muted">
-                      Address: <span className="operator-mono">{shortHash(draftVaultAssetAddress)}</span>
+                      Asset address:{" "}
+                      <span className="operator-mono">{shortHash(draftVaultAssetAddress)}</span>
                     </p>
                   </label>
                 </div>

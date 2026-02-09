@@ -1827,6 +1827,16 @@ a:focus-visible {
   gap: 10px;
 }
 
+.asset-select {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.asset-select select {
+  flex: 1;
+}
+
 .asset-picker__option {
   display: flex;
   align-items: center;
