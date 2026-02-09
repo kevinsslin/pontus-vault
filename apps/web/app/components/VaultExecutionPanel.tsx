@@ -366,13 +366,17 @@ async function sendTx(
   const value = params.valueWei ?? 0n;
   const walletClient = connector.getWalletClient?.();
   if (walletClient?.sendTransaction) {
-    const txHash = await walletClient.sendTransaction({
+    // Connector types omit `chain` but viem WalletClient requires it at runtime
+    const txParams = {
       chain: PHAROS_VIEM_CHAIN,
-      account: params.from as `0x${string}`,
-      to: params.to as `0x${string}`,
+      account: params.from,
+      to: params.to,
       data: params.data,
       value,
-    });
+    };
+    const txHash = await walletClient.sendTransaction(
+      txParams as { account?: string; to: string; data?: `0x${string}`; value?: bigint }
+    );
     if (txHash) return typeof txHash === "string" ? txHash : String(txHash);
   }
 
