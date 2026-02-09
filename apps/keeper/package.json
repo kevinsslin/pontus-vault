@@ -10,7 +10,9 @@
   "scripts": {
     "start": "node src/rate-updater.mjs",
     "start:once": "KEEPER_RUN_ONCE=true node src/rate-updater.mjs",
+    "prestart:deploy-executor": "pnpm --filter @pti/shared build",
     "start:deploy-executor": "node src/deploy-executor.mjs",
+    "prestart:operator-worker": "pnpm --filter @pti/shared build",
     "start:operator-worker": "node src/operator-worker.mjs"
   }
 }

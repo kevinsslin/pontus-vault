@@ -34,5 +34,6 @@ export const PHAROS_ATLANTIC = {
   }
 } as const;
 
-export * from "./vaults";
-export * from "./operator";
+// ESM build targets Node runtime (keeper), so keep explicit .js specifiers.
+export * from "./vaults.js";
+export * from "./operator.js";
