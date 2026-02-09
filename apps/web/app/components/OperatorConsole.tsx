@@ -277,6 +277,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const [profileRouteLabel, setProfileRouteLabel] = useState("");
   const [profileBanner, setProfileBanner] = useState("");
   const [profileDisplayOrder, setProfileDisplayOrder] = useState("");
+  const [profileStrategyKeys, setProfileStrategyKeys] = useState("");
   const [profileTags, setProfileTags] = useState("");
   const [routeCapabilities, setRouteCapabilities] = useState<Record<string, boolean>>({
     "openfi-supply": true,
@@ -420,6 +421,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         ? String(selectedVault.uiConfig.displayOrder)
         : ""
     );
+    setProfileStrategyKeys((selectedVault.uiConfig.strategyKeys ?? []).join(", "));
     setProfileTags((selectedVault.uiConfig.tags ?? []).join(", "));
     setRateUpdateAccountant(selectedVault.uiConfig.accountantAddress ?? "");
   }, [selectedVault]);
@@ -601,6 +603,10 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         .split(",")
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0);
+      const strategyKeys = profileStrategyKeys
+        .split(",")
+        .map((key) => key.trim())
+        .filter((key) => key.length > 0);
 
       const response = await fetch(`/api/operator/vaults/${selectedVault.vaultId}`, {
         method: "PATCH",
@@ -612,6 +618,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
             status: profileStatus,
             summary: profileSummary,
             risk: profileRisk,
+            strategyKeys,
             routeLabel: profileRouteLabel,
             banner: profileBanner,
             displayOrder: displayOrder !== undefined ? Math.floor(displayOrder) : undefined,
@@ -1243,6 +1250,17 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                     inputMode="numeric"
                     placeholder="0"
                   />
+                </label>
+                <label className="field operator-grid__full">
+                  <span>Strategy keys (comma separated)</span>
+                  <input
+                    value={profileStrategyKeys}
+                    onChange={(event) => setProfileStrategyKeys(event.target.value)}
+                    placeholder="openfi-lending, asseto-cash-plus"
+                  />
+                  <p className="muted">
+                    Metadata only. Onchain execution is enforced by the manager allowlist/root.
+                  </p>
                 </label>
                 <label className="field">
                   <span>Strategy label</span>

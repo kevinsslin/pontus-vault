@@ -46,6 +46,9 @@ function cleanUiConfig(
   return {
     ...uiConfig,
     risk: cleanOptionalText(uiConfig.risk),
+    strategyKeys: uiConfig.strategyKeys
+      ?.map((key) => key.trim())
+      .filter((key) => key.length > 0),
     routeLabel: cleanOptionalText(uiConfig.routeLabel),
     summary: cleanOptionalText(uiConfig.summary),
     banner: cleanOptionalText(uiConfig.banner),

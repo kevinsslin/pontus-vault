@@ -163,6 +163,7 @@ export const OperatorEditableVaultUiConfigSchema = z.object({
   status: VaultStatusSchema.optional(),
   displayOrder: z.number().int().min(0).max(10_000).optional(),
   risk: z.string().max(80).optional(),
+  strategyKeys: z.array(z.string().max(80)).max(16).optional(),
   routeLabel: z.string().max(80).optional(),
   summary: z.string().max(320).optional(),
   tags: z.array(z.string().max(40)).max(16).optional(),
