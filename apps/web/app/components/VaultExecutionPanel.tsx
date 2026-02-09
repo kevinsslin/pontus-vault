@@ -25,7 +25,11 @@ export default function VaultExecutionPanel({
   const actionLabel = isDeposit ? "Deposit" : "Redeem";
   const inputLabel = isDeposit ? `Amount (${vault.assetSymbol})` : "Shares";
   const submitLabel = isDeposit ? "Submit deposit" : "Submit redeem";
-  const routeLabel = vault.uiConfig.routeLabel ?? vault.route;
+  const routeLabel =
+    vault.uiConfig.routeLabel ??
+    (vault.uiConfig.strategyKeys && vault.uiConfig.strategyKeys.length > 0
+      ? vault.uiConfig.strategyKeys.join(" + ")
+      : "Multi-strategy");
   const selectedApy = formatBps(
     tranche === "senior" ? vault.metrics.seniorApyBps ?? null : vault.metrics.juniorApyBps ?? null
   );

@@ -22,10 +22,10 @@ const CreateDraftVaultRequestSchema = z.object({
   vaultId: z.string().min(1).max(120).optional(),
   chain: z.string().min(1).max(80).default("pharos-atlantic"),
   name: z.string().min(1).max(140),
-  route: z.string().min(1).max(120),
   assetSymbol: z.string().min(1).max(40),
   assetAddress: AddressSchema,
   status: z.enum(["LIVE", "COMING_SOON"]).optional(),
+  strategyKeys: z.array(z.string().min(1).max(80)).max(16).optional(),
 });
 
 function isAddressLike(value: string): boolean {
@@ -87,7 +87,6 @@ export async function POST(request: Request) {
             vaultId,
             chain: parsed.chain,
             name: parsed.name,
-            route: parsed.route,
             assetSymbol: parsed.assetSymbol,
             assetAddress: parsed.assetAddress,
             controllerAddress: ZERO_ADDRESS,
@@ -98,6 +97,7 @@ export async function POST(request: Request) {
             managerAddress: ZERO_ADDRESS,
             uiConfig: {
               status,
+              strategyKeys: parsed.strategyKeys,
             },
             metrics: {
               tvl: null,
@@ -120,7 +120,6 @@ export async function POST(request: Request) {
       vaultId,
       chain: parsed.chain,
       name: parsed.name,
-      route: parsed.route,
       assetSymbol: parsed.assetSymbol,
       assetAddress: parsed.assetAddress,
       controllerAddress: ZERO_ADDRESS,
@@ -131,6 +130,7 @@ export async function POST(request: Request) {
       managerAddress: ZERO_ADDRESS,
       uiConfig: {
         status,
+        strategyKeys: parsed.strategyKeys,
       },
     });
 

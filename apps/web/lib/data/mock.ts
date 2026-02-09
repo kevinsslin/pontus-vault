@@ -6,7 +6,6 @@ export const MOCK_VAULTS: VaultRecord[] = [
     vaultId: "0",
     chain: PHAROS_CHAIN_SLUG,
     name: "Pontus Vault USDC Lending S1",
-    route: "lending",
     assetSymbol: "USDC",
     assetAddress: "0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8",
     controllerAddress: "0x0000000000000000000000000000000000000000",
@@ -19,6 +18,7 @@ export const MOCK_VAULTS: VaultRecord[] = [
       status: "LIVE",
       displayOrder: 1,
       risk: "LOW",
+      strategyKeys: ["openfi-lending"],
       routeLabel: "OpenFi lending",
       summary:
         "Blue-chip USDC lending routed through OpenFi. Senior is capped; junior takes the volatility.",
@@ -41,7 +41,6 @@ export const MOCK_VAULTS: VaultRecord[] = [
     vaultId: "1",
     chain: PHAROS_CHAIN_SLUG,
     name: "Pontus Vault USDT T-Bills S1",
-    route: "t-bill",
     assetSymbol: "USDT",
     assetAddress: "0xE7E84B8B4f39C507499c40B4ac199B050e2882d5",
     controllerAddress: "0x0000000000000000000000000000000000000000",
@@ -54,6 +53,7 @@ export const MOCK_VAULTS: VaultRecord[] = [
       status: "COMING_SOON",
       displayOrder: 2,
       risk: "LOW",
+      strategyKeys: ["t-bill"],
       routeLabel: "Tokenized T-Bills",
       summary:
         "Short-duration treasury exposure for the senior tranche with conservative drawdown control.",
@@ -76,7 +76,6 @@ export const MOCK_VAULTS: VaultRecord[] = [
     vaultId: "2",
     chain: PHAROS_CHAIN_SLUG,
     name: "Pontus Vault Delta Neutral Credit S1",
-    route: "credit",
     assetSymbol: "USDC",
     assetAddress: "0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8",
     controllerAddress: "0x0000000000000000000000000000000000000000",
@@ -89,6 +88,7 @@ export const MOCK_VAULTS: VaultRecord[] = [
       status: "COMING_SOON",
       displayOrder: 3,
       risk: "MEDIUM",
+      strategyKeys: ["credit"],
       routeLabel: "Delta-neutral credit",
       summary:
         "Structured credit sleeve with volatility hedged down to senior-friendly ranges.",

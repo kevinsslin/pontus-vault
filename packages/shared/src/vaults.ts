@@ -10,6 +10,7 @@ export const VaultUiConfigSchema = z.object({
   status: VaultStatusSchema,
   displayOrder: z.number().int().optional(),
   risk: z.string().optional(),
+  strategyKeys: z.array(z.string().max(80)).max(16).optional(),
   routeLabel: z.string().optional(),
   summary: z.string().optional(),
   tags: z.array(z.string()).optional(),
@@ -87,7 +88,9 @@ export const SupabaseVaultRegistryRowSchema = z.object({
   vault_id: z.string(),
   chain: z.string(),
   name: z.string(),
-  route: z.string(),
+  // Legacy single-route marker kept for compatibility with existing rows.
+  // Newer clients should use ui_config.strategyKeys for multi-strategy vaults.
+  route: z.string().optional(),
   asset_symbol: z.string(),
   asset_address: z.string(),
   controller_address: z.string(),
@@ -104,7 +107,6 @@ export const VaultRecordSchema = z.object({
   vaultId: z.string(),
   chain: z.string(),
   name: z.string(),
-  route: z.string(),
   assetSymbol: z.string(),
   assetAddress: z.string(),
   controllerAddress: z.string(),
@@ -173,7 +175,6 @@ export type OperatorEditableVaultUiConfig = z.infer<
 export const OperatorUpdateVaultRequestSchema = z.object({
   requestedBy: z.string().min(1).max(120),
   name: z.string().max(140).optional(),
-  route: z.string().max(120).optional(),
   uiConfig: OperatorEditableVaultUiConfigSchema.optional(),
 });
 export type OperatorUpdateVaultRequest = z.infer<

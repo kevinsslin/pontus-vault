@@ -59,11 +59,16 @@ export default async function VaultDetailPage({
   const juniorMix = seniorMix === null ? null : Math.max(0, 100 - seniorMix);
   const updatedLabel = formatRelativeTimestamp(vault.metrics.updatedAt);
   const mobileVaultTitle = vault.name.replace(/^Pontus Vault\s+/i, "").trim() || vault.name;
+  const strategyLabel =
+    vault.uiConfig.routeLabel ??
+    (vault.uiConfig.strategyKeys && vault.uiConfig.strategyKeys.length > 0
+      ? vault.uiConfig.strategyKeys.join(" + ")
+      : "Multi-strategy");
   const trendSeries = buildTrendSeries(
     vault.metrics.seniorPrice,
     vault.metrics.juniorPrice,
   );
-  const assetAllocation = buildAssetAllocation(vault.route, vault.metrics.tvl);
+  const assetAllocation = buildAssetAllocation(strategyLabel, vault.metrics.tvl);
 
   return (
     <main className="page">
@@ -91,7 +96,7 @@ export default async function VaultDetailPage({
           </article>
           <article className="card vault-profile-item">
             <span className="stat-label">Route</span>
-            <strong>{vault.uiConfig.routeLabel ?? vault.route}</strong>
+            <strong>{strategyLabel}</strong>
           </article>
         </div>
       </section>
@@ -151,8 +156,8 @@ export default async function VaultDetailPage({
                     </span>
                   </div>
                   <div className="row">
-                    <span className="key">Route</span>
-                    <span className="value">{vault.route}</span>
+                    <span className="key">Strategies</span>
+                    <span className="value">{strategyLabel}</span>
                   </div>
                   <div className="row">
                     <span className="key">Risk</span>

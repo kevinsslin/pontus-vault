@@ -348,11 +348,14 @@ export async function POST(request: Request) {
     const deploymentBlock = await fetchTxBlockNumber(result.txHash);
 
     const runtime = resolveLiveDataRuntimeConfig();
+    const baseUiConfig = normalizeVaultUiConfig(parsed.uiConfig);
+    const strategyKeys = baseUiConfig.strategyKeys?.includes(parsed.route)
+      ? baseUiConfig.strategyKeys
+      : [...(baseUiConfig.strategyKeys ?? []), parsed.route];
     await upsertVaultRegistryRow(runtime.supabaseUrl, runtime.supabaseKey, {
       vaultId: parsed.vaultId,
       chain: parsed.chain,
       name: parsed.name,
-      route: parsed.route,
       assetSymbol: parsed.assetSymbol,
       assetAddress: parsed.assetAddress,
       controllerAddress: result.trancheController,
@@ -362,7 +365,8 @@ export async function POST(request: Request) {
       tellerAddress: result.teller,
       managerAddress: result.manager,
       uiConfig: {
-        ...normalizeVaultUiConfig(parsed.uiConfig),
+        ...baseUiConfig,
+        strategyKeys,
         paramsHash: result.paramsHash,
         owner,
         deployTxHash: result.txHash,

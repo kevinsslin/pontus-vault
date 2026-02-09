@@ -271,7 +271,6 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const [rateUpdateMinBps, setRateUpdateMinBps] = useState("1");
   const [rateUpdateAllowPause, setRateUpdateAllowPause] = useState(false);
   const [profileName, setProfileName] = useState("");
-  const [profileRoute, setProfileRoute] = useState("");
   const [profileStatus, setProfileStatus] = useState<VaultStatus>("COMING_SOON");
   const [profileSummary, setProfileSummary] = useState("");
   const [profileRisk, setProfileRisk] = useState("");
@@ -411,7 +410,6 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   useEffect(() => {
     if (!selectedVault) return;
     setProfileName(selectedVault.name);
-    setProfileRoute(selectedVault.route);
     setProfileStatus(selectedVault.uiConfig.status);
     setProfileSummary(selectedVault.uiConfig.summary ?? "");
     setProfileRisk(selectedVault.uiConfig.risk ?? "");
@@ -610,7 +608,6 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         body: JSON.stringify({
           requestedBy: walletAddress,
           name: profileName,
-          route: profileRoute,
           uiConfig: {
             status: profileStatus,
             summary: profileSummary,
@@ -718,17 +715,14 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     }
 
     const name = draftVaultName.trim();
-    const route = draftVaultRoute.trim();
     const assetSymbol = draftVaultAssetSymbol.trim();
     const assetAddress = draftVaultAssetAddress.trim();
     const chain = draftVaultChain.trim();
+    const strategyKey = draftVaultRoute.trim();
+    const strategyKeys = strategyKey.length > 0 ? [strategyKey] : [];
 
     if (!name) {
       setErrorMessage("Vault name is required.");
-      return;
-    }
-    if (!route) {
-      setErrorMessage("Strategy route is required.");
       return;
     }
     if (!assetSymbol) {
@@ -752,10 +746,10 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
           requestedBy: walletAddress,
           chain,
           name,
-          route,
           assetSymbol,
           assetAddress,
           status: draftVaultStatus,
+          strategyKeys: strategyKeys.length > 0 ? strategyKeys : undefined,
         }),
       });
       const payload = await response.json();
@@ -1110,7 +1104,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                     />
                   </label>
                   <label className="field operator-grid__full">
-                    <span>Strategy route</span>
+                    <span>Strategy preset (optional)</span>
                     <select
                       value={draftVaultRoutePreset}
                       onChange={(event) => setDraftVaultRoutePreset(event.target.value)}
@@ -1122,8 +1116,8 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                       ))}
                     </select>
                     <p className="muted">
-                      This is an internal identifier used by the operator, indexer, and front-end
-                      to select the integration playbook. It is not an onchain setting.
+                      This seeds discovery metadata (ui_config.strategyKeys). Vaults can support
+                      multiple strategies; this preset does not restrict onchain execution.
                     </p>
                     {draftVaultRoutePreset === "custom" ? (
                       <input
@@ -1251,15 +1245,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                   />
                 </label>
                 <label className="field">
-                  <span>Route key</span>
-                  <input
-                    value={profileRoute}
-                    onChange={(event) => setProfileRoute(event.target.value)}
-                    placeholder="openfi-lending"
-                  />
-                </label>
-                <label className="field">
-                  <span>Route label</span>
+                  <span>Strategy label</span>
                   <input
                     value={profileRouteLabel}
                     onChange={(event) => setProfileRouteLabel(event.target.value)}

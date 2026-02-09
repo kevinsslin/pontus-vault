@@ -83,7 +83,6 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       vaultId,
       {
         name: parsed.name,
-        route: parsed.route,
         uiConfig: parsed.uiConfig,
       },
       source

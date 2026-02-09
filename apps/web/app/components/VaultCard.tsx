@@ -32,6 +32,11 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
   const juniorRate = formatBps(vault.metrics.juniorApyBps ?? null);
   const seniorProfile = getRateProfile(vault, "senior");
   const juniorProfile = getRateProfile(vault, "junior");
+  const strategyLabel =
+    vault.uiConfig.routeLabel ??
+    (vault.uiConfig.strategyKeys && vault.uiConfig.strategyKeys.length > 0
+      ? vault.uiConfig.strategyKeys.join(" + ")
+      : "Multi-strategy");
 
   return (
     <article className="card vault-card">
@@ -56,7 +61,7 @@ export default function VaultCard({ vault }: { vault: VaultRecord }) {
         </div>
         <div className="vault-card__meta-item">
           <span className="stat-label">Route</span>
-          <strong>{vault.uiConfig.routeLabel ?? vault.route}</strong>
+          <strong>{strategyLabel}</strong>
         </div>
       </div>
 

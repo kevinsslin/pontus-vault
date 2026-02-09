@@ -214,7 +214,9 @@ function buildRebalanceSteps(
   request: OperatorCreateOperationRequest
 ): StepBlueprint[] {
   const options = request.options ?? {};
-  const route = String(options.route ?? vault.route);
+  const defaultRouteKey =
+    vault.uiConfig.strategyKeys?.[0] ?? vault.uiConfig.routeLabel ?? "multi-strategy";
+  const route = String(options.route ?? defaultRouteKey);
   const intent =
     String(options.intent ?? "deploy-capital") === "raise-cash"
       ? "raise-cash"

@@ -23,7 +23,6 @@ export async function fetchVaultRegistry(
 
 type VaultRegistryUpdate = {
   name?: string;
-  route?: string;
   uiConfig?: Record<string, unknown>;
 };
 
@@ -31,7 +30,6 @@ type VaultRegistryUpsert = {
   vaultId: string;
   chain: string;
   name: string;
-  route: string;
   assetSymbol: string;
   assetAddress: string;
   controllerAddress: string;
@@ -79,9 +77,6 @@ export async function updateVaultRegistryRow(
   if (update.name !== undefined) {
     payload.name = update.name;
   }
-  if (update.route !== undefined) {
-    payload.route = update.route;
-  }
 
   const { data, error } = await supabase
     .from("vault_registry")
@@ -116,7 +111,9 @@ export async function upsertVaultRegistryRow(
         vault_id: payload.vaultId,
         chain: payload.chain,
         name: payload.name,
-        route: payload.route,
+        // Strategy selection is multi-valued and stored in ui_config.strategyKeys.
+        // The legacy route column is kept for compatibility and set to a stable marker.
+        route: "multi-strategy",
         asset_symbol: payload.assetSymbol,
         asset_address: payload.assetAddress,
         controller_address: payload.controllerAddress,

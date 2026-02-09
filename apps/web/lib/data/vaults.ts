@@ -27,7 +27,6 @@ type LiveVaultsResult = {
 
 type VaultMetadataPatch = {
   name?: string;
-  route?: string;
   uiConfig?: OperatorEditableVaultUiConfig;
 };
 
@@ -65,7 +64,6 @@ function applyVaultPatch(vault: VaultRecord, patch: VaultMetadataPatch): VaultRe
   return {
     ...vault,
     name: cleanOptionalText(patch.name) ?? vault.name,
-    route: cleanOptionalText(patch.route) ?? vault.route,
     uiConfig: nextUiConfig,
   };
 }
@@ -109,12 +107,16 @@ async function getLiveVaults(): Promise<LiveVaultsResult> {
       row.controller_address || row.vault_address || row.manager_address || ""
     );
     const metrics = indexerMap.get(controllerKey);
+    const normalizedUiConfig = normalizeVaultUiConfig(row.ui_config);
+    const uiConfig =
+      normalizedUiConfig.strategyKeys || !row.route
+        ? normalizedUiConfig
+        : { ...normalizedUiConfig, strategyKeys: [row.route] };
 
     return {
       vaultId: row.vault_id,
       chain: row.chain,
       name: row.name,
-      route: row.route,
       assetSymbol: row.asset_symbol,
       assetAddress: row.asset_address,
       controllerAddress: row.controller_address,
@@ -123,7 +125,7 @@ async function getLiveVaults(): Promise<LiveVaultsResult> {
       vaultAddress: row.vault_address,
       tellerAddress: row.teller_address,
       managerAddress: row.manager_address,
-      uiConfig: normalizeVaultUiConfig(row.ui_config),
+      uiConfig,
       metrics: {
         tvl: metrics?.tvl ?? null,
         seniorApyBps: metrics?.seniorApyBps ?? null,
@@ -213,7 +215,6 @@ export async function updateVaultMetadata(
     const nextPatch: VaultMetadataPatch = {
       ...priorPatch,
       name: patch.name ?? priorPatch.name,
-      route: patch.route ?? priorPatch.route,
       uiConfig: {
         ...(priorPatch.uiConfig ?? {}),
         ...(cleanUiConfig(patch.uiConfig) ?? {}),
@@ -237,7 +238,6 @@ export async function updateVaultMetadata(
 
   await updateVaultRegistryRow(supabaseUrl, supabaseKey, vaultId, {
     name: cleanOptionalText(patch.name),
-    route: cleanOptionalText(patch.route),
     uiConfig: mergedUiConfig,
   });
 
