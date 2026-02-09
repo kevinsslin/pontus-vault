@@ -111,9 +111,6 @@ export async function upsertVaultRegistryRow(
         vault_id: payload.vaultId,
         chain: payload.chain,
         name: payload.name,
-        // Strategy selection is multi-valued and stored in ui_config.strategyKeys.
-        // The legacy route column is kept for compatibility and set to a stable marker.
-        route: "multi-strategy",
         asset_symbol: payload.assetSymbol,
         asset_address: payload.assetAddress,
         controller_address: payload.controllerAddress,

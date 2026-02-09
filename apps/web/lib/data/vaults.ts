@@ -110,11 +110,7 @@ async function getLiveVaults(): Promise<LiveVaultsResult> {
       row.controller_address || row.vault_address || row.manager_address || ""
     );
     const metrics = indexerMap.get(controllerKey);
-    const normalizedUiConfig = normalizeVaultUiConfig(row.ui_config);
-    const uiConfig =
-      normalizedUiConfig.strategyKeys || !row.route
-        ? normalizedUiConfig
-        : { ...normalizedUiConfig, strategyKeys: [row.route] };
+    const uiConfig = normalizeVaultUiConfig(row.ui_config);
 
     return {
       vaultId: row.vault_id,

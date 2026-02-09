@@ -2,7 +2,6 @@ insert into public.vault_registry (
   vault_id,
   chain,
   name,
-  route,
   asset_symbol,
   asset_address,
   controller_address,
@@ -17,7 +16,6 @@ insert into public.vault_registry (
     '0',
     'pharos-atlantic',
     'Pontus Vault USDC Lending S1',
-    'lending',
     'USDC',
     '0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8',
     '0x0000000000000000000000000000000000000000',
@@ -26,13 +24,12 @@ insert into public.vault_registry (
     '0x0000000000000000000000000000000000000000',
     '0x0000000000000000000000000000000000000000',
     '0x0000000000000000000000000000000000000000',
-    '{"status":"LIVE","displayOrder":1,"risk":"LOW","featured":true,"tags":["lending","stable"]}'::jsonb
+    '{"status":"LIVE","displayOrder":1,"risk":"LOW","strategyKeys":["openfi-lending"],"tags":["lending","stable"]}'::jsonb
   ),
   (
     '1',
     'pharos-atlantic',
     'Pontus Vault USDT T-Bills S1',
-    't-bill',
     'USDT',
     '0x0000000000000000000000000000000000000000',
     '0x0000000000000000000000000000000000000000',
@@ -41,13 +38,12 @@ insert into public.vault_registry (
     '0x0000000000000000000000000000000000000000',
     '0x0000000000000000000000000000000000000000',
     '0x0000000000000000000000000000000000000000',
-    '{"status":"COMING_SOON","displayOrder":2,"risk":"LOW","tags":["rwa","t-bill"]}'::jsonb
+    '{"status":"COMING_SOON","displayOrder":2,"risk":"LOW","strategyKeys":["t-bill"],"tags":["rwa","t-bill"]}'::jsonb
   ),
   (
     '2',
     'pharos-atlantic',
     'Pontus Vault Delta Neutral Credit S1',
-    'credit',
     'USDC',
     '0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8',
     '0x0000000000000000000000000000000000000000',
@@ -56,12 +52,11 @@ insert into public.vault_registry (
     '0x0000000000000000000000000000000000000000',
     '0x0000000000000000000000000000000000000000',
     '0x0000000000000000000000000000000000000000',
-    '{"status":"COMING_SOON","displayOrder":3,"risk":"MEDIUM","tags":["credit","delta-neutral"]}'::jsonb
+    '{"status":"COMING_SOON","displayOrder":3,"risk":"MEDIUM","strategyKeys":["credit"],"tags":["credit","delta-neutral"]}'::jsonb
   )
 on conflict (vault_id) do update set
   chain = excluded.chain,
   name = excluded.name,
-  route = excluded.route,
   asset_symbol = excluded.asset_symbol,
   asset_address = excluded.asset_address,
   controller_address = excluded.controller_address,

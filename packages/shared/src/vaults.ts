@@ -88,9 +88,6 @@ export const SupabaseVaultRegistryRowSchema = z.object({
   vault_id: z.string(),
   chain: z.string(),
   name: z.string(),
-  // Legacy single-route marker kept for compatibility with existing rows.
-  // Newer clients should use ui_config.strategyKeys for multi-strategy vaults.
-  route: z.string().optional(),
   asset_symbol: z.string(),
   asset_address: z.string(),
   controller_address: z.string(),
