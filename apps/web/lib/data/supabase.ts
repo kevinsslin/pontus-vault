@@ -21,6 +21,26 @@ export async function fetchVaultRegistry(
   return SupabaseVaultRegistryRowSchema.array().parse(data ?? []);
 }
 
+export async function getVaultRegistryRow(
+  supabaseUrl: string,
+  supabaseKey: string,
+  vaultId: string
+): Promise<SupabaseVaultRegistryRow | null> {
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false },
+  });
+  const { data, error } = await supabase
+    .from("vault_registry")
+    .select("*")
+    .eq("vault_id", vaultId)
+    .maybeSingle();
+  if (error) {
+    throw new Error(error.message);
+  }
+  if (!data) return null;
+  return SupabaseVaultRegistryRowSchema.parse(data);
+}
+
 type VaultRegistryUpdate = {
   name?: string;
   uiConfig?: Record<string, unknown>;

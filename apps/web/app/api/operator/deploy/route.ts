@@ -37,6 +37,8 @@ type RouteDeployExecution = {
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+/** Allow Forge script + verify to finish (Vercel Pro: up to 300s). */
+export const maxDuration = 120;
 
 function isAddressLike(value: string): boolean {
   return /^0x[a-fA-F0-9]{40}$/.test(value);

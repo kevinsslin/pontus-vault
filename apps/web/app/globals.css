@@ -2061,6 +2061,40 @@ button.operator-table__row {
   font-weight: 560;
 }
 
+.operator-local-deploy {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--pv-line);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.operator-pre {
+  white-space: pre-wrap;
+  font-size: 11px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.operator-label {
+  font-size: 13px;
+  font-weight: 560;
+  color: var(--pv-ink-700);
+}
+
+.operator-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--pv-line);
+  background: rgba(5, 25, 46, 0.02);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
 .operator-info {
   margin: 0;
   color: var(--pv-accent);

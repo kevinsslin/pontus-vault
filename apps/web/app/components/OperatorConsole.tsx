@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   OperatorCreateOperationRequest,
@@ -234,6 +235,7 @@ function summarizeStepsForTable(steps: OperatorOperationStep[] | undefined): str
 }
 
 export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
+  const router = useRouter();
   const primaryWallet = useOptionalPrimaryWallet();
   const walletAddress = primaryWallet?.address ?? "";
 
@@ -299,7 +301,6 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const [draftVaultChain, setDraftVaultChain] = useState(PHAROS_CHAIN_KEY);
   const [draftVaultAssetSymbol, setDraftVaultAssetSymbol] = useState(ASSET_OPTIONS[0].symbol);
   const [draftVaultAssetAddress, setDraftVaultAssetAddress] = useState(ASSET_OPTIONS[0].address);
-
   const selectedVault = useMemo(
     () => vaultRecords.find((vault) => vault.vaultId === selectedVaultId) ?? null,
     [vaultRecords, selectedVaultId]
@@ -958,22 +959,62 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         if (!walletAddress) {
           throw new Error("Connect an operator wallet first.");
         }
-        if (["BROADCASTED", "RUNNING"].includes(step.status)) {
-          setInfoMessage("Deployment is already queued.");
-          return;
-        }
-
         const priorStep = activeOperation.steps.find(
           (candidate) => candidate.stepIndex === step.stepIndex - 1
         );
         if (priorStep && !["SUCCEEDED", "CONFIRMED"].includes(priorStep.status)) {
-          throw new Error("Sign deployment intent before queueing execution.");
+          throw new Error("Sign deployment intent before executing deploy.");
+        }
+        const vault = vaultRecords.find((v) => v.vaultId === activeOperation.operation.vaultId);
+        if (!vault) {
+          throw new Error("Vault record not found. Refresh and try again.");
+        }
+        const step0 = activeOperation.steps.find((s) => s.stepIndex === 0);
+        const params = step0?.metadata?.params as Record<string, unknown> | undefined;
+        const supportedRoutes = (step0?.metadata?.supportedRoutes as string[] | undefined) ?? params?.strategyKeys;
+        const route =
+          (Array.isArray(supportedRoutes) && supportedRoutes[0]) ||
+          (typeof params?.route === "string" && params.route) ||
+          "openfi-lending";
+
+        await patchStep(activeOperation.operation.operationId, step.stepIndex, { status: "RUNNING" });
+
+        const deployRes = await fetch("/api/operator/deploy", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            requestedBy: activeOperation.operation.requestedBy,
+            owner: (params?.owner as string) ?? activeOperation.operation.requestedBy,
+            vaultId: activeOperation.operation.vaultId,
+            chain: activeOperation.operation.chain,
+            name: vault.name,
+            route,
+            assetSymbol: vault.assetSymbol,
+            assetAddress: vault.assetAddress,
+            uiConfig: vault.uiConfig ?? {},
+          }),
+        });
+        const deployPayload = await deployRes.json();
+
+        if (!deployRes.ok) {
+          await patchStep(activeOperation.operation.operationId, step.stepIndex, {
+            status: "FAILED",
+            errorCode: "EXECUTION_ERROR",
+            errorMessage: deployPayload?.error ?? "Deploy failed.",
+          });
+          throw new Error(deployPayload?.error ?? "Deploy failed.");
         }
 
+        const txHash = deployPayload?.txHash ?? null;
         await patchStep(activeOperation.operation.operationId, step.stepIndex, {
-          status: "BROADCASTED",
+          status: "CONFIRMED",
+          ...(txHash ? { txHash } : {}),
         });
-        setInfoMessage("Deployment queued. Keeper will execute and sync results.");
+        setInfoMessage(
+          txHash ? `Deployment confirmed. Tx: ${shortHash(txHash)}.` : "Deployment completed."
+        );
+        await loadOperations(activeOperation.operation.vaultId);
+        router.refresh();
         return;
       }
 
@@ -1706,10 +1747,8 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                   activeOperation.operation.jobType === "DEPLOY_VAULT" &&
                   step.kind === "OFFCHAIN" &&
                   step.label === "Execute deployment transaction";
-                const isServerDeployQueued =
-                  isServerDeployStep && ["BROADCASTED", "RUNNING"].includes(step.status);
                 const disableExecute =
-                  isBusy || isStepTerminal(step.status) || isServerDeployQueued;
+                  isBusy || isStepTerminal(step.status);
                 return (
                   <article className="operator-step" key={step.stepId}>
                     <div className="operator-step__head">
@@ -1742,11 +1781,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                         {isBusy
                           ? "Executing..."
                           : isServerDeployStep
-                            ? step.status === "CREATED"
-                              ? "Queue deployment"
-                              : step.status === "RUNNING"
-                                ? "Running..."
-                                : "Queued"
+                            ? "Deploy now"
                           : step.kind === "ONCHAIN" && EXECUTION_MODE === "send_transaction"
                             ? "Sign & send"
                             : "Sign & record"}
