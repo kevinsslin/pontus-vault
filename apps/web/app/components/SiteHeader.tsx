@@ -18,8 +18,8 @@ export default function SiteHeader() {
             <Image
               src="/logo-nav.png"
               alt="Pontus Vault"
-              width={180}
-              height={44}
+              width={220}
+              height={52}
               priority
               className="brand-logo"
             />
