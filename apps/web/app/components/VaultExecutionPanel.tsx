@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { VaultRecord } from "@pti/shared";
 import { PHAROS_ATLANTIC } from "@pti/shared";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import { createPublicClient, http } from "viem";
 import { formatBps } from "../../lib/format";
 import { parseNetworkChainId, PHAROS_CHAIN_ID, PHAROS_VIEM_CHAIN } from "../../lib/constants/network";
 import WalletConnectButton from "./WalletConnectButton";
@@ -47,11 +48,69 @@ export default function VaultExecutionPanel({
   }, []);
 
   function refreshMetricsSoon() {
+    // Router refresh is the only way to re-render server components with updated indexer data.
     router.refresh();
     if (refreshTimer.current !== null) {
       window.clearTimeout(refreshTimer.current);
     }
     refreshTimer.current = window.setTimeout(() => router.refresh(), 7_500);
+  }
+
+  async function waitForReceipt(txHash: string) {
+    const client = createPublicClient({
+      chain: PHAROS_VIEM_CHAIN,
+      transport: http(PHAROS_ATLANTIC.rpcUrl),
+    });
+    return client.waitForTransactionReceipt({
+      hash: txHash as `0x${string}`,
+      timeout: 180_000,
+    });
+  }
+
+  async function pollIndexerUntilVaultUpdates(opts: {
+    vaultId: string;
+    initialUpdatedAt: string | null;
+    initialTvl: string | null;
+    maxMs?: number;
+  }): Promise<{ updatedAt: string | null; tvl: string | null } | null> {
+    const maxMs = opts.maxMs ?? 90_000;
+    const start = Date.now();
+    let attempt = 0;
+
+    while (Date.now() - start < maxMs) {
+      attempt += 1;
+      try {
+        const res = await fetch("/api/vaults", { cache: "no-store" });
+        if (res.ok) {
+          const json = (await res.json()) as {
+            vaults?: Array<{
+              vaultId: string;
+              metrics?: { updatedAt?: string | null; tvl?: string | null };
+            }>;
+          };
+
+          const next = json.vaults?.find((entry) => entry.vaultId === opts.vaultId);
+          const nextUpdatedAt = next?.metrics?.updatedAt ?? null;
+          const nextTvl = next?.metrics?.tvl ?? null;
+
+          const updatedAtChanged =
+            nextUpdatedAt !== null && nextUpdatedAt !== opts.initialUpdatedAt;
+          const tvlChanged = nextTvl !== null && nextTvl !== opts.initialTvl;
+
+          if (updatedAtChanged || tvlChanged) {
+            return { updatedAt: nextUpdatedAt, tvl: nextTvl };
+          }
+        }
+      } catch {
+        // Ignore and retry. Indexer may be temporarily unavailable.
+      }
+
+      // Slight backoff; keep it snappy for testnet demos.
+      const sleepMs = Math.min(2_500, 900 + attempt * 250);
+      await new Promise((resolve) => setTimeout(resolve, sleepMs));
+    }
+
+    return null;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -143,8 +202,35 @@ export default function VaultExecutionPanel({
         );
 
         setStatusMessage(
-          `Deposit submitted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
+          `Deposit submitted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}\n\nWaiting for confirmation...`
         );
+
+        const receipt = await waitForReceipt(txHash);
+        if (receipt.status === "reverted") {
+          setStatusMessage(
+            `Deposit reverted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
+          );
+          return;
+        }
+
+        setStatusMessage(
+          `Deposit confirmed (block ${receipt.blockNumber}).\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}\n\nWaiting for indexer to update metrics...`
+        );
+
+        const synced = await pollIndexerUntilVaultUpdates({
+          vaultId: vault.vaultId,
+          initialUpdatedAt: vault.metrics.updatedAt ?? null,
+          initialTvl: vault.metrics.tvl ?? null,
+        });
+        if (synced) {
+          setStatusMessage(
+            `Deposit indexed.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
+          );
+        } else {
+          setStatusMessage(
+            `Deposit confirmed, indexer still catching up.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}\n\nIf numbers do not change shortly, the indexer may be behind.`
+          );
+        }
         refreshMetricsSoon();
       } else {
         // Redeem requires tranche token approval because controller burns via burnFrom().
@@ -171,8 +257,35 @@ export default function VaultExecutionPanel({
         );
 
         setStatusMessage(
-          `Redeem submitted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
+          `Redeem submitted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}\n\nWaiting for confirmation...`
         );
+        const receipt = await waitForReceipt(txHash);
+        if (receipt.status === "reverted") {
+          setStatusMessage(
+            `Redeem reverted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
+          );
+          return;
+        }
+
+        setStatusMessage(
+          `Redeem confirmed (block ${receipt.blockNumber}).\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}\n\nWaiting for indexer to update metrics...`
+        );
+
+        const synced = await pollIndexerUntilVaultUpdates({
+          vaultId: vault.vaultId,
+          initialUpdatedAt: vault.metrics.updatedAt ?? null,
+          initialTvl: vault.metrics.tvl ?? null,
+        });
+        if (synced) {
+          setStatusMessage(
+            `Redeem indexed.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
+          );
+        } else {
+          setStatusMessage(
+            `Redeem confirmed, indexer still catching up.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}\n\nIf numbers do not change shortly, the indexer may be behind.`
+          );
+        }
+
         refreshMetricsSoon();
       }
     } catch (err) {
