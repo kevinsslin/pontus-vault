@@ -8,6 +8,7 @@ import { buildOperationSteps } from "../../../../lib/operator/plans";
 import {
   createOperatorOperation,
   listOperatorOperations,
+  listOperatorOperationsWithSteps,
 } from "../../../../lib/operator/store";
 import { getDataSource, getVaultById } from "../../../../lib/data/vaults";
 
@@ -53,13 +54,22 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const vaultId = url.searchParams.get("vaultId") ?? undefined;
     const limit = Number(url.searchParams.get("limit") ?? "50");
+    const withSteps = url.searchParams.get("detail") === "1";
+    if (withSteps) {
+      const payload = await listOperatorOperationsWithSteps(
+        vaultId,
+        Number.isFinite(limit) ? limit : 50
+      );
+      return NextResponse.json(
+        OperatorListOperationsResponseSchema.parse(payload)
+      );
+    }
+
     const operations = await listOperatorOperations(
       vaultId,
       Number.isFinite(limit) ? limit : 50
     );
-    return NextResponse.json(
-      OperatorListOperationsResponseSchema.parse({ operations })
-    );
+    return NextResponse.json(OperatorListOperationsResponseSchema.parse({ operations }));
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to list operations.";

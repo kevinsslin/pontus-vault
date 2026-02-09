@@ -4,6 +4,10 @@ export const PHAROS_ATLANTIC = {
   explorerUrl: "https://atlantic.pharosscan.xyz",
   blockscoutVerifierUrl:
     "https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract",
+  pontusInfra: {
+    trancheFactory: "0x7fBaFFA7fba0C6b141cf06B01e1ba1f6FB2350F8",
+    trancheRegistry: "0x341A376b59c86A26324229cd467A5E3b930792C6"
+  },
   tokens: {
     USDC: "0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8",
     USDT: "0xE7E84B8B4f39C507499c40B4ac199B050e2882d5",

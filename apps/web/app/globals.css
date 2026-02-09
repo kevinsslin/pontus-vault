@@ -1888,6 +1888,46 @@ a:focus-visible {
   gap: 10px;
 }
 
+.operator-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.operator-table__row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 1fr 1.8fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--pv-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: var(--pv-shadow-sm);
+  text-align: left;
+}
+
+button.operator-table__row {
+  width: 100%;
+  cursor: pointer;
+}
+
+.operator-table__row:hover {
+  border-color: rgba(10, 52, 95, 0.25);
+}
+
+.operator-table__row--head {
+  padding: 0 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 12px;
+  color: var(--pv-ink-500);
+}
+
 .operator-item {
   border: 1px solid var(--pv-line);
   border-radius: 14px;

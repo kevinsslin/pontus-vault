@@ -230,6 +230,75 @@ export async function listOperatorOperations(vaultId?: string, limit = 50) {
     .map(fromDbOperationRow);
 }
 
+export async function listOperatorOperationsWithSteps(vaultId?: string, limit = 50) {
+  const supabase = getSupabaseAdminClient();
+
+  if (!supabase) {
+    const operations = [...memoryOperations.values()]
+      .map((item) => item.operation)
+      .filter((operation) => (vaultId ? operation.vaultId === vaultId : true))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit);
+
+    const stepsByOperationId: Record<string, OperatorOperationStep[]> = {};
+    for (const operation of operations) {
+      const loaded = memoryOperations.get(operation.operationId);
+      if (loaded) {
+        stepsByOperationId[operation.operationId] = loaded.steps;
+      }
+    }
+
+    return { operations, stepsByOperationId };
+  }
+
+  let operationQuery = supabase
+    .from("operator_operations")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (vaultId) {
+    operationQuery = operationQuery.eq("vault_id", vaultId);
+  }
+
+  const { data: operationsRaw, error: operationsError } = await operationQuery;
+  if (operationsError) {
+    throw new Error(operationsError.message);
+  }
+
+  const operations = SupabaseOperatorOperationRowSchema.array()
+    .parse(operationsRaw ?? [])
+    .map(fromDbOperationRow);
+
+  const operationIds = operations.map((operation) => operation.operationId);
+  if (operationIds.length === 0) {
+    return { operations, stepsByOperationId: {} };
+  }
+
+  const { data: stepsRaw, error: stepsError } = await supabase
+    .from("operator_operation_steps")
+    .select("*")
+    .in("operation_id", operationIds)
+    .order("operation_id", { ascending: true })
+    .order("step_index", { ascending: true });
+  if (stepsError) {
+    throw new Error(stepsError.message);
+  }
+
+  const steps = SupabaseOperatorOperationStepRowSchema.array()
+    .parse(stepsRaw ?? [])
+    .map(fromDbStepRow);
+
+  const stepsByOperationId: Record<string, OperatorOperationStep[]> = {};
+  for (const step of steps) {
+    const key = step.operationId;
+    if (!stepsByOperationId[key]) stepsByOperationId[key] = [];
+    stepsByOperationId[key].push(step);
+  }
+
+  return { operations, stepsByOperationId };
+}
+
 export async function getOperatorOperation(
   operationId: string
 ): Promise<OperatorOperationWithSteps | null> {

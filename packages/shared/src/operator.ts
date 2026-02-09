@@ -104,6 +104,9 @@ export type OperatorUpdateStepRequest = z.infer<
 
 export const OperatorListOperationsResponseSchema = z.object({
   operations: z.array(OperatorOperationSchema),
+  stepsByOperationId: z
+    .record(z.string(), z.array(OperatorOperationStepSchema))
+    .optional(),
 });
 export type OperatorListOperationsResponse = z.infer<
   typeof OperatorListOperationsResponseSchema

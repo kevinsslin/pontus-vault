@@ -175,6 +175,21 @@ function isReadyAddress(value: string | undefined | null) {
   return value.toLowerCase() !== ZERO_ADDRESS;
 }
 
+function resolveTxHashFromSteps(steps: OperatorOperationStep[] | undefined): string | null {
+  if (!steps || steps.length === 0) return null;
+  const stepWithTx = steps.find((step) => Boolean(step.txHash));
+  return stepWithTx?.txHash ?? null;
+}
+
+function summarizeStepsForTable(steps: OperatorOperationStep[] | undefined): string {
+  if (!steps || steps.length === 0) return "—";
+  const parts = steps
+    .slice(0, 4)
+    .map((step) => `${step.stepIndex + 1}:${step.status}`);
+  const suffix = steps.length > 4 ? ` +${steps.length - 4}` : "";
+  return `${parts.join(" ")}${suffix}`;
+}
+
 export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const primaryWallet = useOptionalPrimaryWallet();
   const walletAddress = primaryWallet?.address ?? "";
@@ -230,7 +245,9 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [infraInfo, setInfraInfo] = useState<OperatorInfraResponse | null>(null);
-  const [indexerStartBlockHint, setIndexerStartBlockHint] = useState("");
+  const [historyStepsByOperationId, setHistoryStepsByOperationId] = useState<
+    Record<string, OperatorOperationStep[]>
+  >({});
   const [showDraftVaultForm, setShowDraftVaultForm] = useState(false);
   const [draftVaultName, setDraftVaultName] = useState("");
   const [draftVaultRoute, setDraftVaultRoute] = useState("");
@@ -277,14 +294,18 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const loadOperations = useCallback(
     async (vaultId = selectedVaultId) => {
       if (!vaultId) return;
-      const response = await fetch(`/api/operator/operations?vaultId=${vaultId}`, {
-        cache: "no-store",
-      });
+      const response = await fetch(
+        `/api/operator/operations?vaultId=${vaultId}&detail=1`,
+        {
+          cache: "no-store",
+        }
+      );
       const payload = await response.json();
       if (!response.ok) {
         throw new Error(payload.error ?? "Failed to load operator operations.");
       }
       setOperations(payload.operations ?? []);
+      setHistoryStepsByOperationId(payload.stepsByOperationId ?? {});
     },
     [selectedVaultId]
   );
@@ -323,11 +344,6 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     );
     setProfileTags((selectedVault.uiConfig.tags ?? []).join(", "));
     setRateUpdateAccountant(selectedVault.uiConfig.accountantAddress ?? "");
-    setIndexerStartBlockHint(
-      selectedVault.uiConfig.indexerStartBlock !== undefined
-        ? String(selectedVault.uiConfig.indexerStartBlock)
-        : ""
-    );
   }, [selectedVault]);
 
   useEffect(() => {
@@ -916,12 +932,10 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     routeCapabilities["asseto-redeem"] ||
     routeCapabilities["erc4626"];
   const selectedOperationProgress = activeOperation ? summarizeProgress(activeOperation.steps) : null;
-  const registryForIndexer =
-    infraInfo?.trancheRegistry ?? selectedVault?.uiConfig.trancheRegistry ?? "";
-  const factoryForIndexer =
-    infraInfo?.trancheFactory ?? selectedVault?.uiConfig.trancheFactory ?? "";
   const prepareActionLabel =
     activeJobType === "DEPLOY_VAULT" ? "Prepare deployment" : "Prepare operation";
+  const infraReady = Boolean(infraInfo?.trancheFactory && infraInfo?.trancheRegistry);
+  const hasDeployedAddresses = Boolean(selectedVault && isReadyAddress(selectedVault.vaultAddress));
 
   return (
     <>
@@ -1251,41 +1265,6 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                     </p>
                   )}
                 </div>
-                <div className="operator-grid">
-                  <label className="field">
-                    <span>Tranche Factory</span>
-                    <input value={factoryForIndexer || "Not configured"} readOnly />
-                  </label>
-                  <label className="field">
-                    <span>Tranche Registry</span>
-                    <input value={registryForIndexer || "Not configured"} readOnly />
-                  </label>
-                  <label className="field">
-                    <span>Indexer start block</span>
-                    <input
-                      value={indexerStartBlockHint}
-                      onChange={(event) => setIndexerStartBlockHint(event.target.value)}
-                      inputMode="numeric"
-                      placeholder="e.g. 13042511"
-                    />
-                  </label>
-                  <label className="field operator-grid__full">
-                    <span>Indexer manifest command</span>
-                    <textarea
-                      readOnly
-                      rows={3}
-                      value={
-                        registryForIndexer && indexerStartBlockHint.trim().length > 0
-                          ? `bash contracts/script/update-indexer-subgraph.sh --registry ${registryForIndexer} --start-block ${indexerStartBlockHint.trim()}`
-                          : "Set Tranche Registry + start block to generate command."
-                      }
-                    />
-                  </label>
-                </div>
-                <p className="muted">
-                  If ChangeFactory or ChangeRegistry is executed onchain, update the registry
-                  address/start block and redeploy the indexer manifest.
-                </p>
               </>
             ) : null}
 
@@ -1496,6 +1475,14 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
               <strong>{selectedVault ? shortHash(selectedVault.controllerAddress) : "—"}</strong>
             </div>
             <div className="operator-kv">
+              <span>Infra configured</span>
+              <strong>{infraReady ? "yes" : "no"}</strong>
+            </div>
+            <div className="operator-kv">
+              <span>Deployed</span>
+              <strong>{hasDeployedAddresses ? "yes" : "no"}</strong>
+            </div>
+            <div className="operator-kv">
               <span>Manager route support</span>
               <strong>{selectedCapabilityKeys.length === 0 ? "None selected" : `${selectedCapabilityKeys.length} enabled`}</strong>
             </div>
@@ -1518,27 +1505,36 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       <section className="section section--tight reveal delay-2">
         <div className="card operator-history">
           <h3>Recent operations</h3>
-          <div className="operator-list">
-            {operations.length === 0 ? (
-              <p className="muted">No operations logged for this vault yet.</p>
-            ) : (
-              operations.map((operation) => (
-                <button
-                  className="operator-item"
-                  key={operation.operationId}
-                  type="button"
-                  onClick={() => void loadOperation(operation.operationId)}
-                >
-                  <div>
-                    <strong>{operation.jobType}</strong>
-                    <p className="muted">Vault {operation.vaultId}</p>
-                    <p className="operator-mono">by {shortHash(operation.requestedBy)}</p>
-                  </div>
-                  <span className="chip">{operationStatusLabel(operation.status)}</span>
-                </button>
-              ))
-            )}
-          </div>
+          {operations.length === 0 ? (
+            <p className="muted">No operations logged for this vault yet.</p>
+          ) : (
+            <div className="operator-table">
+              <div className="operator-table__row operator-table__row--head">
+                <span>Job</span>
+                <span>Status</span>
+                <span>Tx hash</span>
+                <span>Steps</span>
+              </div>
+              {operations.map((operation) => {
+                const steps = historyStepsByOperationId[operation.operationId];
+                const txHash = resolveTxHashFromSteps(steps);
+                return (
+                  <button
+                    key={operation.operationId}
+                    type="button"
+                    className="operator-table__row"
+                    onClick={() => void loadOperation(operation.operationId)}
+                    title={operation.operationId}
+                  >
+                    <span>{operation.jobType}</span>
+                    <span>{operationStatusLabel(operation.status)}</span>
+                    <span className="operator-mono">{txHash ? shortHash(txHash) : "—"}</span>
+                    <span className="operator-mono">{summarizeStepsForTable(steps)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 

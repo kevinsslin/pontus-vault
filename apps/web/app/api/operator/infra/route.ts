@@ -10,8 +10,8 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
-    const trancheFactoryRaw = (process.env.TRANCHE_FACTORY ?? "").trim();
-    const trancheRegistryRaw = (process.env.TRANCHE_REGISTRY ?? "").trim();
+    const trancheFactoryRaw = (process.env.TRANCHE_FACTORY ?? PHAROS_ATLANTIC.pontusInfra.trancheFactory).trim();
+    const trancheRegistryRaw = (process.env.TRANCHE_REGISTRY ?? PHAROS_ATLANTIC.pontusInfra.trancheRegistry).trim();
 
     const payload = OperatorInfraResponseSchema.parse({
       chainId: PHAROS_ATLANTIC.chainId,
