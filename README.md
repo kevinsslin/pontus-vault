@@ -2,6 +2,41 @@
 
 Pontus Vault is structured-yield vault infrastructure on Pharos. It packages one strategy stack into multiple risk sleeves, with consistent pricing, accounting, and redemption UX.
 
+## Architecture
+
+```mermaid
+flowchart TB
+  subgraph web["Web App"]
+    user["User (browser)"]
+    ui["Next.js UI"]
+    api["Next.js API routes"]
+    wallet["Dynamic wallet"]
+    user --> ui
+    ui --> api
+    ui --- wallet
+  end
+
+  subgraph data["Data Plane"]
+    supa["Supabase (metadata + operator ops)"]
+    subgraph["Goldsky subgraph (events + snapshots)"]
+  end
+
+  subgraph ops["Automation"]
+    keeper["Keeper (deploy executor + rate updater)"]
+  end
+
+  subgraph chain["Pharos Atlantic"]
+    contracts["Pontus + BoringVault contracts"]
+  end
+
+  api -->|read/write| supa
+  ui -->|GraphQL read| subgraph
+  wallet -->|sign + send tx| contracts
+  contracts -->|events| subgraph
+  api -->|trigger| keeper
+  keeper -->|forge/cast tx| contracts
+```
+
 ## Monorepo Layout
 
 - `apps/web`: Next.js app (discover, vault detail, portfolio, operator UI)
