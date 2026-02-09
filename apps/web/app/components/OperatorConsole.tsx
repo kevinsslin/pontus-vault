@@ -262,9 +262,42 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     [vaultRecords, selectedVaultId]
   );
 
+  const hasVault = Boolean(selectedVault);
+  const isDeployed = Boolean(selectedVault && isReadyAddress(selectedVault.vaultAddress));
+
   const moduleMeta = useMemo(
     () => MODULES.find((module) => module.id === activeModule) ?? MODULES[0],
     [activeModule]
+  );
+
+  const visibleModules = useMemo(() => {
+    if (!hasVault) {
+      return MODULES.filter((module) => module.id === "overview");
+    }
+    if (!isDeployed) {
+      return MODULES.filter((module) =>
+        ["overview", "vault_profile", "vault_factory", "history"].includes(module.id)
+      );
+    }
+    return MODULES;
+  }, [hasVault, isDeployed]);
+
+  const isModuleEnabled = useCallback(
+    (module: OperatorModule) => {
+      if (module === "overview") return true;
+      if (!hasVault) return false;
+      if (module === "vault_profile") return true;
+      if (module === "vault_factory") return true;
+      if (module === "history") return true;
+      if (!isDeployed) return false;
+      // Post-deploy modules
+      if (module === "accountant") return true;
+      if (module === "risk_caps") return true;
+      if (module === "listing") return true;
+      if (module === "rebalance") return true;
+      return false;
+    },
+    [hasVault, isDeployed]
   );
 
   const activeJobType = useMemo(() => {
@@ -391,6 +424,11 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       setActiveOperation(null);
     }
   }, [activeOperation, operations]);
+
+  useEffect(() => {
+    if (isModuleEnabled(activeModule)) return;
+    setActiveModule("overview");
+  }, [activeModule, isModuleEnabled]);
 
   function buildRequestPayload(): OperatorCreateOperationRequest {
     if (!activeJobType) {
@@ -957,18 +995,22 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       <section className="section section--tight reveal delay-1">
         <div className="operator-shell">
           <div className="card operator-panel">
-            <h3>Module selection</h3>
+            <h3>Workflow</h3>
             <div className="segment">
-              {MODULES.map((module) => (
+              {visibleModules.map((module) => {
+                const enabled = isModuleEnabled(module.id);
+                return (
                 <button
                   key={module.id}
                   type="button"
+                  disabled={!enabled}
                   className={`segment-button ${activeModule === module.id ? "segment-button--active" : ""}`}
                   onClick={() => setActiveModule(module.id)}
                 >
                   {module.label}
                 </button>
-              ))}
+                );
+              })}
             </div>
             <p className="muted">{moduleMeta.helper}</p>
 
