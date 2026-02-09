@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PHAROS_ATLANTIC } from "@pti/shared";
 import { VAULT_TREND_POINTS } from "../../../lib/constants/vault-detail";
 import { getActivityForVault, getVaultById } from "../../../lib/data/vaults";
 import { buildAssetAllocation } from "../../../lib/asset-allocation";
@@ -40,6 +41,37 @@ function buildTrendSeries(
     seniorSharePrice: seniorBase * point.seniorFactor,
     juniorSharePrice: juniorBase * point.juniorFactor,
   }));
+}
+
+function isAddressLike(value: string) {
+  return /^0x[a-fA-F0-9]{40}$/.test(value);
+}
+
+function isTxHashLike(value: string) {
+  return /^0x[a-fA-F0-9]{64}$/.test(value);
+}
+
+function explorerAddressHref(address: string) {
+  return `${PHAROS_ATLANTIC.explorerUrl}/address/${address}`;
+}
+
+function explorerTxHref(txHash: string) {
+  return `${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`;
+}
+
+function AddressLink({ address }: { address: string }) {
+  if (!isAddressLike(address)) return <span>{address}</span>;
+  return (
+    <a
+      href={explorerAddressHref(address)}
+      target="_blank"
+      rel="noreferrer"
+      className="mono"
+      title="Open in block explorer"
+    >
+      {address}
+    </a>
+  );
 }
 
 export default async function VaultDetailPage({
@@ -183,8 +215,32 @@ export default async function VaultDetailPage({
                   </div>
                   <div className="row">
                     <span className="key">Teller</span>
-                    <span className="value">{vault.tellerAddress}</span>
+                    <span className="value">
+                      <AddressLink address={vault.tellerAddress} />
+                    </span>
                   </div>
+                  <div className="row">
+                    <span className="key">Manager</span>
+                    <span className="value">
+                      <AddressLink address={vault.managerAddress} />
+                    </span>
+                  </div>
+                  {isTxHashLike(vault.uiConfig.deployTxHash ?? "") ? (
+                    <div className="row">
+                      <span className="key">Deploy tx</span>
+                      <span className="value">
+                        <a
+                          href={explorerTxHref(vault.uiConfig.deployTxHash!)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mono"
+                          title="Open in block explorer"
+                        >
+                          {vault.uiConfig.deployTxHash}
+                        </a>
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
                 {isLive ? null : (
                   <div className="card-actions">
@@ -220,20 +276,32 @@ export default async function VaultDetailPage({
               <div className="list-rows">
                 <div className="row">
                   <span className="key">Controller</span>
-                  <span className="value">{vault.controllerAddress}</span>
+                  <span className="value">
+                    <AddressLink address={vault.controllerAddress} />
+                  </span>
                 </div>
                 <div className="row">
                   <span className="key">Senior token</span>
-                  <span className="value">{vault.seniorTokenAddress}</span>
+                  <span className="value">
+                    <AddressLink address={vault.seniorTokenAddress} />
+                  </span>
                 </div>
                 <div className="row">
                   <span className="key">Junior token</span>
-                  <span className="value">{vault.juniorTokenAddress}</span>
+                  <span className="value">
+                    <AddressLink address={vault.juniorTokenAddress} />
+                  </span>
                 </div>
                 <div className="row">
-                  <span className="key">Vault / Teller</span>
+                  <span className="key">BoringVault</span>
                   <span className="value">
-                    {vault.vaultAddress} / {vault.tellerAddress}
+                    <AddressLink address={vault.vaultAddress} />
+                  </span>
+                </div>
+                <div className="row">
+                  <span className="key">Teller</span>
+                  <span className="value">
+                    <AddressLink address={vault.tellerAddress} />
                   </span>
                 </div>
               </div>

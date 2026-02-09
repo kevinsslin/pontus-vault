@@ -120,6 +120,78 @@ pnpm --filter @pti/contracts keeper:update-rate
 8. Run operator workflows from `/operator`:
    configure vault profile/caps/routes, then execute rebalance with `raise-cash` intent before large redemptions when needed.
 
+## Example Deployments (Pharos Atlantic)
+
+These addresses are provided as a concrete reference for demos, indexer wiring, and UI live mode.
+
+- Network: Pharos Atlantic testnet
+- Chain ID: `688689`
+- Explorer: https://atlantic.pharosscan.xyz/
+- Last updated: 2026-02-09
+
+### Infra (UUPS Proxies + Implementations)
+
+| Component | Address | Verified | Notes |
+|---|---:|---:|---|
+| TrancheRegistry (proxy) | `0x341A376b59c86A26324229cd467A5E3b930792C6` | ✅ | OZ `ERC1967Proxy` |
+| TrancheFactory (proxy) | `0x7fBaFFA7fba0C6b141cf06B01e1ba1f6FB2350F8` | ✅ | OZ `ERC1967Proxy` |
+| TrancheRegistry (impl) | `0xeab73FD82e5406858e287e33D825c3B2c83a146D` | ✅ | UUPS implementation |
+| TrancheFactory (impl) | `0x69F7Ca00E83828a8362865E5877E75b9b657fb77` | ✅ | UUPS implementation |
+| TrancheController (impl) | `0x40873215773169F1D8adF8d03EB8f355e90ED2d8` | ✅ | EIP-1167 clone target |
+| TrancheToken (impl) | `0x4b2D7C56A211506f89238Cff7e0d96771603bEF5` | ✅ | EIP-1167 clone target |
+
+### Demo Vault (USDT)
+
+- Asset: USDT `0xE7E84B8B4f39C507499c40B4ac199B050e2882d5`
+- Params hash: `0x0cdf7da3e5832884a02221b487938de04986c8c1afb518e1e1e35535b7a81b70`
+
+| Component | Address | Verified | Notes |
+|---|---:|---:|---|
+| TrancheController | `0x9E221E5f409e13B1d90442Bda17F3c2989F4728E` | n/a | EIP-1167 clone -> `TrancheController (impl)` |
+| SeniorToken | `0xAD7F02a52B9bB3574B9130a4643F3Eb8Cc5f8563` | n/a | EIP-1167 clone -> `TrancheToken (impl)` |
+| JuniorToken | `0xb8E36aA4328eBFa45a727409Dea4e2C0484B5c49` | n/a | EIP-1167 clone -> `TrancheToken (impl)` |
+| BoringVault | `0x86717d6E7e8c022b7f64bdbE19c2e503E0c402A4` | ✅ | Vault core |
+| Accountant | `0x729D68f666B57BaAa4239fcA6EC75891460722f2` | ✅ | `AccountantWithRateProviders` |
+| Teller | `0xB85f846fd8819275b95F2Be5db3E58367D48CEE2` | ✅ | `TellerWithMultiAssetSupport` |
+| Manager | `0x75b0E8867711e937F46737DC744fDCb4A175B83A` | ✅ | `ManagerWithMerkleVerification` |
+| RolesAuthority | `0x94E5F8476639096670e86207c8f94e171586011E` | ✅ | Solmate `RolesAuthority` |
+| WETH (local) | `0xD511a81ece0bCDA92Cae441809e3A96A718E9589` | ✅ | Local WETH helper for teller |
+| OpenFi decoder | `0xfF742317CE7E6eef61BbCDae3D850d3D9B4ff4E8` | ✅ | `OpenFiDecoderAndSanitizer` |
+| Asseto decoder | `0x92A1a7f8244c251F884d5BC89BbadbF93F424D0E` | ✅ | `AssetoDecoderAndSanitizer` |
+
+### Indexer (Goldsky)
+
+- GraphQL endpoint:
+  `https://api.goldsky.com/api/public/project_cly6pszz9vs2p01249oib4l5x/subgraphs/pontus-vault/0.1.0/gn`
+
+Example query (vault overview):
+```graphql
+query VaultOverview($id: ID!) {
+  vault(id: $id) {
+    id
+    paramsHash
+    asset
+    tvl
+    seniorPrice
+    juniorPrice
+    seniorSupply
+    juniorSupply
+    seniorDebt
+    updatedAt
+    createdAt
+  }
+}
+```
+
+Example curl:
+```bash
+INDEXER_URL="https://api.goldsky.com/api/public/project_cly6pszz9vs2p01249oib4l5x/subgraphs/pontus-vault/0.1.0/gn"
+curl "$INDEXER_URL" -H 'content-type: application/json' --data '{
+  "query":"query($id:ID!){vault(id:$id){id paramsHash asset tvl seniorPrice juniorPrice seniorSupply juniorSupply seniorDebt updatedAt createdAt}}",
+  "variables":{"id":"0x9e221e5f409e13b1d90442bda17f3c2989f4728e"}
+}'
+```
+
 **Manual vs Server-Side Execution**
 - Manual execution:
   best for bootstrap deploys, one-off maintenance, and break-glass operations.

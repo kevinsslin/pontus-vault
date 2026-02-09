@@ -1,0 +1,34 @@
+query RegistryAndLatestVaults {
+  registryConfigs(first: 5) {
+    id
+    registry
+    factory
+    vaultCount
+    updatedAt
+  }
+
+  vaults(first: 5, orderBy: createdAt, orderDirection: desc) {
+    id
+    paramsHash
+    asset
+    controller
+    createdAt
+    updatedAt
+  }
+}
+
+query VaultOverview($id: ID!) {
+  vault(id: $id) {
+    id
+    paramsHash
+    asset
+    tvl
+    seniorPrice
+    juniorPrice
+    seniorSupply
+    juniorSupply
+    seniorDebt
+    updatedAt
+    createdAt
+  }
+}
