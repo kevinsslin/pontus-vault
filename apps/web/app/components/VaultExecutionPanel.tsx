@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { VaultRecord } from "@pti/shared";
 import { PHAROS_ATLANTIC } from "@pti/shared";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
@@ -20,6 +21,7 @@ export default function VaultExecutionPanel({
   vault,
   defaultMode = "deposit",
 }: VaultExecutionPanelProps) {
+  const router = useRouter();
   const dynamic = useOptionalDynamicContext();
   const [mode, setMode] = useState<ExecutionMode>(defaultMode);
   const [tranche, setTranche] = useState<TrancheMode>("senior");
@@ -28,12 +30,29 @@ export default function VaultExecutionPanel({
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusOpen, setStatusOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const refreshTimer = useRef<number | null>(null);
   const amountId = useId();
 
   const isDeposit = mode === "deposit";
   const actionLabel = isDeposit ? "Deposit" : "Redeem";
   const inputLabel = isDeposit ? `Amount (${vault.assetSymbol})` : "Shares";
   const submitLabel = isDeposit ? "Submit deposit" : "Submit redeem";
+
+  useEffect(() => {
+    return () => {
+      if (refreshTimer.current !== null) {
+        window.clearTimeout(refreshTimer.current);
+      }
+    };
+  }, []);
+
+  function refreshMetricsSoon() {
+    router.refresh();
+    if (refreshTimer.current !== null) {
+      window.clearTimeout(refreshTimer.current);
+    }
+    refreshTimer.current = window.setTimeout(() => router.refresh(), 7_500);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -126,6 +145,7 @@ export default function VaultExecutionPanel({
         setStatusMessage(
           `Deposit submitted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
         );
+        refreshMetricsSoon();
       } else {
         // Redeem requires tranche token approval because controller burns via burnFrom().
         setStatusMessage("Step 1/2: Approve tranche token burn (wallet signature required)...");
@@ -153,6 +173,7 @@ export default function VaultExecutionPanel({
         setStatusMessage(
           `Redeem submitted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
         );
+        refreshMetricsSoon();
       }
     } catch (err) {
       const msg =
@@ -285,6 +306,13 @@ export default function VaultExecutionPanel({
           <div className="pv-modal" onMouseDown={(e) => e.stopPropagation()}>
             <div className="pv-modal__header">
               <strong>Status</strong>
+              <button
+                type="button"
+                className="pv-modal__refresh"
+                onClick={refreshMetricsSoon}
+              >
+                Refresh
+              </button>
               <button
                 type="button"
                 className="pv-modal__close"
