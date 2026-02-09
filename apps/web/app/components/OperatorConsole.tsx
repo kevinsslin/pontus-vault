@@ -778,11 +778,17 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       errorMessage?: string;
     }
   ) {
+    if (!walletAddress) {
+      throw new Error("Connect an operator wallet first.");
+    }
     const response = await fetch(
       `/api/operator/operations/${operationId}/steps/${stepIndex}`,
       {
         method: "PATCH",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          "x-operator-address": walletAddress,
+        },
         body: JSON.stringify(patch),
       }
     );
@@ -877,12 +883,31 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     setErrorMessage(null);
     setInfoMessage(null);
     try {
-      if (
+      const isServerDeployStep =
         activeOperation.operation.jobType === "DEPLOY_VAULT" &&
         step.kind === "OFFCHAIN" &&
-        step.label === "Execute deployment transaction"
-      ) {
-        await runServerDeployStep(step);
+        step.label === "Execute deployment transaction";
+
+      if (isServerDeployStep) {
+        if (!walletAddress) {
+          throw new Error("Connect an operator wallet first.");
+        }
+        if (["BROADCASTED", "RUNNING"].includes(step.status)) {
+          setInfoMessage("Deployment is already queued.");
+          return;
+        }
+
+        const priorStep = activeOperation.steps.find(
+          (candidate) => candidate.stepIndex === step.stepIndex - 1
+        );
+        if (priorStep && !["SUCCEEDED", "CONFIRMED"].includes(priorStep.status)) {
+          throw new Error("Sign deployment intent before queueing execution.");
+        }
+
+        await patchStep(activeOperation.operation.operationId, step.stepIndex, {
+          status: "BROADCASTED",
+        });
+        setInfoMessage("Deployment queued. Keeper will execute and sync results.");
         return;
       }
 
@@ -1504,6 +1529,10 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                   activeOperation.operation.jobType === "DEPLOY_VAULT" &&
                   step.kind === "OFFCHAIN" &&
                   step.label === "Execute deployment transaction";
+                const isServerDeployQueued =
+                  isServerDeployStep && ["BROADCASTED", "RUNNING"].includes(step.status);
+                const disableExecute =
+                  isBusy || isStepTerminal(step.status) || isServerDeployQueued;
                 return (
                   <article className="operator-step" key={step.stepId}>
                     <div className="operator-step__head">
@@ -1530,13 +1559,17 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                       <button
                         className="button"
                         type="button"
-                        disabled={isBusy || isStepTerminal(step.status)}
+                        disabled={disableExecute}
                         onClick={() => void executeStep(step)}
                       >
                         {isBusy
                           ? "Executing..."
                           : isServerDeployStep
-                            ? "Deploy & sync"
+                            ? step.status === "CREATED"
+                              ? "Queue deployment"
+                              : step.status === "RUNNING"
+                                ? "Running..."
+                                : "Queued"
                           : step.kind === "ONCHAIN" && EXECUTION_MODE === "send_transaction"
                             ? "Sign & send"
                             : "Sign & record"}

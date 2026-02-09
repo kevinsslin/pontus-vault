@@ -288,6 +288,17 @@ p {
   letter-spacing: 0.02em;
 }
 
+.brand--logo {
+  gap: 0;
+}
+
+.brand-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 .site-header__nav {
   display: flex;
   align-items: center;

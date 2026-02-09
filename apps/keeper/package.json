@@ -3,9 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "dependencies": {
+    "@pti/shared": "workspace:*",
+    "@supabase/supabase-js": "2.94.1"
+  },
   "scripts": {
     "start": "node src/rate-updater.mjs",
     "start:once": "KEEPER_RUN_ONCE=true node src/rate-updater.mjs",
-    "start:deploy-executor": "node src/deploy-executor.mjs"
+    "start:deploy-executor": "node src/deploy-executor.mjs",
+    "start:operator-worker": "node src/operator-worker.mjs"
   }
 }

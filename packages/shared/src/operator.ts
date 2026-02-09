@@ -24,6 +24,7 @@ export const OperatorStepStatusSchema = z.enum([
   "CREATED",
   "AWAITING_SIGNATURE",
   "BROADCASTED",
+  "RUNNING",
   "CONFIRMED",
   "SUCCEEDED",
   "FAILED",

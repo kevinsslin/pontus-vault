@@ -61,7 +61,7 @@ function deriveOperationStatus(steps: OperatorOperationStep[]): OperatorOperatio
   }
   if (
     steps.some((step) =>
-      ["CREATED", "AWAITING_SIGNATURE", "BROADCASTED"].includes(step.status)
+      ["CREATED", "AWAITING_SIGNATURE", "BROADCASTED", "RUNNING"].includes(step.status)
     )
   ) {
     return "RUNNING";

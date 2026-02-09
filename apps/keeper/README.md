@@ -1,6 +1,12 @@
-# Keeper Worker
+# Keeper
 
-This worker runs a periodic exchange-rate update tick for BoringVault accountant.
+This package contains server-side workers that run Foundry scripts and write results back to the Pontus operator database (Supabase).
+
+## Modes
+
+- **Rate updater** (`pnpm --filter @pti/keeper start`): periodically pushes `AccountantWithRateProviders.updateExchangeRate(...)`.
+- **Deploy executor** (`pnpm --filter @pti/keeper start:deploy-executor`): HTTP service used by the operator UI (optional).
+- **Operator worker** (`pnpm --filter @pti/keeper start:operator-worker`): async worker that polls Supabase for queued operator steps, runs Foundry, and persists results.
 
 ## Purpose
 
@@ -81,3 +87,39 @@ Use **this folder’s Dockerfile** (`apps/keeper/Dockerfile`). The build context
 5. **Variables**: set `PHAROS_ATLANTIC_RPC_URL`, `DEPLOYER_PRIVATE_KEY`, `TRANCHE_FACTORY`. Optionally `CONTRACTS_WORKSPACE_DIR=/app/contracts`, `DEPLOY_EXECUTOR_TOKEN`, and role addresses. See **`.env.example`** in this folder.
 
 The app listens on `PORT` or `DEPLOY_EXECUTOR_PORT` (default 8787); Railway injects `PORT` automatically.
+
+## Operator Worker
+
+This worker is the production async path for **vault deployment execution**.
+
+### What It Does
+
+1. Poll `operator_operation_steps` for `label = "Execute deployment transaction"` and `status = "BROADCASTED"`.
+2. Atomically claim the step by transitioning it to `RUNNING`.
+3. Run `forge script script/DeployTrancheVault.s.sol --broadcast --verify ...`.
+4. Write deployed addresses and metadata to `vault_registry` (including `ui_config.paramsHash`, `ui_config.deployTxHash`, and an `ui_config.indexerStartBlock` hint when available).
+5. Mark the deployment step `CONFIRMED` and advance the next step (register outputs) to `SUCCEEDED`.
+
+### Required Environment
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `OPERATOR_ADMIN_ADDRESSES` (comma-separated allowlist; required to prevent unbounded execution)
+- `PHAROS_ATLANTIC_RPC_URL`
+- `DEPLOYER_PRIVATE_KEY`
+- `TRANCHE_FACTORY`
+
+### Optional Environment
+
+- `CONTRACTS_WORKSPACE_DIR` (or `KEEPER_CONTRACTS_DIR`)
+- `DEPLOYER_OPERATOR`
+- `DEPLOYER_GUARDIAN`
+- `DEPLOYER_STRATEGIST`
+- `DEPLOYER_MANAGER_ADMIN`
+- `KEEPER_WORKER_INTERVAL_MS` (default `3000`)
+
+### Run
+
+```bash
+pnpm --filter @pti/keeper start:operator-worker
+```

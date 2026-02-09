@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   PHAROS_NETWORK_LABEL,
   PHAROS_NETWORK_LABEL_MOBILE,
@@ -13,11 +14,15 @@ export default function SiteHeader() {
     <header className="site-header">
       <div className="site-header__inner">
         <div className="site-header__brand">
-          <Link href="/" className="brand" aria-label="Pontus Vault home">
-            <span className="brand-mark">P</span>
-            <span>
-              Pontus <span className="muted">Vault</span>
-            </span>
+          <Link href="/" className="brand brand--logo" aria-label="Pontus Vault home">
+            <Image
+              src="/logo-nav.png"
+              alt="Pontus Vault"
+              width={140}
+              height={32}
+              priority
+              className="brand-logo"
+            />
           </Link>
           <span className="chip chip--soft site-header__network">
             <span className="live-dot" />
