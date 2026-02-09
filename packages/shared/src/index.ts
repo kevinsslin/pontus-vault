@@ -6,7 +6,9 @@ export const PHAROS_ATLANTIC = {
     "https://api.socialscan.io/pharos-atlantic-testnet/v1/explorer/command_api/contract",
   pontusInfra: {
     trancheFactory: "0x7fBaFFA7fba0C6b141cf06B01e1ba1f6FB2350F8",
-    trancheRegistry: "0x341A376b59c86A26324229cd467A5E3b930792C6"
+    trancheRegistry: "0x341A376b59c86A26324229cd467A5E3b930792C6",
+    trancheControllerImpl: "0x40873215773169F1D8adF8d03EB8f355e90ED2d8",
+    trancheTokenImpl: "0x4b2D7C56A211506f89238Cff7e0d96771603bEF5"
   },
   tokens: {
     USDC: "0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8",
