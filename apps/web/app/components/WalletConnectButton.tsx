@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ComponentType } from "react";
+import dynamic from "next/dynamic";
 import { HAS_DYNAMIC_CONFIG } from "../../lib/constants/dynamic";
 import { PHAROS_ATLANTIC } from "@pti/shared";
 
@@ -25,32 +25,15 @@ function ConnectButtonShell({
   );
 }
 
+const DynamicWalletButtonRuntime = dynamic(
+  () => import("./DynamicWalletButtonRuntime"),
+  {
+    ssr: false,
+    loading: () => <ConnectButtonShell disabled label="Loading..." />,
+  }
+);
+
 export default function WalletConnectButton() {
-  const [WalletRuntime, setWalletRuntime] = useState<ComponentType | null>(null);
-  const [loadingRuntime, setLoadingRuntime] = useState(false);
-
-  useEffect(() => {
-    if (!HAS_DYNAMIC_CONFIG) return;
-    if (WalletRuntime || loadingRuntime) return;
-
-    let cancelled = false;
-    setLoadingRuntime(true);
-    import("./DynamicWalletButtonRuntime")
-      .then((mod) => {
-        if (cancelled) return;
-        const RuntimeComponent = mod.default as ComponentType;
-        setWalletRuntime(() => RuntimeComponent);
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setLoadingRuntime(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [WalletRuntime, loadingRuntime]);
-
   if (!HAS_DYNAMIC_CONFIG) {
     return (
       <ConnectButtonShell
@@ -63,17 +46,6 @@ export default function WalletConnectButton() {
     );
   }
 
-  if (!WalletRuntime) {
-    return (
-      <ConnectButtonShell
-        disabled={loadingRuntime}
-        label={loadingRuntime ? "Loading..." : "Connect Wallet"}
-        onClick={() => {
-          // Runtime will mount automatically; this is just a noop affordance.
-        }}
-      />
-    );
-  }
-
-  return <WalletRuntime />;
+  return <DynamicWalletButtonRuntime />;
 }
+
