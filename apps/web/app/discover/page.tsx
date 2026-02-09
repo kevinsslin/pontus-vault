@@ -71,7 +71,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
         </div>
       </section>
 
-      <section className="section reveal delay-1">
+      <section className="section reveal">
         <div className="grid grid-3">
           {rankedVaults.map((vault) => (
             <VaultCard key={vault.vaultId} vault={vault} />

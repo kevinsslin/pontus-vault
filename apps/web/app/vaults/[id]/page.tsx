@@ -142,7 +142,7 @@ export default async function VaultDetailPage({
 
       <div className="vault-detail-layout">
         <div className="vault-detail-main">
-          <section className="section section--compact reveal delay-1">
+          <section className="section section--compact reveal">
             <div className="detail-yield-grid">
               <article className="card card--priority">
                 <div className="stat-label">Senior APY</div>
@@ -155,7 +155,7 @@ export default async function VaultDetailPage({
             </div>
           </section>
 
-          <section className="section section--tight reveal delay-1">
+          <section className="section section--tight reveal">
             <div className="stat-grid">
               <article className="card">
                 <div className="stat-label">TVL</div>
@@ -175,15 +175,15 @@ export default async function VaultDetailPage({
             </div>
           </section>
 
-          <section className="section section--tight reveal delay-1">
+          <section className="section section--tight reveal">
             <VaultPerformanceChart points={trendSeries} />
           </section>
 
-          <section className="section section--compact reveal delay-2">
+          <section className="section section--compact reveal">
             <VaultAssetAllocationChart slices={assetAllocation} />
           </section>
 
-          <section className="section section--compact reveal delay-2">
+          <section className="section section--compact reveal">
             <div className="grid grid-2">
               <article className="card">
                 <h3>Vault terms</h3>
@@ -260,7 +260,7 @@ export default async function VaultDetailPage({
             </div>
           </section>
 
-          <section className="section section--compact reveal delay-2">
+          <section className="section section--compact reveal">
             <article className="card">
               <h3>Tranche allocation</h3>
               <div className="mix-chart">
@@ -277,44 +277,52 @@ export default async function VaultDetailPage({
             </article>
           </section>
 
-          <section className="section section--compact reveal delay-3">
+          <section className="section section--compact reveal">
             <article className="card">
               <h3>Addresses</h3>
-              <div className="list-rows">
-                <div className="row">
-                  <span className="key">Controller</span>
-                  <span className="value">
-                    <AddressLink address={vault.controllerAddress} />
-                    {cloneImpls ? (
-                      <div className="micro muted">
-                        EIP-1167 clone · Impl:{" "}
-                        <AddressLink address={cloneImpls.trancheControllerImpl} />
-                      </div>
-                    ) : null}
-                  </span>
-                </div>
-                <div className="row">
-                  <span className="key">Senior token</span>
-                  <span className="value">
-                    <AddressLink address={vault.seniorTokenAddress} />
-                    {cloneImpls ? (
-                      <div className="micro muted">
-                        EIP-1167 clone · Impl: <AddressLink address={cloneImpls.trancheTokenImpl} />
-                      </div>
-                    ) : null}
-                  </span>
-                </div>
-                <div className="row">
-                  <span className="key">Junior token</span>
-                  <span className="value">
-                    <AddressLink address={vault.juniorTokenAddress} />
-                    {cloneImpls ? (
-                      <div className="micro muted">
-                        EIP-1167 clone · Impl: <AddressLink address={cloneImpls.trancheTokenImpl} />
-                      </div>
-                    ) : null}
-                  </span>
-                </div>
+                <div className="list-rows">
+                  <div className="row">
+                    <span className="key">
+                      {cloneImpls ? "TrancheController (clone)" : "TrancheController"}
+                    </span>
+                    <span className="value">
+                      <AddressLink address={vault.controllerAddress} />
+                      {cloneImpls ? (
+                        <div className="micro muted">
+                          Minimal proxy (EIP-1167). Verified impl:{" "}
+                          <AddressLink address={cloneImpls.trancheControllerImpl} />
+                        </div>
+                      ) : null}
+                    </span>
+                  </div>
+                  <div className="row">
+                    <span className="key">
+                      {cloneImpls ? "SeniorToken (clone)" : "SeniorToken"}
+                    </span>
+                    <span className="value">
+                      <AddressLink address={vault.seniorTokenAddress} />
+                      {cloneImpls ? (
+                        <div className="micro muted">
+                          Minimal proxy (EIP-1167). Verified impl:{" "}
+                          <AddressLink address={cloneImpls.trancheTokenImpl} />
+                        </div>
+                      ) : null}
+                    </span>
+                  </div>
+                  <div className="row">
+                    <span className="key">
+                      {cloneImpls ? "JuniorToken (clone)" : "JuniorToken"}
+                    </span>
+                    <span className="value">
+                      <AddressLink address={vault.juniorTokenAddress} />
+                      {cloneImpls ? (
+                        <div className="micro muted">
+                          Minimal proxy (EIP-1167). Verified impl:{" "}
+                          <AddressLink address={cloneImpls.trancheTokenImpl} />
+                        </div>
+                      ) : null}
+                    </span>
+                  </div>
                 <div className="row">
                   <span className="key">BoringVault</span>
                   <span className="value">
@@ -331,7 +339,7 @@ export default async function VaultDetailPage({
             </article>
           </section>
 
-          <section className="section section--compact reveal delay-3">
+          <section className="section section--compact reveal">
             <article className="card">
               <h3>Activity feed</h3>
               <div className="table-wrap">
@@ -362,7 +370,7 @@ export default async function VaultDetailPage({
           </section>
         </div>
 
-        <aside className="vault-detail-cta reveal delay-2">
+        <aside className="vault-detail-cta reveal">
           {isLive ? (
             <VaultExecutionPanel vault={vault} />
           ) : (

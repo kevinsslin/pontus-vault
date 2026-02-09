@@ -1132,7 +1132,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         </div>
       </section>
 
-      <section className="section section--tight reveal delay-1">
+      <section className="section section--tight reveal">
         <div className="operator-shell">
           <div className="card operator-panel">
             <h3>Workflow</h3>
@@ -1727,7 +1727,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         </div>
       </section>
 
-      <section className="section section--tight reveal delay-2">
+      <section className="section section--tight reveal">
         <div className="card operator-history">
           <h3>Recent operations</h3>
           {operations.length === 0 ? (
@@ -1764,7 +1764,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       </section>
 
       {activeOperation ? (
-        <section className="section section--tight reveal delay-3">
+        <section className="section section--tight reveal">
           <div className="card operator-steps">
             <h3>Operation detail</h3>
             <p className="muted">

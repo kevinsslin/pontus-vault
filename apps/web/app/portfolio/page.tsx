@@ -20,7 +20,7 @@ export default function PortfolioPage() {
         </div>
       </section>
 
-      <section className="section reveal delay-1">
+      <section className="section reveal">
         <div className="stat-grid">
           <div className="card">
             <div className="stat-label">Total value</div>
@@ -35,7 +35,7 @@ export default function PortfolioPage() {
         </div>
       </section>
 
-      <section className="section reveal delay-2">
+      <section className="section reveal">
         <div className="card">
           <h3>Position ledger</h3>
           <table className="table">

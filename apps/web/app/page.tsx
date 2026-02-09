@@ -87,7 +87,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <aside className="hero__panel hero__panel--compact reveal delay-1">
+        <aside className="hero__panel hero__panel--compact reveal">
           <p className="eyebrow">Platform snapshot</p>
           <h3>Capital routing with tranche-native controls.</h3>
           <div className="hero__aum-card">
@@ -138,7 +138,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section reveal delay-1">
+      <section className="section reveal">
         <div className="section-copy">
           <p className="eyebrow">Operating model</p>
           <h2>Operating model</h2>
@@ -158,7 +158,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section reveal delay-2">
+      <section className="section reveal">
         <div className="section-copy">
           <p className="eyebrow">Vault stack</p>
           <h2>Three layers, one investable product surface.</h2>
@@ -185,7 +185,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section reveal delay-2">
+      <section className="section reveal">
         <div className="section-copy">
           <p className="eyebrow">Allocation styles</p>
           <h2>Choose your lane</h2>
@@ -219,7 +219,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section reveal delay-3">
+      <section className="section reveal">
         <div className="section-title">
           <h2>Featured vaults</h2>
           <Link className="button button--ghost" href="/discover">

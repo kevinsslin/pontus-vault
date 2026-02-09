@@ -24,7 +24,9 @@ export default function VaultExecutionPanel({
   const [mode, setMode] = useState<ExecutionMode>(defaultMode);
   const [tranche, setTranche] = useState<TrancheMode>("senior");
   const [amount, setAmount] = useState("");
-  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [inlineMessage, setInlineMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusOpen, setStatusOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const amountId = useId();
 
@@ -35,48 +37,48 @@ export default function VaultExecutionPanel({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitMessage(null);
+    setInlineMessage(null);
     const raw = amount.trim();
     if (!raw) {
-      setSubmitMessage("Please enter a valid amount.");
+      setInlineMessage("Please enter a valid amount.");
       return;
     }
 
     if (!dynamic?.primaryWallet) {
-      setSubmitMessage("Connect your wallet first (then retry).");
+      setInlineMessage("Connect your wallet first (then retry).");
       return;
     }
 
     const wallet = dynamic.primaryWallet;
     const walletAddress = wallet.address;
     if (!walletAddress) {
-      setSubmitMessage("Wallet address unavailable. Reconnect your wallet and retry.");
+      setInlineMessage("Wallet address unavailable. Reconnect your wallet and retry.");
       return;
     }
 
     const controller = vault.controllerAddress;
     if (!isReadyAddress(controller)) {
-      setSubmitMessage("Vault controller address is missing. This vault is not ready for execution.");
+      setInlineMessage("Vault controller address is missing. This vault is not ready for execution.");
       return;
     }
 
     const assetAddress = vault.assetAddress;
     if (!isReadyAddress(assetAddress)) {
-      setSubmitMessage("Vault asset address is missing. This vault is not ready for execution.");
+      setInlineMessage("Vault asset address is missing. This vault is not ready for execution.");
       return;
     }
 
     const trancheToken =
       tranche === "senior" ? vault.seniorTokenAddress : vault.juniorTokenAddress;
     if (!isDeposit && !isReadyAddress(trancheToken)) {
-      setSubmitMessage("Tranche token address is missing. This vault is not ready for execution.");
+      setInlineMessage("Tranche token address is missing. This vault is not ready for execution.");
       return;
     }
 
     const chainIdRaw = await wallet.getNetwork().catch(() => null);
     const chainId = parseNetworkChainId(chainIdRaw ?? undefined);
     if (chainId !== PHAROS_CHAIN_ID) {
-      setSubmitMessage(
+      setInlineMessage(
         `Wrong network (chainId=${chainId ?? "unknown"}). Switch to Pharos Atlantic (${PHAROS_CHAIN_ID}) and retry.`
       );
       return;
@@ -87,28 +89,26 @@ export default function VaultExecutionPanel({
     try {
       parsedAmount = parseUnits(raw, decimals);
     } catch (err) {
-      setSubmitMessage(err instanceof Error ? err.message : "Invalid amount format.");
+      setInlineMessage(err instanceof Error ? err.message : "Invalid amount format.");
       return;
     }
     if (parsedAmount <= 0n) {
-      setSubmitMessage("Please enter a positive amount.");
+      setInlineMessage("Please enter a positive amount.");
       return;
     }
 
     setSubmitting(true);
+    setStatusOpen(true);
     try {
       if (isDeposit) {
-        setSubmitMessage("Step 1/2: Approve asset spend (wallet signature required)...");
+        setStatusMessage("Step 1/2: Approve asset spend (wallet signature required)...");
         await sendTx(wallet, {
           from: walletAddress,
           to: assetAddress,
           data: encodeErc20Approve(controller, parsedAmount),
         });
 
-        setSubmitMessage("Step 2/2: Waiting for wallet… then sign the deposit.");
-        await new Promise((r) => setTimeout(r, 1500));
-
-        setSubmitMessage("Step 2/2: Submit deposit (wallet signature required)...");
+        setStatusMessage("Step 2/2: Submit deposit (wallet signature required)...");
         const txHash = await withTimeout(
           sendTx(wallet, {
             from: walletAddress,
@@ -123,22 +123,19 @@ export default function VaultExecutionPanel({
           "Wallet did not respond. Sign the deposit in your wallet or cancel and retry."
         );
 
-        setSubmitMessage(
-          `Deposit submitted. Tx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
+        setStatusMessage(
+          `Deposit submitted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
         );
       } else {
         // Redeem requires tranche token approval because controller burns via burnFrom().
-        setSubmitMessage("Step 1/2: Approve tranche token burn (wallet signature required)...");
+        setStatusMessage("Step 1/2: Approve tranche token burn (wallet signature required)...");
         await sendTx(wallet, {
           from: walletAddress,
           to: trancheToken,
           data: encodeErc20Approve(controller, parsedAmount),
         });
 
-        setSubmitMessage("Step 2/2: Waiting for wallet… then sign the redeem.");
-        await new Promise((r) => setTimeout(r, 1500));
-
-        setSubmitMessage("Step 2/2: Submit redeem (wallet signature required)...");
+        setStatusMessage("Step 2/2: Submit redeem (wallet signature required)...");
         const txHash = await withTimeout(
           sendTx(wallet, {
             from: walletAddress,
@@ -153,8 +150,8 @@ export default function VaultExecutionPanel({
           "Wallet did not respond. Sign the redeem in your wallet or cancel and retry."
         );
 
-        setSubmitMessage(
-          `Redeem submitted. Tx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
+        setStatusMessage(
+          `Redeem submitted.\nTx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
         );
       }
     } catch (err) {
@@ -164,7 +161,7 @@ export default function VaultExecutionPanel({
           : typeof err === "object" && err !== null && "message" in err
             ? String((err as { message: unknown }).message)
             : "Transaction failed.";
-      setSubmitMessage(`Failed: ${msg}`);
+      setStatusMessage(`Failed: ${msg}`);
     } finally {
       setSubmitting(false);
     }
@@ -251,9 +248,9 @@ export default function VaultExecutionPanel({
           </button>
           <WalletConnectButton />
         </div>
-        {submitMessage ? (
+        {inlineMessage ? (
           <p className="execution-form__message" role="status">
-            {submitMessage}
+            {inlineMessage}
           </p>
         ) : null}
       </form>
@@ -276,6 +273,33 @@ export default function VaultExecutionPanel({
           <span className="execution-summary__value">{routeLabel}</span>
         </div>
       </div>
+
+      {statusOpen && statusMessage ? (
+        <div
+          className="pv-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Transaction status"
+          onMouseDown={() => setStatusOpen(false)}
+        >
+          <div className="pv-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="pv-modal__header">
+              <strong>Status</strong>
+              <button
+                type="button"
+                className="pv-modal__close"
+                onClick={() => setStatusOpen(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="pv-modal__body">
+              <pre className="pv-modal__pre">{statusMessage}</pre>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </article>
   );
 }
