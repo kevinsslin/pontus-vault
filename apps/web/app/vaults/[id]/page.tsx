@@ -87,6 +87,13 @@ export default async function VaultDetailPage({
 
   const activity = getActivityForVault(vault.vaultId);
   const isLive = vault.uiConfig.status === "LIVE";
+  const cloneImpls =
+    vault.chain === "pharos-atlantic"
+      ? {
+          trancheControllerImpl: PHAROS_ATLANTIC.pontusInfra.trancheControllerImpl,
+          trancheTokenImpl: PHAROS_ATLANTIC.pontusInfra.trancheTokenImpl,
+        }
+      : null;
   const seniorMix = seniorMixPercent(vault.metrics.tvl, vault.metrics.seniorDebt);
   const juniorMix = seniorMix === null ? null : Math.max(0, 100 - seniorMix);
   const updatedLabel = formatRelativeTimestamp(vault.metrics.updatedAt);
@@ -278,18 +285,34 @@ export default async function VaultDetailPage({
                   <span className="key">Controller</span>
                   <span className="value">
                     <AddressLink address={vault.controllerAddress} />
+                    {cloneImpls ? (
+                      <div className="micro muted">
+                        EIP-1167 clone · Impl:{" "}
+                        <AddressLink address={cloneImpls.trancheControllerImpl} />
+                      </div>
+                    ) : null}
                   </span>
                 </div>
                 <div className="row">
                   <span className="key">Senior token</span>
                   <span className="value">
                     <AddressLink address={vault.seniorTokenAddress} />
+                    {cloneImpls ? (
+                      <div className="micro muted">
+                        EIP-1167 clone · Impl: <AddressLink address={cloneImpls.trancheTokenImpl} />
+                      </div>
+                    ) : null}
                   </span>
                 </div>
                 <div className="row">
                   <span className="key">Junior token</span>
                   <span className="value">
                     <AddressLink address={vault.juniorTokenAddress} />
+                    {cloneImpls ? (
+                      <div className="micro muted">
+                        EIP-1167 clone · Impl: <AddressLink address={cloneImpls.trancheTokenImpl} />
+                      </div>
+                    ) : null}
                   </span>
                 </div>
                 <div className="row">
