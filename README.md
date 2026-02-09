@@ -18,7 +18,7 @@ flowchart TB
 
   subgraph data["Data Plane"]
     supa["Supabase (metadata + operator ops)"]
-    subgraph["Goldsky subgraph (events + snapshots)"]
+    gs["Goldsky subgraph (events + snapshots)"]
   end
 
   subgraph ops["Automation"]
@@ -30,9 +30,9 @@ flowchart TB
   end
 
   api -->|read/write| supa
-  ui -->|GraphQL read| subgraph
+  ui -->|GraphQL read| gs
   wallet -->|sign + send tx| contracts
-  contracts -->|events| subgraph
+  contracts -->|events| gs
   api -->|trigger| keeper
   keeper -->|forge/cast tx| contracts
 ```
