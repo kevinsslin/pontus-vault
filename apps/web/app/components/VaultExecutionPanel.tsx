@@ -105,15 +105,23 @@ export default function VaultExecutionPanel({
           data: encodeErc20Approve(controller, parsedAmount),
         });
 
+        setSubmitMessage("Step 2/2: Waiting for wallet… then sign the deposit.");
+        await new Promise((r) => setTimeout(r, 1500));
+
         setSubmitMessage("Step 2/2: Submit deposit (wallet signature required)...");
-        const txHash = await sendTx(wallet, {
-          from: walletAddress,
-          to: controller,
-          data:
-            tranche === "senior"
-              ? encodeDepositSenior(parsedAmount, walletAddress)
-              : encodeDepositJunior(parsedAmount, walletAddress),
-        });
+        const txHash = await withTimeout(
+          sendTx(wallet, {
+            from: walletAddress,
+            to: controller,
+            data:
+              tranche === "senior"
+                ? encodeDepositSenior(parsedAmount, walletAddress)
+                : encodeDepositJunior(parsedAmount, walletAddress),
+            valueWei: 0n,
+          }),
+          120000,
+          "Wallet did not respond. Sign the deposit in your wallet or cancel and retry."
+        );
 
         setSubmitMessage(
           `Deposit submitted. Tx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
@@ -127,22 +135,36 @@ export default function VaultExecutionPanel({
           data: encodeErc20Approve(controller, parsedAmount),
         });
 
+        setSubmitMessage("Step 2/2: Waiting for wallet… then sign the redeem.");
+        await new Promise((r) => setTimeout(r, 1500));
+
         setSubmitMessage("Step 2/2: Submit redeem (wallet signature required)...");
-        const txHash = await sendTx(wallet, {
-          from: walletAddress,
-          to: controller,
-          data:
-            tranche === "senior"
-              ? encodeRedeemSenior(parsedAmount, walletAddress)
-              : encodeRedeemJunior(parsedAmount, walletAddress),
-        });
+        const txHash = await withTimeout(
+          sendTx(wallet, {
+            from: walletAddress,
+            to: controller,
+            data:
+              tranche === "senior"
+                ? encodeRedeemSenior(parsedAmount, walletAddress)
+                : encodeRedeemJunior(parsedAmount, walletAddress),
+            valueWei: 0n,
+          }),
+          120000,
+          "Wallet did not respond. Sign the redeem in your wallet or cancel and retry."
+        );
 
         setSubmitMessage(
           `Redeem submitted. Tx: ${txHash}\nExplorer: ${PHAROS_ATLANTIC.explorerUrl}/tx/${txHash}`
         );
       }
     } catch (err) {
-      setSubmitMessage(err instanceof Error ? err.message : "Transaction failed.");
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === "object" && err !== null && "message" in err
+            ? String((err as { message: unknown }).message)
+            : "Transaction failed.";
+      setSubmitMessage(`Failed: ${msg}`);
     } finally {
       setSubmitting(false);
     }
@@ -343,6 +365,15 @@ function encodeRedeemSenior(sharesIn: bigint, receiver: string): `0x${string}` {
 
 function encodeRedeemJunior(sharesIn: bigint, receiver: string): `0x${string}` {
   return `0x${REDEEM_JUNIOR_SELECTOR}${encodeUint256(sharesIn)}${encodeAddress(receiver)}`;
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(message)), ms)
+    ),
+  ]);
 }
 
 async function sendTx(
