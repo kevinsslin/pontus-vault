@@ -5,7 +5,7 @@ import type { VaultRecord } from "@pti/shared";
 import { PHAROS_ATLANTIC } from "@pti/shared";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { formatBps } from "../../lib/format";
-import { parseNetworkChainId, PHAROS_CHAIN_ID } from "../../lib/constants/network";
+import { parseNetworkChainId, PHAROS_CHAIN_ID, PHAROS_VIEM_CHAIN } from "../../lib/constants/network";
 import WalletConnectButton from "./WalletConnectButton";
 
 type ExecutionMode = "deposit" | "redeem";
@@ -367,12 +367,13 @@ async function sendTx(
   const walletClient = connector.getWalletClient?.();
   if (walletClient?.sendTransaction) {
     const txHash = await walletClient.sendTransaction({
-      account: params.from,
-      to: params.to,
+      chain: PHAROS_VIEM_CHAIN,
+      account: params.from as `0x${string}`,
+      to: params.to as `0x${string}`,
       data: params.data,
       value,
     });
-    if (txHash) return txHash;
+    if (txHash) return typeof txHash === "string" ? txHash : String(txHash);
   }
 
   if (connector.getSigner) {

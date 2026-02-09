@@ -1,6 +1,16 @@
+import { defineChain } from "viem";
 import { PHAROS_ATLANTIC } from "@pti/shared";
 
 export const PHAROS_CHAIN_ID = PHAROS_ATLANTIC.chainId;
+
+/** Pharos Atlantic as a viem Chain for WalletClient.sendTransaction(..., { chain }). */
+export const PHAROS_VIEM_CHAIN = defineChain({
+  id: PHAROS_CHAIN_ID,
+  name: "Pharos Atlantic",
+  nativeCurrency: { decimals: 18, name: "Pharos", symbol: "PHRS" },
+  rpcUrls: { default: { http: [PHAROS_ATLANTIC.rpcUrl] } },
+  blockExplorers: { default: { name: "PharosScan", url: PHAROS_ATLANTIC.explorerUrl } },
+});
 export const PHAROS_CHAIN_ID_HEX = `0x${PHAROS_CHAIN_ID.toString(16)}`;
 export const PHAROS_NETWORK_NAME = "Pharos Atlantic Testnet";
 
