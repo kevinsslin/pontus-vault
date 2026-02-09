@@ -84,7 +84,7 @@ function extractRate(output, label) {
   return match?.[1] ?? null;
 }
 
-export async function runDeployForge({owner, requestedBy, assetAddress}) {
+export async function runDeployForge({owner, requestedBy, assetAddress, deployConfig}) {
   const rpcUrl = getRequiredEnv("PHAROS_ATLANTIC_RPC_URL");
   const deployerPrivateKey = getRequiredEnv("DEPLOYER_PRIVATE_KEY");
   const trancheFactory = getRequiredEnv("TRANCHE_FACTORY");
@@ -96,7 +96,7 @@ export async function runDeployForge({owner, requestedBy, assetAddress}) {
 
   const operator = getEnv("DEPLOYER_OPERATOR", requestedBy);
   const guardian = getEnv("DEPLOYER_GUARDIAN", requestedBy);
-  const strategist = getEnv("DEPLOYER_STRATEGIST", owner);
+  const strategist = getEnv("DEPLOYER_STRATEGIST", operator);
   const managerAdmin = getEnv("DEPLOYER_MANAGER_ADMIN", owner);
 
   if (!isAddressLike(operator)) throw new Error("DEPLOYER_OPERATOR is invalid.");
@@ -132,7 +132,16 @@ export async function runDeployForge({owner, requestedBy, assetAddress}) {
       STRATEGIST: strategist,
       MANAGER_ADMIN: managerAdmin,
       TRANCHE_FACTORY: trancheFactory,
-      ASSET: assetAddress
+      ASSET: assetAddress,
+      ...(deployConfig?.seniorTokenName ? {SENIOR_TOKEN_NAME: String(deployConfig.seniorTokenName)} : {}),
+      ...(deployConfig?.seniorTokenSymbol ? {SENIOR_TOKEN_SYMBOL: String(deployConfig.seniorTokenSymbol)} : {}),
+      ...(deployConfig?.juniorTokenName ? {JUNIOR_TOKEN_NAME: String(deployConfig.juniorTokenName)} : {}),
+      ...(deployConfig?.juniorTokenSymbol ? {JUNIOR_TOKEN_SYMBOL: String(deployConfig.juniorTokenSymbol)} : {}),
+      ...(deployConfig?.boringVaultName ? {BORING_VAULT_NAME: String(deployConfig.boringVaultName)} : {}),
+      ...(deployConfig?.boringVaultSymbol ? {BORING_VAULT_SYMBOL: String(deployConfig.boringVaultSymbol)} : {}),
+      ...(deployConfig?.boringVaultDecimals !== undefined && deployConfig?.boringVaultDecimals !== null
+        ? {BORING_VAULT_DECIMALS: String(deployConfig.boringVaultDecimals)}
+        : {})
     },
     maxBuffer: 1024 * 1024 * 16
   });
@@ -231,4 +240,3 @@ export async function runUpdateRateForge({
     }
   };
 }
-

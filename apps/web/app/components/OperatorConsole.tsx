@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   OperatorCreateOperationRequest,
@@ -41,6 +42,8 @@ const DEFAULT_ASSET_ADDRESSES: Record<string, string> = {
   USDC: "0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8",
   USDT: "0xE7E84B8B4f39C507499c40B4ac199B050e2882d5",
 };
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const MODULES: Array<{ id: OperatorModule; label: string; helper: string }> = [
   {
@@ -166,6 +169,12 @@ function isAddressLike(value: string) {
   return /^0x[a-fA-F0-9]{40}$/.test(value);
 }
 
+function isReadyAddress(value: string | undefined | null) {
+  if (!value) return false;
+  if (!isAddressLike(value)) return false;
+  return value.toLowerCase() !== ZERO_ADDRESS;
+}
+
 export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const primaryWallet = useOptionalPrimaryWallet();
   const walletAddress = primaryWallet?.address ?? "";
@@ -189,6 +198,13 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const [minCashBufferBps, setMinCashBufferBps] = useState("500");
   const [deploymentNote, setDeploymentNote] = useState("");
   const [deploymentOwner, setDeploymentOwner] = useState("");
+  const [deploySeniorTokenName, setDeploySeniorTokenName] = useState("Pontus Vault Senior");
+  const [deploySeniorTokenSymbol, setDeploySeniorTokenSymbol] = useState("ptS");
+  const [deployJuniorTokenName, setDeployJuniorTokenName] = useState("Pontus Vault Junior");
+  const [deployJuniorTokenSymbol, setDeployJuniorTokenSymbol] = useState("ptJ");
+  const [deployBoringVaultName, setDeployBoringVaultName] = useState("Pontus Vault Base");
+  const [deployBoringVaultSymbol, setDeployBoringVaultSymbol] = useState("PTVB");
+  const [deployBoringVaultDecimals, setDeployBoringVaultDecimals] = useState("18");
   const [rateUpdateAccountant, setRateUpdateAccountant] = useState("");
   const [rateUpdateMinBps, setRateUpdateMinBps] = useState("1");
   const [rateUpdateAllowPause, setRateUpdateAllowPause] = useState(false);
@@ -382,6 +398,23 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         }
         options.owner = deployOwner;
       }
+      const boringVaultDecimals = Number(deployBoringVaultDecimals.trim() || "18");
+      if (
+        !Number.isFinite(boringVaultDecimals) ||
+        boringVaultDecimals < 0 ||
+        boringVaultDecimals > 255
+      ) {
+        throw new Error("BoringVault decimals must be an integer between 0 and 255.");
+      }
+      options.deployConfig = {
+        seniorTokenName: deploySeniorTokenName.trim(),
+        seniorTokenSymbol: deploySeniorTokenSymbol.trim(),
+        juniorTokenName: deployJuniorTokenName.trim(),
+        juniorTokenSymbol: deployJuniorTokenSymbol.trim(),
+        boringVaultName: deployBoringVaultName.trim(),
+        boringVaultSymbol: deployBoringVaultSymbol.trim(),
+        boringVaultDecimals: Math.floor(boringVaultDecimals),
+      };
       if (deploymentNote.trim()) options.note = deploymentNote.trim();
     } else if (activeModule === "risk_caps") {
       options.maxSeniorRatioBps = Number(maxSeniorRatioBps || "8000");
@@ -1134,6 +1167,90 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                     placeholder={walletAddress || "0x..."}
                   />
                 </label>
+                <div className="operator-grid">
+                  <label className="field operator-grid__full">
+                    <span>Onchain token config</span>
+                    <p className="muted">
+                      These values are baked into the deployed ERC20 tokens and the BoringVault
+                      share token.
+                    </p>
+                  </label>
+                  <label className="field">
+                    <span>Senior token name</span>
+                    <input
+                      value={deploySeniorTokenName}
+                      onChange={(event) => setDeploySeniorTokenName(event.target.value)}
+                      placeholder="Pontus Vault Senior"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Senior token symbol</span>
+                    <input
+                      value={deploySeniorTokenSymbol}
+                      onChange={(event) => setDeploySeniorTokenSymbol(event.target.value)}
+                      placeholder="ptS"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Junior token name</span>
+                    <input
+                      value={deployJuniorTokenName}
+                      onChange={(event) => setDeployJuniorTokenName(event.target.value)}
+                      placeholder="Pontus Vault Junior"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Junior token symbol</span>
+                    <input
+                      value={deployJuniorTokenSymbol}
+                      onChange={(event) => setDeployJuniorTokenSymbol(event.target.value)}
+                      placeholder="ptJ"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>BoringVault name</span>
+                    <input
+                      value={deployBoringVaultName}
+                      onChange={(event) => setDeployBoringVaultName(event.target.value)}
+                      placeholder="Pontus Vault Base"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>BoringVault symbol</span>
+                    <input
+                      value={deployBoringVaultSymbol}
+                      onChange={(event) => setDeployBoringVaultSymbol(event.target.value)}
+                      placeholder="PTVB"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>BoringVault decimals</span>
+                    <input
+                      value={deployBoringVaultDecimals}
+                      onChange={(event) => setDeployBoringVaultDecimals(event.target.value)}
+                      inputMode="numeric"
+                      placeholder="18"
+                    />
+                  </label>
+                  {selectedVault && isReadyAddress(selectedVault.vaultAddress) ? (
+                    <div className="card-actions operator-grid__full">
+                      <Link className="button" href={`/vaults/${selectedVault.vaultId}/deposit`}>
+                        Supply (deposit)
+                      </Link>
+                      <Link
+                        className="button button--ghost"
+                        href={`/vaults/${selectedVault.vaultId}/redeem`}
+                      >
+                        Redeem
+                      </Link>
+                      <span className="chip">Uses connected wallet</span>
+                    </div>
+                  ) : (
+                    <p className="muted operator-grid__full">
+                      Supply becomes available after the vault is deployed and addresses are synced.
+                    </p>
+                  )}
+                </div>
                 <div className="operator-grid">
                   <label className="field">
                     <span>Tranche Factory</span>

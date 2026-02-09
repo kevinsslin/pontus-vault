@@ -253,13 +253,16 @@ async function processDeployStep(supabase, allowlist, step) {
     }
 
     const options = operation.options ?? {};
-    const owner = isAddressLike(options.owner ?? "") ? String(options.owner).toLowerCase() : String(operation.requested_by).toLowerCase();
+    const owner = isAddressLike(options.owner ?? "")
+      ? String(options.owner).toLowerCase()
+      : String(operation.requested_by).toLowerCase();
     const requestedBy = String(operation.requested_by).toLowerCase();
 
     const exec = await runDeployForge({
       owner,
       requestedBy,
-      assetAddress: String(vaultRow.asset_address)
+      assetAddress: String(vaultRow.asset_address),
+      deployConfig: options.deployConfig ?? null
     });
 
     await upsertVaultRegistryDeployment(supabase, vaultRow, {
@@ -337,4 +340,3 @@ async function main() {
 }
 
 void main();
-

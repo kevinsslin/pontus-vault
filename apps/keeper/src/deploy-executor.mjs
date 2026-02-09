@@ -42,6 +42,7 @@ async function handleDeploy(request, response) {
   const owner = String(body.owner ?? "").trim();
   const requestedBy = String(body.requestedBy ?? "").trim();
   const assetAddress = String(body.assetAddress ?? "").trim();
+  const deployConfig = body.deployConfig ?? null;
 
   if (!owner || !requestedBy || !assetAddress) {
     sendJson(response, 400, {
@@ -67,7 +68,8 @@ async function handleDeploy(request, response) {
     const payload = await runDeployForge({
       owner: owner.toLowerCase(),
       requestedBy: requestedBy.toLowerCase(),
-      assetAddress: assetAddress.toLowerCase()
+      assetAddress: assetAddress.toLowerCase(),
+      deployConfig
     });
     sendJson(response, 200, payload);
   } catch (error) {
