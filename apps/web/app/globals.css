@@ -1821,6 +1821,44 @@ a:focus-visible {
   gap: 10px;
 }
 
+.asset-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.asset-picker__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--pv-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.asset-picker__option:hover {
+  border-color: rgba(10, 52, 95, 0.25);
+}
+
+.asset-picker__option--active {
+  border-color: rgba(10, 52, 95, 0.55);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.asset-picker__icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.asset-picker__label {
+  font-weight: 650;
+  color: var(--pv-ink-900);
+}
+
 .operator-capability {
   display: flex;
   align-items: flex-start;
@@ -2471,6 +2509,10 @@ button.operator-table__row {
 
   .operator-grid,
   .operator-list {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-picker {
     grid-template-columns: 1fr;
   }
 

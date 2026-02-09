@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   OperatorCreateOperationRequest,
@@ -44,6 +45,52 @@ const DEFAULT_ASSET_ADDRESSES: Record<string, string> = {
 };
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const PHAROS_CHAIN_LABEL = "Pharos Atlantic";
+const PHAROS_CHAIN_KEY = "pharos-atlantic";
+const PHAROS_CHAIN_ICON = "/partners/pharos.png";
+
+const ASSET_OPTIONS: Array<{
+  symbol: string;
+  address: string;
+  tokenIcon: string;
+  label: string;
+}> = [
+  {
+    symbol: "USDC",
+    address: DEFAULT_ASSET_ADDRESSES.USDC,
+    tokenIcon: "/tokens/usdc.svg",
+    label: "USDC",
+  },
+  {
+    symbol: "USDT",
+    address: DEFAULT_ASSET_ADDRESSES.USDT,
+    tokenIcon: "/tokens/usdt.svg",
+    label: "USDT",
+  },
+];
+
+const ROUTE_PRESETS: Array<{ key: string; label: string; helper: string }> = [
+  {
+    key: "openfi-lending",
+    label: "OpenFi lending",
+    helper: "Use OpenFi pool integration for conservative carry.",
+  },
+  {
+    key: "asseto-cash-plus",
+    label: "Asseto Cash+",
+    helper: "Use Asseto Cash+ integration for tokenized yield routes.",
+  },
+  {
+    key: "erc4626",
+    label: "ERC4626 generic",
+    helper: "Use a generic ERC4626 adapter for strategy routing.",
+  },
+  {
+    key: "custom",
+    label: "Custom",
+    helper: "Provide a custom route key (advanced).",
+  },
+];
 
 const MODULES: Array<{ id: OperatorModule; label: string; helper: string }> = [
   {
@@ -250,12 +297,12 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   >({});
   const [showDraftVaultForm, setShowDraftVaultForm] = useState(false);
   const [draftVaultName, setDraftVaultName] = useState("");
-  const [draftVaultRoute, setDraftVaultRoute] = useState("");
+  const [draftVaultRoutePreset, setDraftVaultRoutePreset] = useState("openfi-lending");
+  const [draftVaultRouteCustom, setDraftVaultRouteCustom] = useState("");
   const [draftVaultStatus, setDraftVaultStatus] = useState<VaultStatus>("COMING_SOON");
-  const [draftVaultAssetSymbol, setDraftVaultAssetSymbol] = useState("USDC");
-  const [draftVaultAssetAddress, setDraftVaultAssetAddress] = useState(
-    DEFAULT_ASSET_ADDRESSES.USDC
-  );
+  const [draftVaultChain, setDraftVaultChain] = useState(PHAROS_CHAIN_KEY);
+  const [draftVaultAssetSymbol, setDraftVaultAssetSymbol] = useState(ASSET_OPTIONS[0].symbol);
+  const [draftVaultAssetAddress, setDraftVaultAssetAddress] = useState(ASSET_OPTIONS[0].address);
 
   const selectedVault = useMemo(
     () => vaultRecords.find((vault) => vault.vaultId === selectedVaultId) ?? null,
@@ -410,10 +457,14 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   useEffect(() => {
     const key = draftVaultAssetSymbol.trim().toUpperCase();
     const preset = DEFAULT_ASSET_ADDRESSES[key];
-    if (preset) {
-      setDraftVaultAssetAddress(preset);
-    }
+    if (!preset) return;
+    setDraftVaultAssetAddress(preset);
   }, [draftVaultAssetSymbol]);
+
+  const draftVaultRoute = useMemo(() => {
+    if (draftVaultRoutePreset !== "custom") return draftVaultRoutePreset;
+    return draftVaultRouteCustom.trim();
+  }, [draftVaultRouteCustom, draftVaultRoutePreset]);
 
   useEffect(() => {
     if (!activeOperation) return;
@@ -670,13 +721,14 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     const route = draftVaultRoute.trim();
     const assetSymbol = draftVaultAssetSymbol.trim();
     const assetAddress = draftVaultAssetAddress.trim();
+    const chain = draftVaultChain.trim();
 
     if (!name) {
       setErrorMessage("Vault name is required.");
       return;
     }
     if (!route) {
-      setErrorMessage("Route key is required.");
+      setErrorMessage("Strategy route is required.");
       return;
     }
     if (!assetSymbol) {
@@ -698,7 +750,7 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           requestedBy: walletAddress,
-          chain: selectedVault?.chain ?? "pharos-atlantic",
+          chain,
           name,
           route,
           assetSymbol,
@@ -721,10 +773,12 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       setActiveModule("vault_profile");
       setShowDraftVaultForm(false);
       setDraftVaultName("");
-      setDraftVaultRoute("");
+      setDraftVaultRoutePreset("openfi-lending");
+      setDraftVaultRouteCustom("");
       setDraftVaultStatus("COMING_SOON");
-      setDraftVaultAssetSymbol("USDC");
-      setDraftVaultAssetAddress(DEFAULT_ASSET_ADDRESSES.USDC);
+      setDraftVaultChain(PHAROS_CHAIN_KEY);
+      setDraftVaultAssetSymbol(ASSET_OPTIONS[0].symbol);
+      setDraftVaultAssetAddress(ASSET_OPTIONS[0].address);
       setInfoMessage("Draft vault created. Update metadata and deploy via Vault Factory.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Create vault failed.");
@@ -1056,12 +1110,42 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                     />
                   </label>
                   <label className="field operator-grid__full">
-                    <span>Route key</span>
-                    <input
-                      value={draftVaultRoute}
-                      onChange={(event) => setDraftVaultRoute(event.target.value)}
-                      placeholder="asseto-cash-plus"
-                    />
+                    <span>Strategy route</span>
+                    <select
+                      value={draftVaultRoutePreset}
+                      onChange={(event) => setDraftVaultRoutePreset(event.target.value)}
+                    >
+                      {ROUTE_PRESETS.map((preset) => (
+                        <option key={preset.key} value={preset.key}>
+                          {preset.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="muted">
+                      This is an internal identifier used by the operator, indexer, and front-end
+                      to select the integration playbook. It is not an onchain setting.
+                    </p>
+                    {draftVaultRoutePreset === "custom" ? (
+                      <input
+                        value={draftVaultRouteCustom}
+                        onChange={(event) => setDraftVaultRouteCustom(event.target.value)}
+                        placeholder="custom-route-key"
+                      />
+                    ) : (
+                      <p className="muted">
+                        {ROUTE_PRESETS.find((preset) => preset.key === draftVaultRoutePreset)
+                          ?.helper ?? ""}
+                      </p>
+                    )}
+                  </label>
+                  <label className="field operator-grid__full">
+                    <span>Network</span>
+                    <select
+                      value={draftVaultChain}
+                      onChange={(event) => setDraftVaultChain(event.target.value)}
+                    >
+                      <option value={PHAROS_CHAIN_KEY}>{PHAROS_CHAIN_LABEL}</option>
+                    </select>
                   </label>
                   <label className="field">
                     <span>Initial status</span>
@@ -1073,21 +1157,45 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                       <option value="COMING_SOON">COMING_SOON</option>
                     </select>
                   </label>
-                  <label className="field">
-                    <span>Asset symbol</span>
-                    <input
-                      value={draftVaultAssetSymbol}
-                      onChange={(event) => setDraftVaultAssetSymbol(event.target.value)}
-                      placeholder="USDT"
-                    />
-                  </label>
                   <label className="field operator-grid__full">
-                    <span>Asset address</span>
-                    <input
-                      value={draftVaultAssetAddress}
-                      onChange={(event) => setDraftVaultAssetAddress(event.target.value)}
-                      placeholder="0x..."
-                    />
+                    <span>Asset</span>
+                    <div className="asset-picker">
+                      {ASSET_OPTIONS.map((asset) => {
+                        const selected = asset.symbol === draftVaultAssetSymbol;
+                        return (
+                          <button
+                            key={asset.symbol}
+                            type="button"
+                            className={`asset-picker__option ${selected ? "asset-picker__option--active" : ""}`}
+                            onClick={() => {
+                              setDraftVaultAssetSymbol(asset.symbol);
+                              setDraftVaultAssetAddress(asset.address);
+                            }}
+                          >
+                            <span className="asset-picker__icons">
+                              <Image
+                                src={asset.tokenIcon}
+                                alt={asset.label}
+                                width={20}
+                                height={20}
+                              />
+                              <Image
+                                src={PHAROS_CHAIN_ICON}
+                                alt={PHAROS_CHAIN_LABEL}
+                                width={20}
+                                height={20}
+                              />
+                            </span>
+                            <span className="asset-picker__label">
+                              {asset.label} · {PHAROS_CHAIN_LABEL}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="muted">
+                      Address: <span className="operator-mono">{shortHash(draftVaultAssetAddress)}</span>
+                    </p>
                   </label>
                 </div>
                 <div className="card-actions">
