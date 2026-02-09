@@ -301,6 +301,8 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
   const [draftVaultChain, setDraftVaultChain] = useState(PHAROS_CHAIN_KEY);
   const [draftVaultAssetSymbol, setDraftVaultAssetSymbol] = useState(ASSET_OPTIONS[0].symbol);
   const [draftVaultAssetAddress, setDraftVaultAssetAddress] = useState(ASSET_OPTIONS[0].address);
+  const [localDeployOutput, setLocalDeployOutput] = useState("");
+  const [recordingDeploy, setRecordingDeploy] = useState(false);
   const selectedVault = useMemo(
     () => vaultRecords.find((vault) => vault.vaultId === selectedVaultId) ?? null,
     [vaultRecords, selectedVaultId]
@@ -943,6 +945,44 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     await loadOperations(selectedVaultId);
   }
 
+  async function recordLocalDeploy(operationId: string, stepIndex: number, vaultId: string) {
+    if (!walletAddress) {
+      setErrorMessage("Connect an operator wallet first.");
+      return;
+    }
+    const output = localDeployOutput.trim();
+    if (!output) {
+      setErrorMessage("Paste the forge script output first.");
+      return;
+    }
+    setRecordingDeploy(true);
+    setErrorMessage(null);
+    setInfoMessage(null);
+    try {
+      const res = await fetch("/api/operator/deploy/record", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          operationId,
+          stepIndex,
+          vaultId,
+          operatorAddress: walletAddress,
+          forgeOutput: output,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Record failed.");
+      setLocalDeployOutput("");
+      setInfoMessage("Deployment recorded. Registry updated.");
+      await loadOperation(operationId);
+      router.refresh();
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Record failed.");
+    } finally {
+      setRecordingDeploy(false);
+    }
+  }
+
   async function executeStep(step: OperatorOperationStep) {
     if (!activeOperation) return;
     const actionKey = `${activeOperation.operation.operationId}:${step.stepIndex}`;
@@ -977,7 +1017,10 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
           (typeof params?.route === "string" && params.route) ||
           "openfi-lending";
 
-        await patchStep(activeOperation.operation.operationId, step.stepIndex, { status: "RUNNING" });
+        await patchStep(activeOperation.operation.operationId, step.stepIndex, {
+          status: "RUNNING",
+          ...(step.status === "FAILED" ? { errorCode: "", errorMessage: "" } : {}),
+        });
 
         const deployRes = await fetch("/api/operator/deploy", {
           method: "POST",
@@ -1747,8 +1790,10 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                   activeOperation.operation.jobType === "DEPLOY_VAULT" &&
                   step.kind === "OFFCHAIN" &&
                   step.label === "Execute deployment transaction";
+                const canRetryDeploy = isServerDeployStep && step.status === "FAILED";
                 const disableExecute =
-                  isBusy || isStepTerminal(step.status);
+                  isBusy || (isStepTerminal(step.status) && !canRetryDeploy);
+                const showDeployFallback = isServerDeployStep && step.status === "FAILED";
                 return (
                   <article className="operator-step" key={step.stepId}>
                     <div className="operator-step__head">
@@ -1780,14 +1825,45 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
                       >
                         {isBusy
                           ? "Executing..."
-                          : isServerDeployStep
-                            ? "Deploy now"
-                          : step.kind === "ONCHAIN" && EXECUTION_MODE === "send_transaction"
-                            ? "Sign & send"
-                            : "Sign & record"}
+                          : canRetryDeploy
+                            ? "Retry deploy"
+                            : isServerDeployStep
+                              ? "Deploy now"
+                              : step.kind === "ONCHAIN" && EXECUTION_MODE === "send_transaction"
+                                ? "Sign & send"
+                                : "Sign & record"}
                       </button>
                       <span className="chip">{step.kind.toLowerCase()}</span>
                     </div>
+                    {showDeployFallback ? (
+                      <div className="operator-local-deploy">
+                        <p className="muted">
+                          Deploy failed. You can retry above, or run <code>forge script</code> locally and paste the full output below to record the deployment.
+                        </p>
+                        <label className="operator-label">Paste forge output (stdout + stderr):</label>
+                        <textarea
+                          className="operator-textarea"
+                          rows={5}
+                          placeholder="Paste the full output from forge script ..."
+                          value={localDeployOutput}
+                          onChange={(e) => setLocalDeployOutput(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="button"
+                          disabled={!localDeployOutput.trim() || recordingDeploy}
+                          onClick={() =>
+                            void recordLocalDeploy(
+                              activeOperation.operation.operationId,
+                              step.stepIndex,
+                              activeOperation.operation.vaultId
+                            )
+                          }
+                        >
+                          {recordingDeploy ? "Recording..." : "Record deployment (fallback)"}
+                        </button>
+                      </div>
+                    ) : null}
                   </article>
                 );
               })}

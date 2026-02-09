@@ -19,12 +19,33 @@ export default function VaultExecutionPanel({
 }: VaultExecutionPanelProps) {
   const [mode, setMode] = useState<ExecutionMode>(defaultMode);
   const [tranche, setTranche] = useState<TrancheMode>("senior");
+  const [amount, setAmount] = useState("");
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const amountId = useId();
 
   const isDeposit = mode === "deposit";
   const actionLabel = isDeposit ? "Deposit" : "Redeem";
   const inputLabel = isDeposit ? `Amount (${vault.assetSymbol})` : "Shares";
   const submitLabel = isDeposit ? "Submit deposit" : "Submit redeem";
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitMessage(null);
+    const raw = amount.trim();
+    const num = raw ? Number.parseFloat(raw) : NaN;
+    if (!raw || Number.isNaN(num) || num <= 0) {
+      setSubmitMessage("Please enter a valid amount.");
+      return;
+    }
+    setSubmitting(true);
+    setSubmitMessage(
+      isDeposit
+        ? `Deposit ${num} ${vault.assetSymbol} → ${tranche === "senior" ? "Senior" : "Junior"}. Connect wallet above to sign the transaction.`
+        : `Redeem ${num} shares (${tranche}). Connect wallet above to sign the transaction.`
+    );
+    setSubmitting(false);
+  }
   const routeLabel =
     vault.uiConfig.routeLabel ??
     (vault.uiConfig.strategyKeys && vault.uiConfig.strategyKeys.length > 0
@@ -62,7 +83,7 @@ export default function VaultExecutionPanel({
         </button>
       </div>
 
-      <form className="execution-form" aria-label={`${actionLabel} form`}>
+      <form className="execution-form" aria-label={`${actionLabel} form`} onSubmit={handleSubmit}>
         <label className="field-label" htmlFor={amountId}>
           {inputLabel}
         </label>
@@ -73,6 +94,8 @@ export default function VaultExecutionPanel({
           placeholder="0.00"
           className="input"
           inputMode="decimal"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
         />
 
         <div>
@@ -100,11 +123,16 @@ export default function VaultExecutionPanel({
         </div>
 
         <div className="execution-actions">
-          <button className="button" type="button">
-            {submitLabel}
+          <button className="button" type="submit" disabled={submitting}>
+            {submitting ? "Submitting..." : submitLabel}
           </button>
           <WalletConnectButton />
         </div>
+        {submitMessage ? (
+          <p className="execution-form__message" role="status">
+            {submitMessage}
+          </p>
+        ) : null}
       </form>
 
       <div className="execution-summary">

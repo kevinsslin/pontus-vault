@@ -1742,6 +1742,15 @@ a:focus-visible {
   align-content: start;
 }
 
+.execution-form__message {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(17, 91, 152, 0.08);
+  color: var(--pv-ink-700);
+  font-size: 13px;
+}
+
 .operator-panel,
 .operator-history,
 .operator-steps {
