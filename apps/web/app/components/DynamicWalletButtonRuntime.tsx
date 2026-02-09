@@ -1,9 +1,8 @@
 "use client";
 
 import { DynamicWidget, useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import DynamicBoundary from "./DynamicBoundary";
 
-function DynamicWalletButtonInner() {
+export default function DynamicWalletButtonRuntime() {
   const { primaryWallet, setShowAuthFlow } = useDynamicContext();
 
   if (!primaryWallet) {
@@ -19,13 +18,5 @@ function DynamicWalletButtonInner() {
   }
 
   return <DynamicWidget buttonClassName="button button--ghost" />;
-}
-
-export default function DynamicWalletButtonRuntime() {
-  return (
-    <DynamicBoundary>
-      <DynamicWalletButtonInner />
-    </DynamicBoundary>
-  );
 }
 
