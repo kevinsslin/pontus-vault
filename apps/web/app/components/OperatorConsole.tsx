@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   OperatorCreateOperationRequest,
-  OperatorDeployVaultResponse,
   OperatorInfraResponse,
   OperatorJobType,
   OperatorOperation,
@@ -798,82 +797,6 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
     }
     setActiveOperation(payload);
     await loadOperations(selectedVaultId);
-  }
-
-  async function refreshVaultRecord(vaultId: string) {
-    const response = await fetch(`/api/operator/vaults/${vaultId}`, {
-      cache: "no-store",
-    });
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.error ?? "Failed to refresh vault record.");
-    }
-    const refreshedVault = payload.vault as VaultRecord;
-    setVaultRecords((previous) =>
-      previous.map((vault) =>
-        vault.vaultId === refreshedVault.vaultId ? refreshedVault : vault
-      )
-    );
-  }
-
-  async function runServerDeployStep(step: OperatorOperationStep) {
-    if (!activeOperation) {
-      throw new Error("No active operation selected.");
-    }
-    if (!selectedVault) {
-      throw new Error("Select a vault first.");
-    }
-    if (!walletAddress) {
-      throw new Error("Connect an operator wallet first.");
-    }
-
-    const owner = (deploymentOwner.trim() || walletAddress).trim();
-    if (!isAddressLike(owner)) {
-      throw new Error("Owner address is invalid.");
-    }
-
-    const response = await fetch("/api/operator/deploy", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        requestedBy: walletAddress,
-        owner,
-        vaultId: selectedVault.vaultId,
-        chain: selectedVault.chain,
-        name: selectedVault.name,
-        route: selectedVault.route,
-        assetSymbol: selectedVault.assetSymbol,
-        assetAddress: selectedVault.assetAddress,
-        uiConfig: selectedVault.uiConfig,
-      }),
-    });
-
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.error ?? "Server deploy failed.");
-    }
-
-    const deployment = payload as OperatorDeployVaultResponse;
-    await patchStep(activeOperation.operation.operationId, step.stepIndex, {
-      status: "SUCCEEDED",
-      txHash: deployment.txHash ?? undefined,
-      proof: deployment.paramsHash,
-    });
-
-    const registerStep = activeOperation.steps.find(
-      (candidate) => candidate.stepIndex === step.stepIndex + 1
-    );
-    if (registerStep && !isStepTerminal(registerStep.status)) {
-      await patchStep(activeOperation.operation.operationId, registerStep.stepIndex, {
-        status: "SUCCEEDED",
-        proof: deployment.paramsHash,
-      });
-    }
-
-    await refreshVaultRecord(selectedVault.vaultId);
-    setInfoMessage(
-      `Deployment complete. Controller ${shortHash(deployment.addresses.trancheController)}`
-    );
   }
 
   async function executeStep(step: OperatorOperationStep) {

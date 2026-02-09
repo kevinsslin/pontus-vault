@@ -39,8 +39,8 @@ async function handleDeploy(request, response) {
   }
 
   const body = await parseJsonBody(request);
-  const owner = String(body.owner ?? "").trim().toLowerCase();
-  const requestedBy = String(body.requestedBy ?? "").trim().toLowerCase();
+  const owner = String(body.owner ?? "").trim();
+  const requestedBy = String(body.requestedBy ?? "").trim();
   const assetAddress = String(body.assetAddress ?? "").trim();
 
   if (!owner || !requestedBy || !assetAddress) {
@@ -50,8 +50,25 @@ async function handleDeploy(request, response) {
     return;
   }
 
+  if (!isAddressLike(owner)) {
+    sendJson(response, 400, {error: "owner must be a valid EVM address."});
+    return;
+  }
+  if (!isAddressLike(requestedBy)) {
+    sendJson(response, 400, {error: "requestedBy must be a valid EVM address."});
+    return;
+  }
+  if (!isAddressLike(assetAddress)) {
+    sendJson(response, 400, {error: "assetAddress must be a valid EVM address."});
+    return;
+  }
+
   try {
-    const payload = await runDeployForge({owner, requestedBy, assetAddress});
+    const payload = await runDeployForge({
+      owner: owner.toLowerCase(),
+      requestedBy: requestedBy.toLowerCase(),
+      assetAddress: assetAddress.toLowerCase()
+    });
     sendJson(response, 200, payload);
   } catch (error) {
     sendJson(response, 400, {
@@ -77,6 +94,19 @@ async function handleUpdateRate(request, response) {
     sendJson(response, 400, {
       error: "vaultAddress, accountantAddress, and assetAddress are required."
     });
+    return;
+  }
+
+  if (!isAddressLike(vaultAddress)) {
+    sendJson(response, 400, {error: "vaultAddress must be a valid EVM address."});
+    return;
+  }
+  if (!isAddressLike(accountantAddress)) {
+    sendJson(response, 400, {error: "accountantAddress must be a valid EVM address."});
+    return;
+  }
+  if (!isAddressLike(assetAddress)) {
+    sendJson(response, 400, {error: "assetAddress must be a valid EVM address."});
     return;
   }
 
