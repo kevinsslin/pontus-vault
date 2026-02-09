@@ -789,6 +789,27 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
       throw new Error("Connect an operator wallet first.");
     }
 
+    // Prefer personal_sign with address so we don't depend on connector's viem signer having account set.
+    if (typeof window !== "undefined") {
+      const ethereum = (
+        window as Window & {
+          ethereum?: {
+            request?: (args: { method: string; params?: unknown[] }) => Promise<string>;
+          };
+        }
+      ).ethereum;
+      if (ethereum?.request && primaryWallet.address) {
+        try {
+          return await ethereum.request({
+            method: "personal_sign",
+            params: [message, primaryWallet.address],
+          });
+        } catch {
+          // fall through to connector
+        }
+      }
+    }
+
     const connector = primaryWallet.connector as {
       getSigner?: () => Promise<{
         signMessage?: (value: string | { message: string }) => Promise<string>;
@@ -803,22 +824,6 @@ export default function OperatorConsole({ vaults }: OperatorConsoleProps) {
         } catch {
           return await signer.signMessage({ message });
         }
-      }
-    }
-
-    if (typeof window !== "undefined") {
-      const ethereum = (
-        window as Window & {
-          ethereum?: {
-            request?: (args: { method: string; params?: unknown[] }) => Promise<string>;
-          };
-        }
-      ).ethereum;
-      if (ethereum?.request) {
-        return ethereum.request({
-          method: "personal_sign",
-          params: [message, primaryWallet.address],
-        });
       }
     }
 
